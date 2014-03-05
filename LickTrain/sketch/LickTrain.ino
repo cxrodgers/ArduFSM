@@ -116,10 +116,11 @@ void loop()
       // Rewarding state
       // Chats and touches are ignored!
       // start a timer
-      reward_timer = time + 1000;
+      Serial.println((String) "REWARD DELIVERED " + time);
+      reward_timer = time + 40;
     
       // rewarding
-      reward();
+      digitalWrite(6, HIGH);    // open solenoid valve
     
       // transition
       next_state = 3;
@@ -132,6 +133,7 @@ void loop()
       if (time >= reward_timer)
       {
         next_state = 0;
+        digitalWrite(6, LOW);
       }
       break;
   }
@@ -142,23 +144,4 @@ void loop()
     Serial.println(time + (String) " STATE CHANGE " + current_state + " " + next_state);
     current_state = next_state;
   }
-}
-
-void reward()
-{
-  unsigned long time = millis();
-  
-  Serial.println((String) "REWARD DELIVERED " + time);
-
-  //~ digitalWrite(12, HIGH);
-  //~ delay(100);
-  
-  digitalWrite(6, HIGH);    // open solenoid valve for a short time
-  delay(40);                  // 8ms ~= 8uL of reward liquid (on box #4 011811)
-  digitalWrite(6, LOW);
-
-  digitalWrite(7, HIGH);    // open solenoid valve for a short time
-  delay(40);                  // 8ms ~= 8uL of reward liquid (on box #4 011811)
-  digitalWrite(7, LOW);
-
 }
