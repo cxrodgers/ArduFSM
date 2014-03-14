@@ -61,7 +61,7 @@ class Chatter:
     Call `main_loop` to iterate over `update` calls until CTRL+C is received.
     """
     def __init__(self, serial_port='/dev/ttyACM0', from_user='TO_DEV', 
-        to_user=None, serial_timeout=0.01):
+        to_user=None, serial_timeout=0.01, baud_rate=9600):
         """Initialize a new Chatter.
         
         `serial_port` : where the device is located
@@ -86,7 +86,7 @@ class Chatter:
         # 0 means return whatever is available immediately
         # otherwise, wait for specified time
         # 0.01 takes a noticeable but small amount of CPU time
-        self.ser = serial.Serial(serial_port, 9600, timeout=serial_timeout)
+        self.ser = serial.Serial(serial_port, baud_rate, timeout=serial_timeout)
 
         # Wait for it to initialize the arduino
         time.sleep(0.1)
