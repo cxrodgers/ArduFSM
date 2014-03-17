@@ -1,6 +1,8 @@
 #include "chat.h"
 #include "mpr121.h"
 #include <Wire.h> # also for mpr121
+#include <Servo.h>
+
 
 // Pins
 struct PINS_TYPE 
@@ -23,8 +25,10 @@ struct PINS_TYPE
 enum STATE_TYPE
 {
   TRIAL_START,
-  WAIT_L,
-  WAIT_R,
+  MOVE_SERVO_START,
+  MOVE_SERVO_WAIT,
+  RESPONSE_WINDOW_START,
+  RESPONSE_WINDOW,
   REWARD_L,
   REWARD_R,
   REWARD_TIMER_L,
@@ -33,19 +37,32 @@ enum STATE_TYPE
   INTER_TRIAL_INTERVAL
 } current_state = TRIAL_START;
 
+
+// Locations of the servo
+struct SERVO_POSITIONS_TYPE 
+{
+  static const int NEAR = 45; // position when within whisking range
+  static const int FAR = 70; // position when out of whisking range
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 1500;
+} SERVO_POSITIONS;
+
 // Trial variables
 struct TRIAL_PARAMS_TYPE
 {
   char rewarded_side = 'L';
+  String outcome = "spoil";
+  String choice = "nogo";
 } current_trial_params;
 
 // Session params -- combine this with trial variables
 struct SESSION_PARAMS_TYPE
 {
   char force = 'X';
-  unsigned long inter_trial_interval = 1000;
+  unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
+  unsigned long response_window_dur = 3000;
   unsigned long reward_dur_l = 30;
   unsigned long reward_dur_r = 45;  
+  unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
 } session_params;
 
 // Debugging announcements
@@ -55,9 +72,14 @@ unsigned long interval = 1000;
 // State machine timers
 unsigned long reward_timer = 0;
 unsigned long iti_timer = 0;
+unsigned long timer = 0; // generic timer
 
 // touched monitor
 uint16_t sticky_touched = 0;
+
+// Servo
+Servo linServo;
+
 
 
 int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd);
@@ -83,6 +105,12 @@ void setup()
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
+
+  // linear servo setup
+  linServo.attach(PINS.LINEAR_SERVO);
+  linServo.write(SERVO_POSITIONS.FAR);
+  delay(session_params.linear_servo_setup_time);
+  
   
   
 }
@@ -128,6 +156,9 @@ void loop()
           current_trial_params.rewarded_side = 'L';
           break;
       }
+      
+      current_trial_params.outcome = "spoil"; // until proven otherwise
+      current_trial_params.choice = "nogo"; // until proven otherwise
 
       // Trial start
       Serial.println((String) "TRIAL START " + time);
@@ -135,84 +166,112 @@ void loop()
         current_trial_params.rewarded_side);
     
       // Set next state
+      next_state = MOVE_SERVO_START;
+      break;
+      
+    
+    case MOVE_SERVO_START:
+      /* Start moving servo to move stimulus into position 
+      */
+      // set position
+      linServo.write(SERVO_POSITIONS.NEAR);
+    
+      // would also rotate arm here...
+      
+      // set timer
+      timer = time + SERVO_POSITIONS.NEAR2FAR_TRAVEL_TIME;
+    
+      // wait state
+      next_state = MOVE_SERVO_WAIT;
+    
+    case MOVE_SERVO_WAIT:
+      /* Wait for servo to reach whisking position
+      */
+      // Poll touch inputs
+      touched = pollTouchInputs();
+      
+      // announce sticky
+      if (touched != sticky_touched)
+      {
+        Serial.println((String) time + " EVENT TOUCHED " + touched);
+        sticky_touched = touched;
+      }
+      
+      // check time
+      if (time >= timer)
+      {
+        next_state = RESPONSE_WINDOW_START;
+      }
+      break;
+
+    case RESPONSE_WINDOW_START:
+      /* Start response window timer
+      */
+      timer = time + session_params.response_window_dur;
+      
+    case RESPONSE_WINDOW:
+      /* Wait for response lick
+      */
+    
+      // transition if response window over
+      if (time >= timer)
+      {
+        next_state = START_INTER_TRIAL_INTERVAL;
+      }
+    
+      // Poll touch inputs
+      touched = pollTouchInputs();
+      
+      // announce sticky
+      if (touched != sticky_touched)
+      {
+        Serial.println((String) time + " EVENT TOUCHED " + touched);
+        sticky_touched = touched;
+      }
+    
+      // Check chat
+      if (received_chat.length() > 0)
+      {
+        received_chat.trim();
+      }      
+
+      // What we do depends on which side is rewarded
       switch (current_trial_params.rewarded_side)
       {
         case 'L':
-          next_state = WAIT_L;
+          // transition if received REWARD or touched
+          if (received_chat.equals("REWARD"))
+          {
+            next_state = REWARD_L;
+          }
+          
+          if ((get_touched_channel(touched, 0) == 1) && 
+              (get_touched_channel(touched, 1) == 0))
+          {
+            current_trial_params.outcome = "hit";
+            current_trial_params.choice = "go L";
+            next_state = REWARD_L;
+          }
           break;
+        
         case 'R':
-          next_state = WAIT_R;
+          // transition if received REWARD or touched
+          if (received_chat.equals("REWARD"))
+          {
+            next_state = REWARD_R;
+          }
+          
+          if ((get_touched_channel(touched, 0) == 0) && 
+              (get_touched_channel(touched, 1) == 1))
+          {
+            current_trial_params.outcome = "hit";
+            current_trial_params.choice = "go R";
+            next_state = REWARD_R;
+          }
           break;
       }
-
       break;
-    
-    case WAIT_L:
-      // Poll touch inputs
-      touched = pollTouchInputs();
-      
-      // announce sticky
-      if (touched != sticky_touched)
-      {
-        Serial.println((String) time + " EVENT TOUCHED " + touched);
-        sticky_touched = touched;
-      }
-    
-      // Check chat
-      if (received_chat.length() > 0)
-      {
-        received_chat.trim();
-      }      
-
-      // transition if received REWARD or touched
-      if (received_chat.equals("REWARD"))
-      {
-        Serial.println("TRIAL OUTCOME SPOIL");
-        next_state = REWARD_L;
-      }
-      
-      if ((get_touched_channel(touched, 0) == 1) && 
-          (get_touched_channel(touched, 1) == 0))
-      {
-        Serial.println("TRIAL OUTCOME HIT");
-        //~ Serial.println((String) "DEBUG touched = " + (String) touched);
-        next_state = REWARD_L;
-      }
-      break;
-
-    case WAIT_R:
-      // Poll touch inputs
-      touched = pollTouchInputs();
-
-      // announce sticky
-      if (touched != sticky_touched)
-      {
-        Serial.println((String) time + " EVENT TOUCHED " + touched);
-        sticky_touched = touched;
-      }
-    
-      // Check chat
-      if (received_chat.length() > 0)
-      {
-        received_chat.trim();
-      }      
-
-      // transition if received REWARD or touched
-      if (received_chat.equals("REWARD"))
-      {
-        Serial.println("TRIAL OUTCOME SPOIL");
-        next_state = REWARD_R;
-      }
-      
-      if ((get_touched_channel(touched, 1) == 1) && 
-          (get_touched_channel(touched, 0) == 0))
-      {
-        Serial.println("TRIAL OUTCOME HIT");
-        //~ Serial.println((String) "DEBUG touched = " + (String) touched);
-        next_state = REWARD_R;
-      }
-      break;
-      
+          
     case REWARD_L:
       // Rewarding state
       // Chats and touches are ignored!
@@ -246,7 +305,7 @@ void loop()
       // wait for timer
       if (time >= reward_timer)
       {
-        next_state = START_INTER_TRIAL_INTERVAL;
+        next_state = RESPONSE_WINDOW;
         digitalWrite(6, LOW);
       }
       break;
@@ -257,13 +316,20 @@ void loop()
       // wait for timer
       if (time >= reward_timer)
       {
-        next_state = START_INTER_TRIAL_INTERVAL;
+        next_state = RESPONSE_WINDOW;
         digitalWrite(7, LOW);
       }
       break;
     
     case START_INTER_TRIAL_INTERVAL:
       iti_timer = time + session_params.inter_trial_interval;
+
+      // move stim back
+      linServo.write(SERVO_POSITIONS.FAR);
+    
+      // announce result
+      Serial.println((String) "TRIAL OUTCOME " + current_trial_params.outcome);
+
       next_state = INTER_TRIAL_INTERVAL;
       break;
     
