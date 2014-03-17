@@ -56,8 +56,9 @@
 
 
 // Global Constants
-#define TOU_THRESH	0x15  // CR: 0x06 // orig. = 0x06 (then 0x43/0x40)
-#define	REL_THRESH	0x10  // CR: 0x09 // orig. = 0x0A
+// CR: I like 0x15 and 0x10
+#define TOU_THRESH	0x15
+#define	REL_THRESH	0x10
 
 
 uint16_t pollTouchInputs(void);
