@@ -485,6 +485,10 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
     {
       session_params.force = 'R';
     }
+    else if (cmd.substring(5, 7) == " X")
+    {
+      session_params.force = 'X';
+    }    
     else
     {
       // Cannot parse command
