@@ -33,6 +33,8 @@ enum STATE_TYPE
   REWARD_R,
   REWARD_TIMER_L,
   REWARD_TIMER_R,
+  POST_REWARD_TIMER_START,
+  POST_REWARD_TIMER_WAIT,
   START_INTER_TRIAL_INTERVAL,
   INTER_TRIAL_INTERVAL
 } current_state = TRIAL_START;
@@ -42,7 +44,7 @@ enum STATE_TYPE
 struct SERVO_POSITIONS_TYPE 
 {
   static const int NEAR = 45; // position when within whisking range
-  static const int FAR = 70; // position when out of whisking range
+  static const int FAR = 55; // position when out of whisking range
   static const unsigned long NEAR2FAR_TRAVEL_TIME = 1500;
 } SERVO_POSITIONS;
 
@@ -59,7 +61,8 @@ struct SESSION_PARAMS_TYPE
 {
   char force = 'X';
   unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
-  unsigned long response_window_dur = 3000;
+  unsigned long response_window_dur = 6000;
+  unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
   unsigned long reward_dur_l = 30;
   unsigned long reward_dur_r = 45;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
@@ -208,6 +211,9 @@ void loop()
       /* Start response window timer
       */
       timer = time + session_params.response_window_dur;
+      //Serial.println((String) "DEBUG respons window timer " + timer);
+      next_state = RESPONSE_WINDOW;
+      break;
       
     case RESPONSE_WINDOW:
       /* Wait for response lick
@@ -305,7 +311,7 @@ void loop()
       // wait for timer
       if (time >= reward_timer)
       {
-        next_state = RESPONSE_WINDOW;
+        next_state = POST_REWARD_TIMER_START;
         digitalWrite(6, LOW);
       }
       break;
@@ -316,9 +322,19 @@ void loop()
       // wait for timer
       if (time >= reward_timer)
       {
-        next_state = RESPONSE_WINDOW;
+        next_state = POST_REWARD_TIMER_START;
         digitalWrite(7, LOW);
       }
+      break;
+    
+    case POST_REWARD_TIMER_START:
+      reward_timer = time + session_params.inter_reward_interval;
+      next_state = POST_REWARD_TIMER_WAIT;
+      break;
+    
+    case POST_REWARD_TIMER_WAIT:
+      if (time >= reward_timer)
+        next_state = RESPONSE_WINDOW;
       break;
     
     case START_INTER_TRIAL_INTERVAL:
