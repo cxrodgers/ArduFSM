@@ -143,6 +143,9 @@ void setup()
   linServo.write(SERVO_POSITIONS.FAR);
   delay(session_params.linear_servo_setup_time);
 
+  // random number seed
+  randomSeed(analogRead(3));
+
 
   
   
@@ -188,8 +191,11 @@ void loop()
           break;
         case 'X':
           // choose randomly -- ultimately want to get this from user
+          if (random(0, STIMULI.N) == 0)
+            current_trial_params.rewarded_side = 'L';
+          else
+            current_trial_params.rewarded_side = 'R';
           
-          current_trial_params.rewarded_side = 'L';
           break;
       }
       
