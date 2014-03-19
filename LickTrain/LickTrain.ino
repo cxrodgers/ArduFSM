@@ -45,7 +45,7 @@ struct SESSION_PARAMS_TYPE
   char force = 'X';
   unsigned long inter_trial_interval = 1000;
   unsigned long reward_dur_l = 30;
-  unsigned long reward_dur_r = 45;  
+  unsigned long reward_dur_r = 42;  
 } session_params;
 
 // Debugging announcements
