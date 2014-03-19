@@ -2,6 +2,7 @@
 #include "mpr121.h"
 #include <Wire.h> # also for mpr121
 #include <Servo.h>
+#include <Stepper.h>
 
 
 // Pins
@@ -36,7 +37,8 @@ enum STATE_TYPE
   POST_REWARD_TIMER_START,
   POST_REWARD_TIMER_WAIT,
   START_INTER_TRIAL_INTERVAL,
-  INTER_TRIAL_INTERVAL
+  INTER_TRIAL_INTERVAL,
+  ERROR
 } current_state = TRIAL_START;
 
 
@@ -68,6 +70,20 @@ struct SESSION_PARAMS_TYPE
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
 } session_params;
 
+// Stimuli
+struct STIMULI_TYPE
+{
+  static const int N = 2; // number of positions
+  const int POSITIONS[N] = {50, 150}; // array of locations to move to
+  static const int ROTATION_SPEED = 80; // how fast to rotate stepper
+  
+  // wherever the motor starts will be defined as this position
+  static const int ASSUMED_INITIAL_POSITION = 50; 
+} STIMULI;
+
+// initial position of stim arm .. user must ensure this is correct
+int stim_arm_position = STIMULI.ASSUMED_INITIAL_POSITION;
+
 // Debugging announcements
 unsigned long speak_at = 1000;
 unsigned long interval = 1000;
@@ -77,14 +93,22 @@ unsigned long reward_timer = 0;
 unsigned long iti_timer = 0;
 unsigned long timer = 0; // generic timer
 
+// max rewards
+unsigned int rewards_this_trial = 0;
+const unsigned int max_rewards_per_trial = 3;
+
 // touched monitor
 uint16_t sticky_touched = 0;
 
 // Servo
 Servo linServo;
 
+// Stepper
+// 200 steps per rotation; the rest are pin numbers
+Stepper stimStepper(200, 8, 9, 10, 11);
 
-
+//// Function prototypes and default arguments
+void rotate_motor(int rotation, unsigned int delay_ms=100);
 int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd);
 
 void setup()
@@ -109,11 +133,17 @@ void setup()
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
 
+  // stepper setup
+  stimStepper.setSpeed(STIMULI.ROTATION_SPEED);  
+  pinMode(PINS.ENABLE_STEPPER, OUTPUT);
+  digitalWrite(PINS.ENABLE_STEPPER, LOW); // # Make sure it's off
+    
   // linear servo setup
   linServo.attach(PINS.LINEAR_SERVO);
   linServo.write(SERVO_POSITIONS.FAR);
   delay(session_params.linear_servo_setup_time);
-  
+
+
   
   
 }
@@ -140,7 +170,9 @@ void loop()
   if (status == 1)
     Serial.println((String) "DEBUG cannot parse " + received_chat);
   
-
+  // for rotating
+  int new_position = 0;
+  
   // state
   switch (current_state)
   {
@@ -155,7 +187,8 @@ void loop()
           current_trial_params.rewarded_side = 'R';
           break;
         case 'X':
-          // should choose randomly
+          // choose randomly -- ultimately want to get this from user
+          
           current_trial_params.rewarded_side = 'L';
           break;
       }
@@ -168,6 +201,9 @@ void loop()
       Serial.println((String) "TRIAL SIDE " + 
         current_trial_params.rewarded_side);
     
+      // keep track of how many rewards
+      rewards_this_trial = 0;
+      
       // Set next state
       next_state = MOVE_SERVO_START;
       break;
@@ -179,7 +215,18 @@ void loop()
       // set position
       linServo.write(SERVO_POSITIONS.NEAR);
     
-      // would also rotate arm here...
+      
+      // rotate the arm while it's moving
+      switch (current_trial_params.rewarded_side)
+      {
+        case 'L':
+          new_position = STIMULI.POSITIONS[0];
+          break;
+        case 'R':
+          new_position = STIMULI.POSITIONS[1];
+          break;
+      }
+      rotateStim(new_position);
       
       // set timer
       timer = time + SERVO_POSITIONS.NEAR2FAR_TRAVEL_TIME;
@@ -225,6 +272,12 @@ void loop()
         next_state = START_INTER_TRIAL_INTERVAL;
       }
     
+      // transition if max rewards reached
+      if (rewards_this_trial >= max_rewards_per_trial)
+      {
+        next_state = START_INTER_TRIAL_INTERVAL;
+      }
+      
       // Poll touch inputs
       touched = pollTouchInputs();
       
@@ -251,6 +304,7 @@ void loop()
             next_state = REWARD_L;
           }
           
+          // correct response
           if ((get_touched_channel(touched, 0) == 1) && 
               (get_touched_channel(touched, 1) == 0))
           {
@@ -258,6 +312,16 @@ void loop()
             current_trial_params.choice = "go L";
             next_state = REWARD_L;
           }
+          
+          // incorrect response
+          if ((get_touched_channel(touched, 0) == 0) && 
+              (get_touched_channel(touched, 1) == 1))
+          {
+            current_trial_params.outcome = "error";
+            current_trial_params.choice = "go R";
+            next_state = ERROR;
+          }               
+          
           break;
         
         case 'R':
@@ -267,6 +331,7 @@ void loop()
             next_state = REWARD_R;
           }
           
+          // correct response
           if ((get_touched_channel(touched, 0) == 0) && 
               (get_touched_channel(touched, 1) == 1))
           {
@@ -274,6 +339,15 @@ void loop()
             current_trial_params.choice = "go R";
             next_state = REWARD_R;
           }
+          
+          // incorrect response
+          if ((get_touched_channel(touched, 0) == 1) && 
+              (get_touched_channel(touched, 1) == 0))
+          {
+            current_trial_params.outcome = "error";
+            current_trial_params.choice = "go L";
+            next_state = ERROR;
+          }          
           break;
       }
       break;
@@ -289,6 +363,9 @@ void loop()
     
       // transition
       next_state = REWARD_TIMER_L;
+    
+      // count rewards
+      rewards_this_trial++;
       break;
 
     case REWARD_R:
@@ -303,6 +380,9 @@ void loop()
     
       // transition
       next_state = REWARD_TIMER_R;
+    
+      // count rewards
+      rewards_this_trial++;
       break;
     
     case REWARD_TIMER_L:
@@ -336,6 +416,16 @@ void loop()
       if (time >= reward_timer)
         next_state = RESPONSE_WINDOW;
       break;
+    
+    case ERROR:
+      /* An error was made
+      We could punish with a timeout or alarm soundhere.
+      */
+      
+      // Announce
+      Serial.println((String) time + " EVENT ERROR");
+    
+      next_state = START_INTER_TRIAL_INTERVAL;
     
     case START_INTER_TRIAL_INTERVAL:
       iti_timer = time + session_params.inter_trial_interval;
@@ -416,3 +506,75 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
   
   return status;
 }   
+
+
+/* Stepper rotation functions */
+
+void rotateStim(int new_position) 
+{ /*
+  The distance to move, even if zero, is split into two amounts.
+  Positive rotations correspond to CW rotations.
+  */
+  
+  // Determine how far we need to rotate (can be + or -)
+  int necessary_rotation = new_position - stim_arm_position;
+  
+  // Split into two rotations to control for the sound
+  int rotation1 = 50;
+  
+  // +ve rotation
+  int rotation2 = (necessary_rotation - rotation1 + 200) % 200;
+  
+  // turn >1/2 rot into a rot the other way
+  if (rotation2 > 100) rotation2 -= 200;
+  
+  // do the rotations
+  rotate_motor(rotation1);
+  rotate_motor(rotation2);
+
+  //~ // Debugging
+  //~ Serial.print("Rotating stim: old ");
+  //~ Serial.print(stim_arm_position);
+  //~ Serial.print(" new ");
+  //~ Serial.print(new_position);
+  //~ Serial.print(" diff ");
+  //~ Serial.println(necessary_rotation);
+  
+  // Return the new, now current, position
+  stim_arm_position = new_position;
+  //return new_position;
+}
+
+void rotate_motor(int rotation, unsigned int delay_ms)
+{ /* Low-level rotation function.
+  Enables the motor, waits, performs rotation, disables motor.
+  Is the wait necessary to ensure it is active???
+  Disabling prevents the circuitry from overheating.
+  
+  I *think* it's necessary to wait after disabling .. a few times
+  it kept going forever without this statement.
+  */
+  bool local_debug = 0;
+  
+  if (local_debug) Serial.println("Rotating motor");
+  if (local_debug) Serial.println("* Enabling");
+  digitalWrite(PINS.ENABLE_STEPPER, HIGH);
+  
+  if (local_debug) Serial.println("* Delaying");
+  delay(delay_ms);
+  
+  if (local_debug) Serial.println("* Rotating");
+  stimStepper.step(rotation);
+  
+  if (local_debug) Serial.println("* Delaying");
+  delay(delay_ms);
+  
+  if (local_debug) Serial.println("* Disabling");
+  digitalWrite(PINS.ENABLE_STEPPER, LOW);
+  
+  if (local_debug) Serial.println("* Delaying");
+  delay(delay_ms);
+  
+  if (local_debug) Serial.println("* Finished");
+  return;
+}
