@@ -68,6 +68,7 @@ struct SESSION_PARAMS_TYPE
   unsigned long reward_dur_l = 30;
   unsigned long reward_dur_r = 45;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
+  bool terminate_on_error = 0; // end trial as soon as mistake occurs
 } session_params;
 
 // Stimuli
@@ -199,7 +200,7 @@ void loop()
           break;
       }
       
-      current_trial_params.outcome = "spoil"; // until proven otherwise
+      current_trial_params.outcome = "current"; // until proven otherwise
       current_trial_params.choice = "nogo"; // until proven otherwise
 
       // Trial start
@@ -276,12 +277,14 @@ void loop()
       if (time >= timer)
       {
         next_state = START_INTER_TRIAL_INTERVAL;
+        break;
       }
     
       // transition if max rewards reached
       if (rewards_this_trial >= max_rewards_per_trial)
       {
         next_state = START_INTER_TRIAL_INTERVAL;
+        break;
       }
       
       // Poll touch inputs
@@ -314,8 +317,13 @@ void loop()
           if ((get_touched_channel(touched, 0) == 1) && 
               (get_touched_channel(touched, 1) == 0))
           {
-            current_trial_params.outcome = "hit";
-            current_trial_params.choice = "go L";
+            // Only store this info for the first choice of the trial
+            if (current_trial_params.outcome.equals("current"))
+            {
+              current_trial_params.outcome = "hit";
+              current_trial_params.choice = "go L";
+            }
+            
             next_state = REWARD_L;
           }
           
@@ -323,9 +331,16 @@ void loop()
           if ((get_touched_channel(touched, 0) == 0) && 
               (get_touched_channel(touched, 1) == 1))
           {
-            current_trial_params.outcome = "error";
-            current_trial_params.choice = "go R";
-            next_state = ERROR;
+            // Only store this info for the first choice of the trial
+            if (current_trial_params.outcome.equals("current"))
+            {
+              current_trial_params.outcome = "error";
+              current_trial_params.choice = "go R";
+            }
+            
+            // end trial if terminate_on_error
+            if (session_params.terminate_on_error)
+                next_state = ERROR;
           }               
           
           break;
@@ -341,8 +356,12 @@ void loop()
           if ((get_touched_channel(touched, 0) == 0) && 
               (get_touched_channel(touched, 1) == 1))
           {
-            current_trial_params.outcome = "hit";
-            current_trial_params.choice = "go R";
+            // Only store this info for the first choice of the trial
+            if (current_trial_params.outcome.equals("current"))
+            {
+              current_trial_params.outcome = "hit";
+              current_trial_params.choice = "go R";
+            }
             next_state = REWARD_R;
           }
           
@@ -350,9 +369,16 @@ void loop()
           if ((get_touched_channel(touched, 0) == 1) && 
               (get_touched_channel(touched, 1) == 0))
           {
-            current_trial_params.outcome = "error";
-            current_trial_params.choice = "go L";
-            next_state = ERROR;
+            // Only store this info for the first choice of the trial
+            if (current_trial_params.outcome.equals("current"))
+            {            
+              current_trial_params.outcome = "error";
+              current_trial_params.choice = "go L";
+            }
+            
+            // end trial if terminate_on_error
+            if (session_params.terminate_on_error)
+                next_state = ERROR;
           }          
           break;
       }
@@ -438,6 +464,10 @@ void loop()
 
       // move stim back
       linServo.write(SERVO_POSITIONS.FAR);
+    
+      // did nothing happen?
+      if (current_trial_params.outcome.equals("current"))
+        current_trial_params.outcome = "spoil";
     
       // announce result
       Serial.println((String) "TRIAL OUTCOME " + current_trial_params.outcome);
