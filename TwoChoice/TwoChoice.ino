@@ -38,7 +38,9 @@ enum STATE_TYPE
   POST_REWARD_TIMER_WAIT,
   START_INTER_TRIAL_INTERVAL,
   INTER_TRIAL_INTERVAL,
-  ERROR
+  ERROR,
+  PRE_SERVO_WAIT,
+  SERVO_WAIT
 } current_state = TRIAL_START;
 
 
@@ -63,11 +65,12 @@ struct SESSION_PARAMS_TYPE
 {
   char force = 'X';
   unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
-  unsigned long response_window_dur = 6000;
+  unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
   unsigned long reward_dur_l = 30;
-  unsigned long reward_dur_r = 45;  
+  unsigned long reward_dur_r = 42;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
+  unsigned long pre_servo_wait = 2000;
   bool terminate_on_error = 0; // end trial as soon as mistake occurs
 } session_params;
 
@@ -96,7 +99,7 @@ unsigned long timer = 0; // generic timer
 
 // max rewards
 unsigned int rewards_this_trial = 0;
-const unsigned int max_rewards_per_trial = 3;
+unsigned int max_rewards_per_trial = 2;
 
 // touched monitor
 uint16_t sticky_touched = 0;
@@ -170,7 +173,9 @@ void loop()
   received_chat = receive_chat();
   
   // Set session variables
-  int status = set_session_params(session_params, received_chat);
+  int status = 0;
+  if (received_chat.length() > 0)
+    status = set_session_params(session_params, received_chat);
   if (status == 1)
     Serial.println((String) "DEBUG cannot parse " + received_chat);
   
@@ -276,14 +281,14 @@ void loop()
       // transition if response window over
       if (time >= timer)
       {
-        next_state = START_INTER_TRIAL_INTERVAL;
+        next_state = PRE_SERVO_WAIT;
         break;
       }
     
       // transition if max rewards reached
       if (rewards_this_trial >= max_rewards_per_trial)
       {
-        next_state = START_INTER_TRIAL_INTERVAL;
+        next_state = PRE_SERVO_WAIT;
         break;
       }
       
@@ -457,7 +462,20 @@ void loop()
       // Announce
       Serial.println((String) time + " EVENT ERROR");
     
-      next_state = START_INTER_TRIAL_INTERVAL;
+      next_state = PRE_SERVO_WAIT;
+      break;
+    
+    case PRE_SERVO_WAIT:
+      iti_timer = time + session_params.pre_servo_wait;
+      next_state = SERVO_WAIT;
+      break;
+    
+    case SERVO_WAIT:
+      if (time >= iti_timer)
+      {
+        next_state = START_INTER_TRIAL_INTERVAL;
+      }
+      break;
     
     case START_INTER_TRIAL_INTERVAL:
       iti_timer = time + session_params.inter_trial_interval;
@@ -504,45 +522,107 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
   */
   int status = 0;
   
-  // If sent FORCE L or FORCE R, then set session_params accordingly
-  if ((cmd.substring(0, 5) == "FORCE"))
+  //~ int i1, i2;
+  //~ i1 = 0;
+  //~ i2 = cmd.indexOf(' ');
+  //~ Serial.println(i1);
+  //~ Serial.println(i2);
+  //~ return 0;
+  //~ Serial.println(cmd.substring(i1, i2));
+
+
+  char *pch;
+  char cmd_carr[cmd.length() + 1];
+  cmd.toCharArray(cmd_carr, cmd.length() + 1);
+  pch = strtok(cmd_carr, " ");
+  char *strs[3];
+  int n_strs = 0;
+  String s;
+  
+  // Convert to array of strings
+  while (pch != NULL)
   {
-    if (cmd.substring(5, 7) == " L")
+    strs[n_strs] = pch;
+    n_strs++;
+    pch = strtok(NULL, " ");
+  }
+  
+  if ((n_strs == 2) && (strcmp(strs[0], "FORCE") == 0))
+  {
+    session_params.force = strs[1][0];
+  }
+  if ((n_strs == 3) && (strcmp(strs[0], "SET") == 0))
+  {
+    if (strcmp(strs[1], "REWARD_DUR_L") == 0)
     {
-      session_params.force = 'L';
+      s = strs[2];
+      session_params.reward_dur_l = s.toInt();
     }
-    else if (cmd.substring(5, 7) == " R")
+    else if (strcmp(strs[1], "REWARD_DUR_R") == 0)
     {
-      session_params.force = 'R';
-    }
-    else if (cmd.substring(5, 7) == " X")
-    {
-      session_params.force = 'X';
+      s = strs[2];
+      session_params.reward_dur_r = s.toInt();
     }    
-    else
+    else if (strcmp(strs[1], "MRT") == 0)
     {
-      // Cannot parse command
-      status = 1;
+      s = strs[2];
+      max_rewards_per_trial = s.toInt();
+    }
+    else if (strcmp(strs[1], "TOE") == 0)
+    {
+      s = strs[2];
+      session_params.terminate_on_error = s.toInt();
+    }
+    else if (strcmp(strs[1], "PSW") == 0)
+    {
+      s = strs[2];
+      session_params.pre_servo_wait = s.toInt();
     }
   }
+  return 0;
   
   
-  if ((cmd.substring(0, 15) == "SET REWARD_DUR_"))
-  {
-    if (cmd.substring(15, 16) == "L")
-    {
-      session_params.reward_dur_l = cmd.substring(17).toInt();
-    }
-    else if (cmd.substring(15, 16) == "R")
-    {
-      session_params.reward_dur_r = cmd.substring(17).toInt();
-    }
-    else
-    {
-      // Cannot parse command
-      status = 1;
-    }
-  }
+  //~ // If sent FORCE L or FORCE R, then set session_params accordingly
+  //~ if ((cmd.substring(0, 5) == "FORCE"))
+  //~ {
+    //~ if (cmd.substring(5, 7) == " L")
+    //~ {
+      //~ session_params.force = 'L';
+    //~ }
+    //~ else if (cmd.substring(5, 7) == " R")
+    //~ {
+      //~ session_params.force = 'R';
+    //~ }
+    //~ else if (cmd.substring(5, 7) == " X")
+    //~ {
+      //~ session_params.force = 'X';
+    //~ }    
+    //~ else
+    //~ {
+      //~ // Cannot parse command
+      //~ status = 1;
+    //~ }
+  //~ }
+  
+  
+  //~ if ((cmd.substring(0, 15) == "SET REWARD_DUR_"))
+  //~ {
+    //~ if (cmd.substring(15, 16) == "L")
+    //~ {
+      //~ session_params.reward_dur_l = cmd.substring(17).toInt();
+    //~ }
+    //~ else if (cmd.substring(15, 16) == "R")
+    //~ {
+      //~ session_params.reward_dur_r = cmd.substring(17).toInt();
+    //~ }
+    //~ else
+    //~ {
+      //~ // Cannot parse command
+      //~ status = 1;
+    //~ }
+  //~ }
+  
+
   
   return status;
 }   
