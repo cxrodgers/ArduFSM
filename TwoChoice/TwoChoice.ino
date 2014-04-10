@@ -4,6 +4,7 @@
 #include <Servo.h>
 #include <Stepper.h>
 
+bool USE_LEVER = 0;
 
 // Pins
 struct PINS_TYPE 
@@ -48,8 +49,8 @@ enum STATE_TYPE
 struct SERVO_POSITIONS_TYPE 
 {
   static const int NEAR = 45; // position when within whisking range
-  static const int FAR = 55; // position when out of whisking range
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 1500;
+  static const int FAR = 65; // position when out of whisking range
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 2000; // 1.5s for dist=10
 } SERVO_POSITIONS;
 
 // Trial variables
@@ -58,6 +59,7 @@ struct TRIAL_PARAMS_TYPE
   char rewarded_side = 'L';
   String outcome = "spoil";
   String choice = "nogo";
+  int servo_position = SERVO_POSITIONS.NEAR;
 } current_trial_params;
 
 // Session params -- combine this with trial variables
@@ -67,11 +69,14 @@ struct SESSION_PARAMS_TYPE
   unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
-  unsigned long reward_dur_l = 30;
-  unsigned long reward_dur_r = 42;  
+  unsigned long reward_dur_l = 29;
+  unsigned long reward_dur_r = 41;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
-  unsigned long pre_servo_wait = 2000;
-  bool terminate_on_error = 0; // end trial as soon as mistake occurs
+  unsigned long pre_servo_wait = 0; //2000;
+  bool terminate_on_error = 1; //0; // end trial as soon as mistake occurs
+  unsigned long error_timeout = 1000;
+  bool always_reward_r = USE_LEVER;
+  unsigned int servo_throw = 0;
 } session_params;
 
 // Stimuli
@@ -96,6 +101,7 @@ unsigned long interval = 1000;
 unsigned long reward_timer = 0;
 unsigned long iti_timer = 0;
 unsigned long timer = 0; // generic timer
+unsigned int error_flag = 0; // hack for error timeout
 
 // max rewards
 unsigned int rewards_this_trial = 0;
@@ -182,6 +188,19 @@ void loop()
   // for rotating
   int new_position = 0;
   
+  // Poll touch inputs
+  if (USE_LEVER)
+    touched = pollLeverInputs();  
+  else
+    touched = pollTouchInputs();
+  
+  // announce sticky
+  if (touched != sticky_touched)
+  {
+    Serial.println((String) time + " EVENT TOUCHED " + touched);
+    sticky_touched = touched;
+  }  
+  
   // state
   switch (current_state)
   {
@@ -207,12 +226,19 @@ void loop()
       
       current_trial_params.outcome = "current"; // until proven otherwise
       current_trial_params.choice = "nogo"; // until proven otherwise
+      
+      // where to put servo to
+      current_trial_params.servo_position = SERVO_POSITIONS.NEAR +
+        random(0, session_params.servo_throw);
 
       // Trial start
       Serial.println((String) "TRIAL START " + time);
       Serial.println((String) "TRIAL SIDE " + 
         current_trial_params.rewarded_side);
-    
+      Serial.println((String) "TRIAL SERVO_POS " + 
+        current_trial_params.servo_position);
+
+      
       // keep track of how many rewards
       rewards_this_trial = 0;
       
@@ -225,8 +251,7 @@ void loop()
       /* Start moving servo to move stimulus into position 
       */
       // set position
-      linServo.write(SERVO_POSITIONS.NEAR);
-    
+      linServo.write(current_trial_params.servo_position);
       
       // rotate the arm while it's moving
       switch (current_trial_params.rewarded_side)
@@ -249,15 +274,7 @@ void loop()
     case MOVE_SERVO_WAIT:
       /* Wait for servo to reach whisking position
       */
-      // Poll touch inputs
-      touched = pollTouchInputs();
-      
-      // announce sticky
-      if (touched != sticky_touched)
-      {
-        Serial.println((String) time + " EVENT TOUCHED " + touched);
-        sticky_touched = touched;
-      }
+
       
       // check time
       if (time >= timer)
@@ -292,16 +309,6 @@ void loop()
         break;
       }
       
-      // Poll touch inputs
-      touched = pollTouchInputs();
-      
-      // announce sticky
-      if (touched != sticky_touched)
-      {
-        Serial.println((String) time + " EVENT TOUCHED " + touched);
-        sticky_touched = touched;
-      }
-    
       // Check chat
       if (received_chat.length() > 0)
       {
@@ -315,7 +322,10 @@ void loop()
           // transition if received REWARD or touched
           if (received_chat.equals("REWARD"))
           {
-            next_state = REWARD_L;
+            if (session_params.always_reward_r)
+              next_state = REWARD_R;
+            else
+              next_state = REWARD_L;
           }
           
           // correct response
@@ -329,7 +339,10 @@ void loop()
               current_trial_params.choice = "go L";
             }
             
-            next_state = REWARD_L;
+            if (session_params.always_reward_r)
+              next_state = REWARD_R;
+            else
+              next_state = REWARD_L;
           }
           
           // incorrect response
@@ -450,7 +463,7 @@ void loop()
       break;
     
     case POST_REWARD_TIMER_WAIT:
-      if (time >= reward_timer)
+      if ((time >= reward_timer) && (touched == 0))
         next_state = RESPONSE_WINDOW;
       break;
     
@@ -461,6 +474,9 @@ void loop()
       
       // Announce
       Serial.println((String) time + " EVENT ERROR");
+    
+      // Hack, we increase the ITI on errors
+      error_flag = 1;
     
       next_state = PRE_SERVO_WAIT;
       break;
@@ -479,6 +495,12 @@ void loop()
     
     case START_INTER_TRIAL_INTERVAL:
       iti_timer = time + session_params.inter_trial_interval;
+    
+      if (error_flag)
+      {
+        iti_timer += session_params.error_timeout;
+      }
+      error_flag = 0;
 
       // move stim back
       linServo.write(SERVO_POSITIONS.FAR);
@@ -498,6 +520,28 @@ void loop()
       {
         next_state = TRIAL_START;
       }
+      
+      // Check chat
+      if (received_chat.length() > 0)
+      {
+        received_chat.trim();
+      }      
+
+      if (received_chat.equals("REWARD L"))
+      {
+        Serial.println("EVENT MANUAL L");
+        digitalWrite(6, HIGH);
+        delay(session_params.reward_dur_l);
+        digitalWrite(6, LOW);
+      }
+      else if (received_chat.equals("REWARD R"))
+      {
+        Serial.println("EVENT MANUAL R");
+        digitalWrite(7, HIGH);
+        delay(session_params.reward_dur_l);
+        digitalWrite(7, LOW);      
+      }
+      
       break;
   }
   
@@ -578,49 +622,21 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
       s = strs[2];
       session_params.pre_servo_wait = s.toInt();
     }
+    else if (strcmp(strs[1], "TO") == 0)
+    {
+      s = strs[2];
+      session_params.error_timeout = s.toInt();
+    }
+    else if (strcmp(strs[1], "ST") == 0)
+    {
+      s = strs[2];
+      session_params.servo_throw = s.toInt();
+    }
+    
   }
   return 0;
   
-  
-  //~ // If sent FORCE L or FORCE R, then set session_params accordingly
-  //~ if ((cmd.substring(0, 5) == "FORCE"))
-  //~ {
-    //~ if (cmd.substring(5, 7) == " L")
-    //~ {
-      //~ session_params.force = 'L';
-    //~ }
-    //~ else if (cmd.substring(5, 7) == " R")
-    //~ {
-      //~ session_params.force = 'R';
-    //~ }
-    //~ else if (cmd.substring(5, 7) == " X")
-    //~ {
-      //~ session_params.force = 'X';
-    //~ }    
-    //~ else
-    //~ {
-      //~ // Cannot parse command
-      //~ status = 1;
-    //~ }
-  //~ }
-  
-  
-  //~ if ((cmd.substring(0, 15) == "SET REWARD_DUR_"))
-  //~ {
-    //~ if (cmd.substring(15, 16) == "L")
-    //~ {
-      //~ session_params.reward_dur_l = cmd.substring(17).toInt();
-    //~ }
-    //~ else if (cmd.substring(15, 16) == "R")
-    //~ {
-      //~ session_params.reward_dur_r = cmd.substring(17).toInt();
-    //~ }
-    //~ else
-    //~ {
-      //~ // Cannot parse command
-      //~ status = 1;
-    //~ }
-  //~ }
+
   
 
   
@@ -698,3 +714,20 @@ void rotate_motor(int rotation, unsigned int delay_ms)
   if (local_debug) Serial.println("* Finished");
   return;
 }
+
+uint16_t pollLeverInputs()
+{
+  uint16_t res = 0;
+  int voltage = 0;
+  
+  voltage = analogRead(1);
+  if (voltage > 512)
+    res += 1;
+  
+  voltage = analogRead(2);
+  if (voltage > 512)
+    res += 2;
+  
+  return res;
+}
+  
