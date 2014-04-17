@@ -70,7 +70,7 @@ struct SESSION_PARAMS_TYPE
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
   unsigned long reward_dur_l = 29;
-  unsigned long reward_dur_r = 41;  
+  unsigned long reward_dur_r = 40;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
   unsigned long pre_servo_wait = 0; //2000;
   bool terminate_on_error = 1; //0; // end trial as soon as mistake occurs
@@ -274,6 +274,9 @@ void loop()
     case MOVE_SERVO_WAIT:
       /* Wait for servo to reach whisking position
       */
+    
+      // repeatedly set position??
+      linServo.write(current_trial_params.servo_position);
 
       
       // check time
@@ -516,6 +519,10 @@ void loop()
       break;
     
     case INTER_TRIAL_INTERVAL:
+      // repeatedly set position?
+      linServo.write(SERVO_POSITIONS.FAR);
+
+    
       if (time >= iti_timer)
       {
         next_state = TRIAL_START;
