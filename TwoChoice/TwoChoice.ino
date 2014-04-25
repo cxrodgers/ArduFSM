@@ -69,8 +69,8 @@ struct SESSION_PARAMS_TYPE
   unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
-  unsigned long reward_dur_l = 29;
-  unsigned long reward_dur_r = 40;  
+  unsigned long reward_dur_l = 28;
+  unsigned long reward_dur_r = 41;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
   unsigned long pre_servo_wait = 0; //2000;
   bool terminate_on_error = 1; //0; // end trial as soon as mistake occurs
