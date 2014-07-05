@@ -89,8 +89,13 @@ class Chatter:
         self.ser = serial.Serial(serial_port, baud_rate, timeout=serial_timeout)
 
         # Wait for it to initialize the arduino
-        time.sleep(0.1)
-        self.ser.flushInput()
+        time.sleep(1) # without this sleep, still leftover input from previous run
+        self.ser.flushInput() # otherwise still input from previous run pending
+        time.sleep(1) # without this sleep, it will not send the first line or so to the device
+        
+        # these don't appear to be necessary??
+        #~ self.ser.flush()
+        #~ self.ser.flushOutput()
         
         self.new_user_text = ''
         self.new_device_lines = []
@@ -116,6 +121,16 @@ class Chatter:
         self.ser.close()
         self.ofi.close()
         #pipein.close()
+    
+    def write_to_device(self, string, auto_newline=True):
+        """Write a line to the device.
+        
+        Adds a newline character automatically if necessary.
+        Does not call update.
+        """
+        if auto_newline and not string.endswith('\n'):
+            string = string + '\n'
+        write_to_device(self.ser, string)
 
 
 def loop_till_interrupt(chatter):
