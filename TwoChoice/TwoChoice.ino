@@ -48,8 +48,8 @@ enum STATE_TYPE
 // Locations of the servo
 struct SERVO_POSITIONS_TYPE 
 {
-  static const int NEAR = 45; // position when within whisking range
-  static const int FAR = 65; // position when out of whisking range
+  static const int NEAR = 1150; // position when within whisking range
+  static const int FAR = 1900; // position when out of whisking range
   static const unsigned long NEAR2FAR_TRAVEL_TIME = 2000; // 1.5s for dist=10
 } SERVO_POSITIONS;
 
@@ -69,8 +69,8 @@ struct SESSION_PARAMS_TYPE
   unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
-  unsigned long reward_dur_l = 28;
-  unsigned long reward_dur_r = 41;  
+  unsigned long reward_dur_l = 40;
+  unsigned long reward_dur_r = 50;  
   unsigned long linear_servo_setup_time = 2000; // including time to move to far pos
   unsigned long pre_servo_wait = 0; //2000;
   bool terminate_on_error = 1; //0; // end trial as soon as mistake occurs
@@ -84,7 +84,7 @@ struct STIMULI_TYPE
 {
   static const int N = 2; // number of positions
   const int POSITIONS[N] = {50, 150}; // array of locations to move to
-  static const int ROTATION_SPEED = 80; // how fast to rotate stepper
+  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
   
   // wherever the motor starts will be defined as this position
   static const int ASSUMED_INITIAL_POSITION = 50; 
@@ -229,7 +229,7 @@ void loop()
       
       // where to put servo to
       current_trial_params.servo_position = SERVO_POSITIONS.NEAR +
-        random(0, session_params.servo_throw);
+        25*random(0, session_params.servo_throw);
 
       // Trial start
       Serial.println((String) "TRIAL START " + time);
@@ -250,9 +250,6 @@ void loop()
     case MOVE_SERVO_START:
       /* Start moving servo to move stimulus into position 
       */
-      // set position
-      linServo.write(current_trial_params.servo_position);
-      
       // rotate the arm while it's moving
       switch (current_trial_params.rewarded_side)
       {
@@ -264,7 +261,11 @@ void loop()
           break;
       }
       rotateStim(new_position);
+      delay(.2);
       
+      // set position
+      linServo.write(current_trial_params.servo_position);
+            
       // set timer
       timer = time + SERVO_POSITIONS.NEAR2FAR_TRAVEL_TIME;
     
