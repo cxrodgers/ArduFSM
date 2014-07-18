@@ -1,4 +1,7 @@
-import numpy as np
+import numpy as np, pandas
+import matplotlib.pyplot as plt
+import my
+import scipy.stats
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
@@ -141,7 +144,52 @@ def form_trials_info(rewarded_side, trial_types, trial_outcomes, bad_trials):
     return df
 
 
-def update_by_time(ax, filename):
+def init_by_trial(SIDE_TYP_OFFSET):
+    # Plot 
+    f, ax = plt.subplots(1, 1, figsize=(10, 4))
+    f.subplots_adjust(left=.2, right=.95, top=.8)
+    ax.plot([-1000, 1000], [SIDE_TYP_OFFSET-.5] * 2, 'k-', label='divis')
+    #~ f2, axa = plt.subplots(1, 2)
+
+    label2lines = {}
+    for outcome, color in o2c.items():
+        label2lines[outcome], = ax.plot([None], [None], 'o', label=outcome, color=color)
+    label2lines['bad'], = ax.plot([None], [None], '|', label='bad', color='k', ms=10)
+
+    ess_arr = []
+    fit_arr = []
+    #~ axa[0].plot([0, 0, 0])
+    #~ axa[1].plot([0, 0, 0])
+
+    # create the window
+    plt.show()
+    
+    return {'f': f, 'ax': ax, 'label2lines': label2lines, 
+        'SIDE_TYP_OFFSET': SIDE_TYP_OFFSET}
+
+
+def init_by_time(**kwargs):
+    # Plot 
+    f, ax = plt.subplots(figsize=(10, 2))
+    f.subplots_adjust(left=.2, right=.95, top=.85)
+
+    # create the window
+    plt.show()
+
+    return {'f': f, 'ax': ax}
+
+
+def update_by_trial(plotter, filename):
+    ax = plotter['ax']
+    label2lines = plotter['label2lines']
+    SIDE_TYP_OFFSET = plotter['SIDE_TYP_OFFSET']
+    
+    POS_NEAR = 1150
+    POS_DELTA = 25
+    POS_NEAR = 45
+    POS_DELTA = 1
+    
+    
     with file(filename) as fi:
         lines = fi.readlines()
 
@@ -268,9 +316,14 @@ def update_by_time(ax, filename):
             pval, ss), size='medium')
     except KeyError:
         ax.set_title('key error')
+    
+    plt.show()
+    plt.draw()
 
 
-def update_by_trial(ax):
+def update_by_time(plotter, filename):
+    ax = plotter['ax']
+    
     with file(filename) as fi:
         lines = fi.readlines()
 
