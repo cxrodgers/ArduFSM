@@ -194,7 +194,7 @@ def update_by_time_till_interrupt(plotter, filename):
 
 def init_by_trial(SIDE_TYP_OFFSET):
     # Plot 
-    f, ax = plt.subplots(1, 1, figsize=(10, 4))
+    f, ax = plt.subplots(1, 1, figsize=(10, 2))
     f.subplots_adjust(left=.2, right=.95, top=.8)
     ax.plot([-1000, 1000], [SIDE_TYP_OFFSET-.5] * 2, 'k-', label='divis')
     #~ f2, axa = plt.subplots(1, 2)
@@ -209,10 +209,14 @@ def init_by_trial(SIDE_TYP_OFFSET):
     #~ axa[0].plot([0, 0, 0])
     #~ axa[1].plot([0, 0, 0])
 
+    # Separate y-axis for rewards
+    ax2 = ax.twinx()
+    ax2.set_ylabel('rewards')
+
     # create the window
     plt.show()
     
-    return {'f': f, 'ax': ax, 'label2lines': label2lines, 
+    return {'f': f, 'ax': ax, 'ax2': ax2, 'label2lines': label2lines, 
         'SIDE_TYP_OFFSET': SIDE_TYP_OFFSET}
 
 
@@ -409,6 +413,7 @@ def update_by_time(plotter, filename):
     
 def update_by_trial(plotter, filename):    
     ax = plotter['ax']
+    ax2 = plotter['ax2']
     
     with file(filename) as fi:
         lines = fi.readlines()
@@ -478,6 +483,8 @@ def update_by_trial(plotter, filename):
 
     for line in ax.lines:
         line.remove()
+    for line in ax2.lines:
+        line.remove()
 
     o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k'}
     for outcome in ['hit', 'error', 'spoil']:
@@ -487,8 +494,9 @@ def update_by_trial(plotter, filename):
     msk = bad_trials == 1
     ax.plot(np.where(msk)[0], trial_types[msk], '|', color='k', ms=10)
     
-    # rewardsa
-    ax.plot(np.arange(len(n_rewards_a)), n_rewards_a-.5, 'ks-')
+    # Plot the rewards as a separate trace
+    ax2.plot(np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
+    ax2.set_yticks(np.arange(np.max(n_rewards_a) + 2))
     
     ax.set_yticks((0, 1))
     v1 = np.sum((trial_outcomes[trial_types == 0] == 'hit'))# &
@@ -510,7 +518,7 @@ def update_by_trial(plotter, filename):
         'RIGHT %d / %d = %0.3f' % (v3, v4, float(v3) / v4)])
     pval = scipy.stats.binom_test(v1+v3, v2+v4)
     
-    ax.set_ylim((1.5, -3.5))
+    ax.set_ylim((np.max(trial_types) + 0.5, np.min(trial_types)-0.5))
     #~ ax.set_xlim((-1, len(trial_types)))
     ax.set_xlim((len(trial_types)-30, len(trial_types)))
     
