@@ -1,4 +1,4 @@
-import numpy as np, pandas
+import numpy as np, pandas, time
 import matplotlib.pyplot as plt
 import my
 import scipy.stats
@@ -144,6 +144,54 @@ def form_trials_info(rewarded_side, trial_types, trial_outcomes, bad_trials):
     return df
 
 
+def update_by_trial_till_interrupt(plotter, filename):
+    # update over and over
+    PROFILE_MODE = False
+
+    try:
+        while True:
+            update_by_trial(plotter, filename)
+            
+            if not PROFILE_MODE:
+                time.sleep(.3)
+            else:
+                break
+
+    except KeyboardInterrupt:
+        plt.close('all')
+        print "Done."
+    except:
+        raise
+    finally:
+        pass
+
+
+def update_by_time_till_interrupt(plotter, filename):
+    # update over and over
+    PROFILE_MODE = False
+
+    try:
+        while True:
+            # This part differs between the by trial and by time functions
+            # Update_by_time should be updating the data, not replotting
+            for line in plotter['ax'].lines:
+                line.remove()
+            
+            update_by_time(plotter, filename)
+            
+            if not PROFILE_MODE:
+                time.sleep(.3)
+            else:
+                break
+
+    except KeyboardInterrupt:
+        plt.close('all')
+        print "Done."
+    except:
+        raise
+    finally:
+        pass
+
 def init_by_trial(SIDE_TYP_OFFSET):
     # Plot 
     f, ax = plt.subplots(1, 1, figsize=(10, 4))
@@ -179,7 +227,7 @@ def init_by_time(**kwargs):
     return {'f': f, 'ax': ax}
 
 
-def update_by_trial(plotter, filename):
+def update_by_trial_with_anova_and_jittered_position(plotter, filename):
     ax = plotter['ax']
     label2lines = plotter['label2lines']
     SIDE_TYP_OFFSET = plotter['SIDE_TYP_OFFSET']
@@ -322,6 +370,44 @@ def update_by_trial(plotter, filename):
 
 
 def update_by_time(plotter, filename):
+    ax = plotter['ax']
+    #~ label2lines = plotter['label2lines']    
+    
+    with file(filename) as fi:
+        lines = fi.readlines()
+
+    #rew_lines = filter(lambda line: line.startswith('REWARD'), lines)
+    rew_lines_l = filter(lambda line: 'EVENT REWARD_L' in line, lines)
+    rew_times_l = np.array(map(lambda line: int(line.split()[0])/1000., 
+        rew_lines_l))
+    rew_lines_r = filter(lambda line: 'EVENT REWARD_R' in line, lines)
+    rew_times_r = np.array(map(lambda line: int(line.split()[0])/1000., 
+        rew_lines_r))
+
+    if len(rew_times_l) + len(rew_times_r) == 0:
+        counts_l, edges = [0], [0, 1]
+        counts_r, edges = [0], [0, 1]
+    else:
+        binlen = 20
+        bins = np.arange(0, 
+            np.max(np.concatenate([rew_times_l, rew_times_r])) + 2* binlen, 
+            binlen)
+        counts_l, edges = np.histogram(rew_times_l, bins=bins)
+        counts_r, edges = np.histogram(rew_times_r, bins=bins)
+
+    ax.plot(edges[:-1], counts_l, 'b')
+    ax.plot(edges[:-1], counts_r, 'r')
+    ax.set_xlabel('time (s)')
+    ax.set_ylabel('rewards')
+    ax.set_title('%d %d rewards' % tuple(map(len, [rew_times_l, rew_times_r])))
+    plt.draw()
+    plt.show()    
+    
+    
+    
+    
+    
+def update_by_trial(plotter, filename):    
     ax = plotter['ax']
     
     with file(filename) as fi:
