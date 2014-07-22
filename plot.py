@@ -195,7 +195,7 @@ def update_by_time_till_interrupt(plotter, filename):
 def init_by_trial(SIDE_TYP_OFFSET):
     # Plot 
     f, ax = plt.subplots(1, 1, figsize=(10, 2))
-    f.subplots_adjust(left=.2, right=.95, top=.8)
+    f.subplots_adjust(left=.35, right=.95, top=.8)
     ax.plot([-1000, 1000], [SIDE_TYP_OFFSET-.5] * 2, 'k-', label='divis')
     #~ f2, axa = plt.subplots(1, 2)
 
@@ -414,7 +414,16 @@ def update_by_time(plotter, filename):
 def update_by_trial(plotter, filename):    
     ax = plotter['ax']
     ax2 = plotter['ax2']
+
+
+    SIDE_TYP_OFFSET = plotter['SIDE_TYP_OFFSET']
     
+    POS_NEAR = 1150
+    POS_DELTA = 25
+    POS_NEAR = 45
+    POS_DELTA = 1
+    label2lines = plotter['label2lines']
+
     with file(filename) as fi:
         lines = fi.readlines()
 
@@ -426,51 +435,37 @@ def update_by_trial(plotter, filename):
     rew_times_r = np.array(map(lambda line: int(line.split()[0])/1000., 
         rew_lines_r))
 
-    # Split trials
-    trial_starts = np.where([line.startswith('TRIAL START')
-        for line in lines])[0]
-    splines = []
-    for nstart in range(len(trial_starts)-1):
-        splines.append(lines[trial_starts[nstart]:trial_starts[nstart+1]])
+    # Split by trial
+    splines = split_by_trial(lines)
+
+    # Identify spoiled (forced or rewarded) trials
+    bad_trials, force_trials_type = identify_spoiled_trials(splines)
+
+    # Identify trial outcomes and types
+    rewarded_side, trial_outcomes = identify_trial_outcomes(splines)
     
-    # Last trial
-    splines.append(lines[trial_starts[-1]:])
+    # Position of servo
+    servo_pos = (identify_servo_positions(splines) - POS_NEAR) / POS_DELTA
+    servo_pos = servo_pos * 0
+    
+    # define types
+    trial_types = rewarded_side * SIDE_TYP_OFFSET + servo_pos
 
-    # Force trials
-    force_trials = np.where([
-        np.any([line.startswith('ACK FORCE') for line in tlines])
-        for tlines in splines])[0]
-    force_trials_type = [
-        filter(lambda line: line.startswith('ACK FORCE'), splines[trial])[-1].strip()[-1]
-        for trial in force_trials]
-    bad_trials = np.zeros(len(splines), dtype=np.bool)
-    for nforce in range(len(force_trials)-1):
-        if force_trials_type[nforce] != 'X':
-            bad_trials[force_trials[nforce]:force_trials[nforce+1]] = 1
-    if len(force_trials_type) >= 1 and force_trials_type[-1] != 'X':
-        bad_trials[force_trials[-1]:] = 1
-    # Trials with manual reward
-    for nspline, spline in enumerate(splines):
-        # But may not have actually been delivered
-        if 'ACK REWARD' in spline:
-            bad_trials[nspline] = 1
+    # Hits by type
+    typ2perf = count_hits_by_type(trial_types, trial_outcomes, bad_trials)
+    typ2perf_all = count_hits_by_type(trial_types, trial_outcomes, bad_trials* 0)
+    
+    # Hits by side
+    side2perf = count_hits_by_type(rewarded_side, trial_outcomes, bad_trials)
+    
+    # Combined
+    totalperf = count_hits_by_type(np.zeros_like(rewarded_side, dtype=np.int),
+        trial_outcomes, bad_trials)
 
-    trial_types = []
-    trial_outcomes = []
-    for nspline, spline in enumerate(splines):
-        if 'TRIAL SIDE L\r\n' in spline:
-            trial_types.append(0)
-        else:
-            trial_types.append(1)
-        
-        if 'TRIAL OUTCOME hit\r\n' in spline:
-            trial_outcomes.append('hit')
-        elif 'TRIAL OUTCOME error\r\n' in spline:
-            trial_outcomes.append('error')
-        else:
-            trial_outcomes.append('spoil')
-    trial_types = np.asarray(trial_types)
-    trial_outcomes = np.asarray(trial_outcomes)
+    # Get trials info
+    trials_info = form_trials_info(rewarded_side, trial_types, trial_outcomes, 
+        bad_trials)
+
 
     ## count rewards
     n_rewards_l = []
@@ -480,52 +475,55 @@ def update_by_trial(plotter, filename):
     n_rewards_a = np.asarray(n_rewards_l)
     l_rewards = np.sum(n_rewards_a[trial_types == 0])
     r_rewards = np.sum(n_rewards_a[trial_types == 1])
-
-    for line in ax.lines:
-        line.remove()
-    for line in ax2.lines:
-        line.remove()
-
-    o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k'}
-    for outcome in ['hit', 'error', 'spoil']:
-        msk = trial_outcomes == outcome
-        ax.plot(np.where(msk)[0], trial_types[msk], 'o', 
-            color=o2c[outcome])
-    msk = bad_trials == 1
-    ax.plot(np.where(msk)[0], trial_types[msk], '|', color='k', ms=10)
     
     # Plot the rewards as a separate trace
+    for line in ax2.lines:
+        line.remove()    
     ax2.plot(np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
     ax2.set_yticks(np.arange(np.max(n_rewards_a) + 2))
-    
-    ax.set_yticks((0, 1))
-    v1 = np.sum((trial_outcomes[trial_types == 0] == 'hit'))# &
-        # ~bad_trials[trial_types == 0])
-    v2 = np.sum(~bad_trials[trial_types == 0])
-    v2 = len(trial_outcomes[trial_types == 0])
-    v3 = np.sum((trial_outcomes[trial_types == 1] == 'hit'))# &
-        # ~bad_trials[trial_types == 1])
-    v4 = np.sum(~bad_trials[trial_types == 1])
-    v4 = len(trial_outcomes[trial_types == 1])
 
-    if v2 == 0:
-        v2 = 1
-    if v4 == 0:
-        v4 = 1
 
-    ax.set_yticklabels([
-        'LEFT %d / %d = %0.3f' % (v1, v2, float(v1) / v2),
-        'RIGHT %d / %d = %0.3f' % (v3, v4, float(v3) / v4)])
-    pval = scipy.stats.binom_test(v1+v3, v2+v4)
+    ## PLOTTING
+    # plot each outcome
+    for outcome in ['hit', 'error', 'spoil', 'curr']:
+        msk = trial_outcomes == outcome
+
+        line = label2lines[outcome]
+        line.set_xdata(np.where(msk)[0])
+        line.set_ydata(trial_types[msk])
     
-    ax.set_ylim((np.max(trial_types) + 0.5, np.min(trial_types)-0.5))
-    #~ ax.set_xlim((-1, len(trial_types)))
-    ax.set_xlim((len(trial_types)-30, len(trial_types)))
+    # plot vert bars where bad trials occurred
+    msk = bad_trials == 1
+    line = label2lines['bad']
+    line.set_xdata(np.where(msk)[0])
+    line.set_ydata(trial_types[msk])
+
+    # yaxis labels with hits by type
+    sorted_typs = np.sort(typ2perf.keys())
+    ax.set_yticks(sorted_typs)
+    ytl = []
+    for typ in sorted_typs:
+        typname = ('LEFT ' if typ < SIDE_TYP_OFFSET else 'RIGHT ') + str(np.mod(typ, SIDE_TYP_OFFSET))
+        nhits, ntots = typ2perf[typ]
+        nhits_all, ntots_all = typ2perf_all[typ]
     
+        ytl.append('%s. Unforced:%d/%d=%0.2f. All:%d/%d=%0.2f' % (
+            typname, nhits, ntots, 
+            float(nhits) / ntots if ntots != 0 else 0.,
+            nhits_all, ntots_all,
+            float(nhits_all) / ntots_all if ntots_all != 0 else 0.,
+            ))
+    ax.set_yticklabels(ytl, size='small')
+    
+    # Axis limits
+    ax.set_ylim((sorted_typs[-1] + .5, sorted_typs[0] - .5))
+    ax.set_xlim((len(trial_types)-100, len(trial_types)))    
+
+
 
     ts = ''
 
-    
+    pval = .5
     ax.set_title('%d rewards L; %d rewards R; %0.3f; %s' % (
         #~ len(rew_times_l), len(rew_times_r), pval, ts))
         l_rewards, r_rewards, pval, ts))
