@@ -423,6 +423,8 @@ def update_by_trial(plotter, filename):
     POS_NEAR = 45
     POS_DELTA = 1
     label2lines = plotter['label2lines']
+    
+    TRIAL_PLOT_WINDOW_SIZE = 50
 
     with file(filename) as fi:
         lines = fi.readlines()
@@ -517,7 +519,7 @@ def update_by_trial(plotter, filename):
     
     # Axis limits
     ax.set_ylim((sorted_typs[-1] + .5, sorted_typs[0] - .5))
-    ax.set_xlim((len(trial_types)-100, len(trial_types)))    
+    ax.set_xlim((len(trial_types)-TRIAL_PLOT_WINDOW_SIZE, len(trial_types)))    
 
 
 
