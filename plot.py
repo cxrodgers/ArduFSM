@@ -71,8 +71,19 @@ class PlotterWithServoThrow:
 
 
         ## Define trial types, the ordering on the plot
-        trials_info = plotter.assign_trial_type_to_trials_info(trials_info)
-        trial_type_names = plotter.get_list_of_trial_type_names()
+        # update servo_throw in case it has increased
+        st_lines = filter(lambda line: 'SET ST ' in line, lines)
+        if len(st_lines) > 0:
+            st_line = st_lines[-1]
+            inferred_servo_throw = int(st_line.strip().split()[-1])
+            
+            # only update if increased
+            if inferred_servo_throw > self.servo_throw:
+                self.servo_throw = inferred_servo_throw
+        
+        # Add type information to trials_info and generate type names
+        trials_info = self.assign_trial_type_to_trials_info(trials_info)
+        trial_type_names = self.get_list_of_trial_type_names()
 
         
         ## Count performance by type
@@ -111,11 +122,11 @@ class PlotterWithServoThrow:
         
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
-        for line in plotter.graphics_handles['ax2'].lines:
+        for line in self.graphics_handles['ax2'].lines:
             line.remove()    
-        plotter.graphics_handles['ax2'].plot(
+        self.graphics_handles['ax2'].plot(
             np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
-        plotter.graphics_handles['ax2'].set_yticks(
+        self.graphics_handles['ax2'].set_yticks(
             np.arange(np.max(n_rewards_a) + 2))
 
 
@@ -127,19 +138,19 @@ class PlotterWithServoThrow:
 
             # Get the line corresponding to this outcome and set the xdata
             # to the appropriate trial numbers and the ydata to the trial types
-            line = plotter.graphics_handles['label2lines'][outcome]
+            line = self.graphics_handles['label2lines'][outcome]
             line.set_xdata(np.where(msk)[0])
             line.set_ydata(trials_info['trial_type'][msk])
         
         # plot vert bars where bad trials occurred
         msk = trials_info['bad']
-        line = plotter.graphics_handles['label2lines']['bad']
+        line = self.graphics_handles['label2lines']['bad']
         line.set_xdata(np.where(msk)[0])
         line.set_ydata(trials_info['trial_type'][msk])
 
 
         ## PLOTTING axis labels and title
-        ax = plotter.graphics_handles['ax']
+        ax = self.graphics_handles['ax']
         
         # Use the ytick_labels calculated above
         ax.set_yticks(range(len(trial_type_names)))
@@ -150,7 +161,7 @@ class PlotterWithServoThrow:
         
         # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
         ax.set_xlim((
-            len(trials_info) - plotter.trial_plot_window_size, 
+            len(trials_info) - self.trial_plot_window_size, 
             len(trials_info)))    
         
         # title set above
