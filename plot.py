@@ -23,13 +23,16 @@ class PlotterWithServoThrow:
         """
         trials_info = trials_info.copy()
         
+        # Check if any don't integer divide by pos_delta
         if np.any(np.mod(trials_info['servo_position'] - self.pos_near, 
             self.pos_delta) != 0):
-            print "warning: raw servo positions do not divide by POS_DELTA"
+            print "error: raw servo positions do not divide by POS_DELTA"
         
+        # Divide by pos_delta
         integer_positions = (
             trials_info['servo_position'] - self.pos_near) / self.pos_delta
         
+        # Check if any are out of range
         if np.any(integer_positions < 0) or np.any(
             integer_positions >= self.servo_throw):
             print "warning: positions below or above servo throw thresholds"
@@ -37,6 +40,7 @@ class PlotterWithServoThrow:
             integer_positions[integer_positions >= self.servo_throw] = \
                 self.servo_throw - 1
 
+        # Store integer position
         trials_info['servo_intpos'] = integer_positions
         
         # Finally combine with side info
@@ -52,6 +56,131 @@ class PlotterWithServoThrow:
             ['RIGHT %d' % n for n in range(self.servo_throw)]
         
         return res
+    
+    def update(self, filename):    
+        ## Load data and make trials_info
+        # Read file
+        with file(filename) as fi:
+            lines = fi.readlines()
+
+        # Split by trial
+        splines = split_by_trial(lines)
+
+        # Make trials_info
+        trials_info = make_trials_info_from_splines(splines)
+
+
+        ## Define trial types, the ordering on the plot
+        trials_info = plotter.assign_trial_type_to_trials_info(trials_info)
+        trial_type_names = plotter.get_list_of_trial_type_names()
+
+        
+        ## Count performance by type
+        # Hits by type
+        typ2perf = count_hits_by_type_from_trials_info(
+            trials_info[~trials_info.bad])
+        typ2perf_all = count_hits_by_type_from_trials_info(trials_info)
+        
+        # Hits by side
+        side2perf = count_hits_by_type_from_trials_info(
+            trials_info[~trials_info.bad],
+            split_key='rewside')
+        
+        # Combined
+        total_nhit, total_ntot = calculate_nhit_ntot(trials_info[~trials_info.bad])
+
+        # Turn the typ2perf into ticklabels
+        ytick_labels = typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all)
+
+
+        ## count rewards
+        # Get the rewards by each trial in splines
+        n_rewards_l = []
+        for nspline, spline in enumerate(splines):
+            n_rewards = np.sum(map(lambda s: 'EVENT REWARD' in s, spline))
+            n_rewards_l.append(n_rewards)
+        n_rewards_a = np.asarray(n_rewards_l)
+        
+        # Match those onto the rewards from each side
+        l_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 0])
+        r_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 1])
+        
+        # turn the rewards into a title string
+        title_string = '%d rewards L; %d rewards R' % (l_rewards, r_rewards)
+        
+        
+        ## PLOTTING REWARDS
+        # Plot the rewards as a separate trace
+        for line in plotter.graphics_handles['ax2'].lines:
+            line.remove()    
+        plotter.graphics_handles['ax2'].plot(
+            np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
+        plotter.graphics_handles['ax2'].set_yticks(
+            np.arange(np.max(n_rewards_a) + 2))
+
+
+        ## PLOTTING
+        # plot each outcome
+        for outcome in ['hit', 'error', 'spoil', 'curr']:
+            # Get rows corresponding to this outcome
+            msk = trials_info['outcome'] == outcome
+
+            # Get the line corresponding to this outcome and set the xdata
+            # to the appropriate trial numbers and the ydata to the trial types
+            line = plotter.graphics_handles['label2lines'][outcome]
+            line.set_xdata(np.where(msk)[0])
+            line.set_ydata(trials_info['trial_type'][msk])
+        
+        # plot vert bars where bad trials occurred
+        msk = trials_info['bad']
+        line = plotter.graphics_handles['label2lines']['bad']
+        line.set_xdata(np.where(msk)[0])
+        line.set_ydata(trials_info['trial_type'][msk])
+
+
+        ## PLOTTING axis labels and title
+        ax = plotter.graphics_handles['ax']
+        
+        # Use the ytick_labels calculated above
+        ax.set_yticks(range(len(trial_type_names)))
+        ax.set_yticklabels(ytick_labels, size='small')
+        
+        # The ylimits go BACKWARDS so that trial types are from top to bottom
+        ax.set_ylim((len(trial_type_names) - .5, -.5))
+        
+        # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
+        ax.set_xlim((
+            len(trials_info) - plotter.trial_plot_window_size, 
+            len(trials_info)))    
+        
+        # title set above
+        ax.set_title(title_string)
+        
+        
+        ## PLOTTING finalize
+        plt.show()
+        plt.draw()    
+    
+    def update_till_interrupt(self, filename):
+        # update over and over
+        PROFILE_MODE = False
+
+        try:
+            while True:
+                self.update(filename)
+                
+                if not PROFILE_MODE:
+                    time.sleep(.3)
+                else:
+                    break
+
+        except KeyboardInterrupt:
+            plt.close('all')
+            print "Done."
+        except:
+            raise
+        finally:
+            pass
 
 
 
@@ -212,26 +341,6 @@ def form_trials_info(rewarded_side, trial_outcomes, bad_trials):
     return df
 
 
-def update_by_trial_till_interrupt(plotter, filename):
-    # update over and over
-    PROFILE_MODE = False
-
-    try:
-        while True:
-            update_by_trial(plotter, filename)
-            
-            if not PROFILE_MODE:
-                time.sleep(.3)
-            else:
-                break
-
-    except KeyboardInterrupt:
-        plt.close('all')
-        print "Done."
-    except:
-        raise
-    finally:
-        pass
 
 
 def update_by_time_till_interrupt(plotter, filename):
@@ -523,107 +632,3 @@ def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
         ytick_labels.append(tick_label)
     
     return ytick_labels
-
-def update_by_trial(plotter, filename):    
-    ## Load data and make trials_info
-    # Read file
-    with file(filename) as fi:
-        lines = fi.readlines()
-
-    # Split by trial
-    splines = split_by_trial(lines)
-
-    # Make trials_info
-    trials_info = make_trials_info_from_splines(splines)
-
-
-    ## Define trial types, the ordering on the plot
-    trials_info = plotter.assign_trial_type_to_trials_info(trials_info)
-    trial_type_names = plotter.get_list_of_trial_type_names()
-
-    
-    ## Count performance by type
-    # Hits by type
-    typ2perf = count_hits_by_type_from_trials_info(
-        trials_info[~trials_info.bad])
-    typ2perf_all = count_hits_by_type_from_trials_info(trials_info)
-    
-    # Hits by side
-    side2perf = count_hits_by_type_from_trials_info(
-        trials_info[~trials_info.bad],
-        split_key='rewside')
-    
-    # Combined
-    total_nhit, total_ntot = calculate_nhit_ntot(trials_info[~trials_info.bad])
-
-    # Turn the typ2perf into ticklabels
-    ytick_labels = typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all)
-
-
-    ## count rewards
-    # Get the rewards by each trial in splines
-    n_rewards_l = []
-    for nspline, spline in enumerate(splines):
-        n_rewards = np.sum(map(lambda s: 'EVENT REWARD' in s, spline))
-        n_rewards_l.append(n_rewards)
-    n_rewards_a = np.asarray(n_rewards_l)
-    
-    # Match those onto the rewards from each side
-    l_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 0])
-    r_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 1])
-    
-    # turn the rewards into a title string
-    title_string = '%d rewards L; %d rewards R' % (l_rewards, r_rewards)
-    
-    
-    ## PLOTTING REWARDS
-    # Plot the rewards as a separate trace
-    for line in plotter.graphics_handles['ax2'].lines:
-        line.remove()    
-    plotter.graphics_handles['ax2'].plot(
-        np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
-    plotter.graphics_handles['ax2'].set_yticks(
-        np.arange(np.max(n_rewards_a) + 2))
-
-
-    ## PLOTTING
-    # plot each outcome
-    for outcome in ['hit', 'error', 'spoil', 'curr']:
-        # Get rows corresponding to this outcome
-        msk = trials_info['outcome'] == outcome
-
-        # Get the line corresponding to this outcome and set the xdata
-        # to the appropriate trial numbers and the ydata to the trial types
-        line = plotter.graphics_handles['label2lines'][outcome]
-        line.set_xdata(np.where(msk)[0])
-        line.set_ydata(trials_info['trial_type'][msk])
-    
-    # plot vert bars where bad trials occurred
-    msk = trials_info['bad']
-    line = plotter.graphics_handles['label2lines']['bad']
-    line.set_xdata(np.where(msk)[0])
-    line.set_ydata(trials_info['trial_type'][msk])
-
-
-    ## PLOTTING axis labels and title
-    ax = plotter.graphics_handles['ax']
-    
-    # Use the ytick_labels calculated above
-    ax.set_yticks(range(len(trial_type_names)))
-    ax.set_yticklabels(ytick_labels, size='small')
-    
-    # The ylimits go BACKWARDS so that trial types are from top to bottom
-    ax.set_ylim((len(trial_type_names) - .5, -.5))
-    
-    # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
-    ax.set_xlim((
-        len(trials_info) - plotter.trial_plot_window_size, 
-        len(trials_info)))    
-    
-    # title set above
-    ax.set_title(title_string)
-    
-    
-    ## PLOTTING finalize
-    plt.show()
-    plt.draw()
