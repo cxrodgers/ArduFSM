@@ -1,5 +1,5 @@
 """Objects for setting trials and convenient interaction with chatter"""
-import sys, time
+import sys, time, shutil
 import datetime
 import numpy as np
 import os
@@ -82,7 +82,7 @@ def reward_bout_scheduler(params, filename):
 
 
 ## UI stuff
-MENU = """(q) quit
+MENU = """(q) save and quit
 (e) echo
 (s) set rewards
 (l) reward L
@@ -95,6 +95,8 @@ MENU = """(q) quit
 
 class LINES:
     pass
+LINES.FILENAME = 0
+LINES.MENU = 1
 LINES.ENTRY = 10
 LINES.ENTRY2 = 11
 LINES.ERROR = 12
@@ -131,7 +133,8 @@ def run_ui_till_quit(filename, scheduler_params, session_params):
         curses.cbreak()
         stdscr.keypad(1)
         stdscr.clear()
-        stdscr.addstr(0, 0, MENU)
+        stdscr.addstr(LINES.FILENAME, 0, filename)
+        stdscr.addstr(LINES.MENU, 0, MENU)
         stdscr.timeout(TIMEOUT)
         
         while True:
@@ -163,6 +166,15 @@ def run_ui_till_quit(filename, scheduler_params, session_params):
                 
                 # parse input
                 if c == 'q':
+                    # save and quit
+                    mousename = get_additional_input(
+                        "Enter mouse name: \n", stdscr)
+                    mousename = mousename.strip()
+                    if mousename != '':
+                        new_filename = filename + '.' + mousename
+                        assert not os.path.exists(new_filename)
+                        shutil.copyfile(filename, new_filename)
+                    
                     break
                 elif c == 'l':
                     cmd = 'echo "REWARD L" > TO_DEV'
