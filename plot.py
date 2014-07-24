@@ -15,6 +15,37 @@ class PlotterWithServoThrow:
         self.servo_throw = servo_throw
         self.trial_plot_window_size = trial_plot_window_size
     
+    def init_handles(self):
+        """Create graphics handles"""
+        # Plot 
+        f, ax = plt.subplots(1, 1, figsize=(10, 2))
+        f.subplots_adjust(left=.35, right=.95, top=.8)
+        
+        # Make handles to each outcome
+        label2lines = {}
+        for outcome, color in o2c.items():
+            label2lines[outcome], = ax.plot(
+                [None], [None], 'o', label=outcome, color=color)
+        
+        # Plot the bads
+        label2lines['bad'], = ax.plot(
+            [None], [None], '|', label='bad', color='k', ms=10)
+
+        # Plot a horizontal line at SERVO_THROW if available
+        label2lines['divis'], = ax.plot(
+            [None], [None], 'k-', label='divis')
+
+        # Separate y-axis for rewards
+        ax2 = ax.twinx()
+        ax2.set_ylabel('rewards')
+
+        # Store graphics handles
+        self.graphics_handles = {
+            'f': f, 'ax': ax, 'ax2': ax2, 'label2lines': label2lines}
+        
+        # create the window
+        plt.show()
+        
     def assign_trial_type_to_trials_info(self, trials_info):
         """Returns a copy of trials_info with a column called trial_type.
         
@@ -167,6 +198,10 @@ class PlotterWithServoThrow:
         # title set above
         ax.set_title(title_string)
         
+        ## plot division between L and R
+        line = self.graphics_handles['label2lines']['divis']
+        line.set_xdata(ax.get_xlim())
+        line.set_ydata([self.servo_throw - .5] * 2)
         
         ## PLOTTING finalize
         plt.show()
@@ -380,34 +415,6 @@ def update_by_time_till_interrupt(plotter, filename):
     finally:
         pass
 
-def init_by_trial(plotter):
-    """Creates graphics objects and stores handles in plotter"""
-    # Plot 
-    f, ax = plt.subplots(1, 1, figsize=(10, 2))
-    f.subplots_adjust(left=.35, right=.95, top=.8)
-    
-    # Plot a horizontal line at SERVO_THROW if available
-    if hasattr(plotter, 'servo_throw'):
-        ax.plot([0, 2000], [plotter.servo_throw-.5] * 2, 'k-', label='divis')
-
-    # Make handles to each outcome
-    label2lines = {}
-    for outcome, color in o2c.items():
-        label2lines[outcome], = ax.plot(
-            [None], [None], 'o', label=outcome, color=color)
-    label2lines['bad'], = ax.plot(
-        [None], [None], '|', label='bad', color='k', ms=10)
-
-    # Separate y-axis for rewards
-    ax2 = ax.twinx()
-    ax2.set_ylabel('rewards')
-
-    # Store graphics handles
-    plotter.graphics_handles = {
-        'f': f, 'ax': ax, 'ax2': ax2, 'label2lines': label2lines}
-    
-    # create the window
-    plt.show()
 
 
 def init_by_time(**kwargs):
