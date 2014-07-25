@@ -5,10 +5,18 @@
 #include <Stepper.h>
 
 bool USE_LEVER = 0;
+bool TWO_PIN_STEPPER = 0;
+
 
 // Pins
 struct PINS_TYPE 
 {
+  // Two-pin stepper mode
+  static const unsigned int TWOPIN_ENABLE_STEPPER = 11; // to turn on stepper
+  static const unsigned int TWOPIN_STEPPER_1 = 12;
+  static const unsigned int TWOPIN_STEPPER_2 = 13; // to turn on stepper
+  
+  
   // Digital outputs
   static const unsigned int ENABLE_STEPPER = 12; // to turn on stepper
   static const unsigned int LINEAR_SERVO = 4; // to control servo
@@ -115,6 +123,7 @@ Servo linServo;
 
 // Stepper
 // 200 steps per rotation; the rest are pin numbers
+// overwrite this later in the two-pin case
 Stepper stimStepper(200, 8, 9, 10, 11);
 
 //// Function prototypes and default arguments
@@ -143,10 +152,20 @@ void setup()
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
 
+  if (TWO_PIN_STEPPER)
+  {
+    stimStepper = Stepper(200, PINS.TWOPIN_STEPPER_1, PINS.TWOPIN_STEPPER_2);
+    pinMode(PINS.TWOPIN_ENABLE_STEPPER, OUTPUT);
+    digitalWrite(PINS.TWOPIN_ENABLE_STEPPER, LOW); // # Make sure it's off    
+  }
+  else
+  {
+    pinMode(PINS.ENABLE_STEPPER, OUTPUT);
+    digitalWrite(PINS.ENABLE_STEPPER, LOW); // # Make sure it's off
+  }
+
   // stepper setup
   stimStepper.setSpeed(STIMULI.ROTATION_SPEED);  
-  pinMode(PINS.ENABLE_STEPPER, OUTPUT);
-  digitalWrite(PINS.ENABLE_STEPPER, LOW); // # Make sure it's off
     
   // linear servo setup
   linServo.attach(PINS.LINEAR_SERVO);
@@ -702,7 +721,10 @@ void rotate_motor(int rotation, unsigned int delay_ms)
   
   if (local_debug) Serial.println("Rotating motor");
   if (local_debug) Serial.println("* Enabling");
-  digitalWrite(PINS.ENABLE_STEPPER, HIGH);
+  if (TWO_PIN_STEPPER)
+    digitalWrite(PINS.TWOPIN_ENABLE_STEPPER, HIGH);
+  else
+    digitalWrite(PINS.ENABLE_STEPPER, HIGH);
   
   if (local_debug) Serial.println("* Delaying");
   delay(delay_ms);
@@ -714,7 +736,10 @@ void rotate_motor(int rotation, unsigned int delay_ms)
   delay(delay_ms);
   
   if (local_debug) Serial.println("* Disabling");
-  digitalWrite(PINS.ENABLE_STEPPER, LOW);
+  if (TWO_PIN_STEPPER)
+    digitalWrite(PINS.TWOPIN_ENABLE_STEPPER, LOW);
+  else
+    digitalWrite(PINS.ENABLE_STEPPER, LOW);  
   
   if (local_debug) Serial.println("* Delaying");
   delay(delay_ms);
