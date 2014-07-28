@@ -157,14 +157,18 @@ class PlotterWithServoThrow:
         
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
-        title_string += 'L_UF: ' + \
-            format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
-        title_string += 'R_UF: ' + \
-            format_perf_string(side2perf[1][0], side2perf[1][1]) + ';\n'
-        title_string += 'L_A: ' + \
-            format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
-        title_string += 'R_A: ' + \
-            format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
+        if 0 in side2perf:
+            title_string += 'L_UF: ' + \
+                format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
+        if 1 in side2perf:
+            title_string += 'R_UF: ' + \
+                format_perf_string(side2perf[1][0], side2perf[1][1]) + ';\n'
+        if 0 in side2perf_all:
+            title_string += 'L_A: ' + \
+                format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
+        if 1 in side2perf_all:
+            title_string += 'R_A: ' + \
+                format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
         
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
