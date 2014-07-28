@@ -18,8 +18,8 @@ class PlotterWithServoThrow:
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(10, 2))
-        f.subplots_adjust(left=.35, right=.95, top=.8)
+        f, ax = plt.subplots(1, 1, figsize=(10, 4))
+        f.subplots_adjust(left=.4, right=.95, top=.75)
         
         # Make handles to each outcome
         label2lines = {}
@@ -125,8 +125,9 @@ class PlotterWithServoThrow:
         
         # Hits by side
         side2perf = count_hits_by_type_from_trials_info(
-            trials_info[~trials_info.bad],
-            split_key='rewside')
+            trials_info[~trials_info.bad], split_key='rewside')
+        side2perf_all = count_hits_by_type_from_trials_info(
+            trials_info, split_key='rewside')            
         
         # Combined
         total_nhit, total_ntot = calculate_nhit_ntot(trials_info[~trials_info.bad])
@@ -147,9 +148,23 @@ class PlotterWithServoThrow:
         l_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 0])
         r_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 1])
         
-        # turn the rewards into a title string
-        title_string = '%d rewards L; %d rewards R' % (l_rewards, r_rewards)
+        def format_perf_string(nhit, ntot):
+            perf = nhit / float(ntot) if ntot > 0 else 0.
+            pval = scipy.stats.binom_test(nhit, ntot)
+            res = '%d/%d=%0.2f, p=%0.3f' % (nhit, ntot, perf, pval)
+            return res
+            
         
+        # turn the rewards into a title string
+        title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
+        title_string += 'L_UF: ' + \
+            format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
+        title_string += 'R_UF: ' + \
+            format_perf_string(side2perf[1][0], side2perf[1][1]) + ';\n'
+        title_string += 'L_A: ' + \
+            format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
+        title_string += 'R_A: ' + \
+            format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
         
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
@@ -196,7 +211,7 @@ class PlotterWithServoThrow:
             len(trials_info)))    
         
         # title set above
-        ax.set_title(title_string)
+        ax.set_title(title_string, size='medium')
         
         ## plot division between L and R
         line = self.graphics_handles['label2lines']['divis']
@@ -635,14 +650,14 @@ def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
         
         if typnum in typ2perf:
             nhits, ntots = typ2perf[typnum]
-            tick_label += ' Unforced:%d/%d' % (nhits, ntots)
+            tick_label += ' Unforced:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
                 tick_label += '=%0.2f' % (float(nhits) / ntots)
             tick_label += '.'
         
         if typnum in typ2perf_all:
             nhits, ntots = typ2perf_all[typnum]
-            tick_label += ' All:%d/%d' % (nhits, ntots)
+            tick_label += ' All:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
                 tick_label += '=%0.2f' % (float(nhits) / ntots)
             tick_label += '.'        
