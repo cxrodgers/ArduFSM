@@ -5,6 +5,13 @@ import scipy.stats
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
+        
+def format_perf_string(nhit, ntot):
+    """Helper function for turning hits and totals into a fraction."""
+    perf = nhit / float(ntot) if ntot > 0 else 0.
+    res = '%d/%d=%0.2f' % (nhit, ntot, perf)
+    return res
+
 
 class PlotterWithServoThrow:
     """Object encapsulating the logic and parameters to plot trials by throw."""
@@ -147,13 +154,6 @@ class PlotterWithServoThrow:
         # Match those onto the rewards from each side
         l_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 0).values])
         r_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 1).values])
-        
-        def format_perf_string(nhit, ntot):
-            perf = nhit / float(ntot) if ntot > 0 else 0.
-            pval = scipy.stats.binom_test(nhit, ntot)
-            res = '%d/%d=%0.2f, p=%0.3f' % (nhit, ntot, perf, pval)
-            return res
-            
         
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
