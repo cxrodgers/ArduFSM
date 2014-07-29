@@ -89,6 +89,10 @@ class PlotterWithServoThrow:
         self.pos_delta = pos_delta
         self.servo_throw = servo_throw
         self.trial_plot_window_size = trial_plot_window_size
+        self.cached_anova_text1 = ''
+        self.cached_anova_len1 = 0
+        self.cached_anova_text2 = ''
+        self.cached_anova_len2 = 0
     
     def init_handles(self):
         """Create graphics handles"""
@@ -235,7 +239,12 @@ class PlotterWithServoThrow:
         if 1 in side2perf:
             title_string += 'R: ' + \
                 format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
-        anova_stats = run_anova(trials_info, remove_bad=True)
+        if len(trials_info) > self.cached_anova_len1 + 5 or self.cached_anova_text1 == '':
+            anova_stats = run_anova(trials_info, remove_bad=True)
+            self.cached_anova_text1 = anova_stats
+            self.cached_anova_len1 = len(trials_info)
+        else:
+            anova_stats = self.cached_anova_text1
         title_string += '. Biases: ' + anova_stats
         title_string += '\n'
         
@@ -248,7 +257,12 @@ class PlotterWithServoThrow:
         if 1 in side2perf_all:
             title_string += 'R_A: ' + \
                 format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
-        anova_stats = run_anova(trials_info, remove_bad=False)
+        if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
+            anova_stats = run_anova(trials_info, remove_bad=False)
+            self.cached_anova_text2 = anova_stats
+            self.cached_anova_len2 = len(trials_info)
+        else:
+            anova_stats = self.cached_anova_text2
         title_string += '. Biases: ' + anova_stats
         
         ## PLOTTING REWARDS
