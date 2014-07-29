@@ -145,8 +145,8 @@ class PlotterWithServoThrow:
         n_rewards_a = np.asarray(n_rewards_l)
         
         # Match those onto the rewards from each side
-        l_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 0])
-        r_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 1])
+        l_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 0).values])
+        r_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 1).values])
         
         def format_perf_string(nhit, ntot):
             perf = nhit / float(ntot) if ntot > 0 else 0.
@@ -157,12 +157,19 @@ class PlotterWithServoThrow:
         
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
+        
+        # A line of info about unforced trials
+        title_string += 'UF: '
         if 0 in side2perf:
-            title_string += 'L_UF: ' + \
+            title_string += 'L: ' + \
                 format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
         if 1 in side2perf:
-            title_string += 'R_UF: ' + \
-                format_perf_string(side2perf[1][0], side2perf[1][1]) + ';\n'
+            title_string += 'R: ' + \
+                format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
+        title_string += '\n'
+        
+        # A line of info about all trials
+        title_string += 'All: '
         if 0 in side2perf_all:
             title_string += 'L_A: ' + \
                 format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
