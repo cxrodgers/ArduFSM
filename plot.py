@@ -5,12 +5,80 @@ import scipy.stats
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
-        
 def format_perf_string(nhit, ntot):
     """Helper function for turning hits and totals into a fraction."""
     perf = nhit / float(ntot) if ntot > 0 else 0.
     res = '%d/%d=%0.2f' % (nhit, ntot, perf)
     return res
+
+def pval_to_star(pval):
+    if pval < .001:
+        return '***'
+    elif pval < .01:
+        return '**'
+    elif pval < .05:
+        return '*'
+    else:
+        return ''
+
+def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay', 
+    neg_word='Switch'):
+    """Turn anova results into human-readable summary."""
+    s = pos_word if aov_res['fit']['fit_' + variable] > 0 else neg_word
+    s += ' %0.2f' % aov_res['ess']['ess_' + variable]
+    s += pval_to_star(aov_res['pvals']['p_' + variable])
+    return s
+
+def run_anova(trials_info, remove_bad=False):
+    """Run anova on trials info and return stats"""
+    trials_info = trials_info.copy()
+    
+    # Remove trials with outcome == spoil or choice == -1 or prevchoice = -1
+    trials_info = trials_info[
+        (trials_info.choice != -1) &
+        (trials_info.prevchoice != -1) &
+        trials_info.outcome.isin(['hit', 'error'])]
+    
+    # Optionally remove bad
+    if remove_bad:
+        trials_info = trials_info[~trials_info.bad]
+    
+    # Replace 0s with -1s
+    trials_info['choice'][trials_info.choice == 0] = -1
+    trials_info['rewside'][trials_info.rewside == 0] = -1
+    trials_info['prevchoice'][trials_info.prevchoice == 0] = -1
+    
+    # Do nothing if insufficient data
+    ss = ''
+    if len(trials_info) >= 10:
+        # ANOVA choice ~ rewside * prevchoice (or possibly +)
+        try:
+            aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
+        except np.linalg.LinAlgError:
+            # eg, always go left
+            return 'lin alg error'
+        
+        # Summarize stay, side, and correct biases
+        ss += anova_text_summarize(aov_res, variable='prevchoice', 
+            pos_word='Stay', neg_word='Switch') + '; '
+        ss += anova_text_summarize(aov_res, variable='Intercept', 
+            pos_word='Right', neg_word='Left') + '; '
+        ss += anova_text_summarize(aov_res, variable='rewside', 
+            pos_word='Correct', neg_word='Incorrect')
+
+    else:
+        ss = 'insufficient data'
+    
+    #~ # Pval on global perf
+    #~ try:
+        #~ pval = scipy.stats.binom_test(
+            #~ side2perf[0][0] + side2perf[1][0],
+            #~ side2perf[0][1] + side2perf[1][1])
+    #~ except KeyError:
+        #~ pval = 1.0
+    
+    return ss
+
 
 
 class PlotterWithServoThrow:
@@ -25,8 +93,8 @@ class PlotterWithServoThrow:
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(10, 4))
-        f.subplots_adjust(left=.4, right=.95, top=.75)
+        f, ax = plt.subplots(1, 1, figsize=(11, 4))
+        f.subplots_adjust(left=.35, right=.95, top=.75)
         
         # Make handles to each outcome
         label2lines = {}
@@ -158,7 +226,8 @@ class PlotterWithServoThrow:
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
         
-        # A line of info about unforced trials
+        
+        ## A line of info about unforced trials
         title_string += 'UF: '
         if 0 in side2perf:
             title_string += 'L: ' + \
@@ -166,9 +235,12 @@ class PlotterWithServoThrow:
         if 1 in side2perf:
             title_string += 'R: ' + \
                 format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
+        anova_stats = run_anova(trials_info, remove_bad=True)
+        title_string += '. Biases: ' + anova_stats
         title_string += '\n'
         
-        # A line of info about all trials
+        
+        ## A line of info about all trials
         title_string += 'All: '
         if 0 in side2perf_all:
             title_string += 'L_A: ' + \
@@ -176,6 +248,8 @@ class PlotterWithServoThrow:
         if 1 in side2perf_all:
             title_string += 'R_A: ' + \
                 format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
+        anova_stats = run_anova(trials_info, remove_bad=False)
+        title_string += '. Biases: ' + anova_stats
         
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
