@@ -43,6 +43,7 @@ def read_from_user(buffer, buffer_size=1024):
     return data
 
 def write_to_device(device, data):
+    # I suspect this fails silently if the arduino's buffer is full
     if data is not None:
         device.write(data)
 
@@ -94,6 +95,9 @@ class Chatter:
         time.sleep(1) # without this sleep, it will not send the first line or so to the device
         
         # these don't appear to be necessary??
+        # actually, the chatter still picks up leftover input
+        # that was echoed to TO_DEV, even with flushInput() above.
+        # uncommenting the below lines doesn't seem to do anything.
         #~ self.ser.flush()
         #~ self.ser.flushOutput()
         
