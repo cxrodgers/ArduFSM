@@ -347,6 +347,42 @@ def identify_servo_positions(splines):
         servo_pos_l.append(int(line.split()[-1]))
     return np.asarray(servo_pos_l)
 
+def identify_trial_times(splines):
+    """Return time of each TRIAL START in splines"""
+    res_l = []
+    for spline in splines:
+        match_line = filter(lambda line: line.startswith('TRIAL START'), spline)[0]
+        res_l.append(int(match_line.split()[-1]))
+    return np.asarray(res_l, dtype=np.int)
+
+def identify_servo_retract_times(splines):
+    """Return time that servo began to retract, hard-coded as 15 11
+    
+    Returns: Series of times in s, indexed by the entry in splines
+    """
+    res_l = []
+    idx_l = []
+    for nspline, spline in enumerate(splines):
+        # Find the state change line
+        match_lines = filter(
+            lambda line: 'STATE CHANGE 15 11' in line, spline)
+        
+        # There should be 1 hit, except in rare cases
+        if len(match_lines) == 1:
+            # Append result and nspline as index
+            res_l.append(int(match_lines[0].split()[0]))
+            idx_l.append(nspline)
+        elif len(match_lines) == 0:
+            # no state change found
+            # this is only okay on the most recent ("current") trial
+            if nspline != len(splines) - 1:
+                print "error: cannot find state change in non-last trial"
+        else:
+            # should never find multiple instances
+            raise ValueError("multiple state changes per spline")
+
+    return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
+
 def count_hits_by_type(trial_types, trial_outcomes, bad_trials):    
     uniq_types = np.unique(trial_types)
     typ2perf = {}
@@ -636,8 +672,13 @@ def make_trials_info_from_splines(splines):
     trials_info = form_trials_info(rewarded_side, trial_outcomes, 
         bad_trials)
     
+    
+    ## Stuff to put into form_trials_info, or otherwise normalize
     # Add in servo throw (put this in form_trials_info)
     trials_info['servo_position'] = raw_servo_positions
+    
+    # Add in trial times
+    trials_info['trial_time'] = identify_trial_times(splines)
 
     return trials_info
 
