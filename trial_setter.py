@@ -159,7 +159,12 @@ def run_ui_till_quit(filename, scheduler_params, session_params):
             c = stdscr.getch()
             
             if c != -1:
-                c = chr(c)
+                # Sanitize input
+                try:
+                    c = chr(c)
+                except ValueError:
+                    # eg, for backspace or something
+                    continue
                 
                 # clear any error message
                 clear_line(LINES.ERROR, stdscr)

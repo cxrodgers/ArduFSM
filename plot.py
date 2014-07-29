@@ -5,6 +5,81 @@ import scipy.stats
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
+def format_perf_string(nhit, ntot):
+    """Helper function for turning hits and totals into a fraction."""
+    perf = nhit / float(ntot) if ntot > 0 else 0.
+    res = '%d/%d=%0.2f' % (nhit, ntot, perf)
+    return res
+
+def pval_to_star(pval):
+    if pval < .001:
+        return '***'
+    elif pval < .01:
+        return '**'
+    elif pval < .05:
+        return '*'
+    else:
+        return ''
+
+def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay', 
+    neg_word='Switch'):
+    """Turn anova results into human-readable summary."""
+    s = pos_word if aov_res['fit']['fit_' + variable] > 0 else neg_word
+    s += ' %0.2f' % aov_res['ess']['ess_' + variable]
+    s += pval_to_star(aov_res['pvals']['p_' + variable])
+    return s
+
+def run_anova(trials_info, remove_bad=False):
+    """Run anova on trials info and return stats"""
+    trials_info = trials_info.copy()
+    
+    # Remove trials with outcome == spoil or choice == -1 or prevchoice = -1
+    trials_info = trials_info[
+        (trials_info.choice != -1) &
+        (trials_info.prevchoice != -1) &
+        trials_info.outcome.isin(['hit', 'error'])]
+    
+    # Optionally remove bad
+    if remove_bad:
+        trials_info = trials_info[~trials_info.bad]
+    
+    # Replace 0s with -1s
+    trials_info['choice'][trials_info.choice == 0] = -1
+    trials_info['rewside'][trials_info.rewside == 0] = -1
+    trials_info['prevchoice'][trials_info.prevchoice == 0] = -1
+    
+    # Do nothing if insufficient data
+    ss = ''
+    if len(trials_info) >= 10:
+        # ANOVA choice ~ rewside * prevchoice (or possibly +)
+        try:
+            aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
+        except np.linalg.LinAlgError:
+            # eg, always go left
+            return 'lin alg error'
+        
+        # Summarize stay, side, and correct biases
+        ss += anova_text_summarize(aov_res, variable='prevchoice', 
+            pos_word='Stay', neg_word='Switch') + '; '
+        ss += anova_text_summarize(aov_res, variable='Intercept', 
+            pos_word='Right', neg_word='Left') + '; '
+        ss += anova_text_summarize(aov_res, variable='rewside', 
+            pos_word='Correct', neg_word='Incorrect')
+
+    else:
+        ss = 'insufficient data'
+    
+    #~ # Pval on global perf
+    #~ try:
+        #~ pval = scipy.stats.binom_test(
+            #~ side2perf[0][0] + side2perf[1][0],
+            #~ side2perf[0][1] + side2perf[1][1])
+    #~ except KeyError:
+        #~ pval = 1.0
+    
+    return ss
+
+
 
 class PlotterWithServoThrow:
     """Object encapsulating the logic and parameters to plot trials by throw."""
@@ -14,12 +89,16 @@ class PlotterWithServoThrow:
         self.pos_delta = pos_delta
         self.servo_throw = servo_throw
         self.trial_plot_window_size = trial_plot_window_size
+        self.cached_anova_text1 = ''
+        self.cached_anova_len1 = 0
+        self.cached_anova_text2 = ''
+        self.cached_anova_len2 = 0
     
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(10, 4))
-        f.subplots_adjust(left=.4, right=.95, top=.75)
+        f, ax = plt.subplots(1, 1, figsize=(11, 4))
+        f.subplots_adjust(left=.35, right=.95, top=.75)
         
         # Make handles to each outcome
         label2lines = {}
@@ -145,26 +224,46 @@ class PlotterWithServoThrow:
         n_rewards_a = np.asarray(n_rewards_l)
         
         # Match those onto the rewards from each side
-        l_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 0])
-        r_rewards = np.sum(n_rewards_a[trials_info['rewside'] == 1])
-        
-        def format_perf_string(nhit, ntot):
-            perf = nhit / float(ntot) if ntot > 0 else 0.
-            pval = scipy.stats.binom_test(nhit, ntot)
-            res = '%d/%d=%0.2f, p=%0.3f' % (nhit, ntot, perf, pval)
-            return res
-            
+        l_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 0).values])
+        r_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 1).values])
         
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
-        title_string += 'L_UF: ' + \
-            format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
-        title_string += 'R_UF: ' + \
-            format_perf_string(side2perf[1][0], side2perf[1][1]) + ';\n'
-        title_string += 'L_A: ' + \
-            format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
-        title_string += 'R_A: ' + \
-            format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
+        
+        
+        ## A line of info about unforced trials
+        title_string += 'UF: '
+        if 0 in side2perf:
+            title_string += 'L: ' + \
+                format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
+        if 1 in side2perf:
+            title_string += 'R: ' + \
+                format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
+        if len(trials_info) > self.cached_anova_len1 + 5 or self.cached_anova_text1 == '':
+            anova_stats = run_anova(trials_info, remove_bad=True)
+            self.cached_anova_text1 = anova_stats
+            self.cached_anova_len1 = len(trials_info)
+        else:
+            anova_stats = self.cached_anova_text1
+        title_string += '. Biases: ' + anova_stats
+        title_string += '\n'
+        
+        
+        ## A line of info about all trials
+        title_string += 'All: '
+        if 0 in side2perf_all:
+            title_string += 'L_A: ' + \
+                format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
+        if 1 in side2perf_all:
+            title_string += 'R_A: ' + \
+                format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
+        if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
+            anova_stats = run_anova(trials_info, remove_bad=False)
+            self.cached_anova_text2 = anova_stats
+            self.cached_anova_len2 = len(trials_info)
+        else:
+            anova_stats = self.cached_anova_text2
+        title_string += '. Biases: ' + anova_stats
         
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
@@ -477,149 +576,6 @@ def init_by_time(**kwargs):
     plt.show()
 
     return {'f': f, 'ax': ax}
-
-
-def update_by_trial_with_anova_and_jittered_position(plotter, filename):
-    ax = plotter['ax']
-    label2lines = plotter['label2lines']
-    SIDE_TYP_OFFSET = plotter['SIDE_TYP_OFFSET']
-    
-    POS_NEAR = 1150
-    POS_DELTA = 25
-    POS_NEAR = 45
-    POS_DELTA = 1
-    
-    
-    with file(filename) as fi:
-        lines = fi.readlines()
-
-    #rew_lines = filter(lambda line: line.startswith('REWARD'), lines)
-    rew_lines_l = filter(lambda line: 'EVENT REWARD_L' in line, lines)
-    rew_times_l = np.array(map(lambda line: int(line.split()[0])/1000., 
-        rew_lines_l))
-    rew_lines_r = filter(lambda line: 'EVENT REWARD_R' in line, lines)
-    rew_times_r = np.array(map(lambda line: int(line.split()[0])/1000., 
-        rew_lines_r))
-
-    # Split by trial
-    splines = split_by_trial(lines)
-
-    # Identify spoiled (forced or rewarded) trials
-    bad_trials, force_trials_type = identify_spoiled_trials(splines)
-
-    # Identify trial outcomes and types
-    rewarded_side, trial_outcomes = identify_trial_outcomes(splines)
-    
-    # Position of servo
-    servo_pos = (identify_servo_positions(splines) - POS_NEAR) / POS_DELTA
-    
-    # define types
-    trial_types = rewarded_side * SIDE_TYP_OFFSET + servo_pos
-
-    # Hits by type
-    typ2perf = count_hits_by_type(trial_types, trial_outcomes, bad_trials)
-    
-    # Hits by side
-    side2perf = count_hits_by_type(rewarded_side, trial_outcomes, bad_trials)
-    
-    # Combined
-    totalperf = count_hits_by_type(np.zeros_like(rewarded_side, dtype=np.int),
-        trial_outcomes, bad_trials)
-
-
-    ## ANOVA
-    # Get trials info
-    trials_info = form_trials_info(rewarded_side, trial_types, trial_outcomes, 
-        bad_trials)
-    
-    # Remove trials with outcome == spoil or choice == -1 or prevchoice = -1
-    trials_info = trials_info[
-        (trials_info.choice != -1) &
-        (trials_info.prevchoice != -1) &
-        trials_info.outcome.isin(['hit', 'error'])]# &
-        #~trials_info.bad]
-    
-    # Replace 0s with -1s
-    trials_info['choice'][trials_info.choice == 0] = -1
-    trials_info['rewside'][trials_info.rewside == 0] = -1
-    trials_info['prevchoice'][trials_info.prevchoice == 0] = -1
-    
-    if len(trials_info) >= 10:
-        # ANOVA choice ~ rewside * prevchoice (or possibly +)
-        aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
-        ess_resid = aov_res['aov']['sum_sq']['Residual'] / aov_res['aov']['sum_sq'].sum()
-        
-        ss = 'Resid: %0.2f;' % ess_resid
-        keylist = np.sort(aov_res['ess']).index[::-1]
-        keylist = map(lambda key: key[4:], keylist)
-        for key in keylist: 
-            ess_raw = aov_res['aov']['sum_sq'][key] / aov_res['aov']['sum_sq'].sum()
-            ess = aov_res['ess']['ess_' + key]
-            fit = aov_res['fit']['fit_' + key]
-            p = aov_res['pvals']['p_' + key]
-            s = '%s EV=%.2f FIT=%.2f p=%.3f' % (key, ess, fit, p)
-            ss = ss + s + ';'
-        
-        keylist = ['Intercept', 'prevchoice', 'rewside']
-        ess_arr = [aov_res['ess']['ess_' + key] for key in keylist]
-        fit_arr = [aov_res['fit']['fit_' + key] for key in keylist]
-    else:
-        ss = 'insuff'
-    
-    # Pval on global perf
-    try:
-        pval = scipy.stats.binom_test(
-            side2perf[0][0] + side2perf[1][0],
-            side2perf[0][1] + side2perf[1][1])
-    except KeyError:
-        pval = 1.0
-    
-    ## PLOTTING
-    # plot each outcome
-    for outcome in ['hit', 'error', 'spoil', 'curr']:
-        msk = trial_outcomes == outcome
-
-        line = label2lines[outcome]
-        line.set_xdata(np.where(msk)[0])
-        line.set_ydata(trial_types[msk])
-    
-    # plot vert bars where bad trials occurred
-    msk = bad_trials == 1
-    line = label2lines['bad']
-    line.set_xdata(np.where(msk)[0])
-    line.set_ydata(trial_types[msk])
-
-    # yaxis labels with hits by type
-    sorted_typs = np.sort(typ2perf.keys())
-    ax.set_yticks(sorted_typs)
-    ytl = []
-    for typ in sorted_typs:
-        typname = ('LEFT ' if typ < SIDE_TYP_OFFSET else 'RIGHT ') + str(np.mod(typ, SIDE_TYP_OFFSET))
-        nhits, ntots = typ2perf[typ]
-    
-        ytl.append('%s %d / %d = %0.3f' % (
-            typname, nhits, ntots, 
-            float(nhits) / ntots) if ntots != 0 else 0.)
-    ax.set_yticklabels(ytl)
-    
-    # Axis limits
-    ax.set_ylim((sorted_typs[-1] + .5, sorted_typs[0] - .5))
-    ax.set_xlim((len(trial_types)-100, len(trial_types)))
-    
-    # Title with rewards totals and p-value
-    try:
-        ax.set_title('Rew: %d & %d. L: %d/%d=%0.3f. R: %d/%d=%0.3f. T: %d/%d=%0.3f, p=%0.2e\n%s' % (
-            len(rew_times_l), len(rew_times_r),
-            side2perf[0][0], side2perf[0][1], float(side2perf[0][0]) / side2perf[0][1],
-            side2perf[1][0], side2perf[1][1], float(side2perf[1][0]) / side2perf[1][1],
-            totalperf[0][0], totalperf[0][1], float(totalperf[0][0]) / totalperf[0][1], 
-            pval, ss), size='medium')
-    except KeyError:
-        ax.set_title('key error')
-    
-    plt.show()
-    plt.draw()
-
 
 def update_by_time(plotter, filename):
     ax = plotter['ax']
