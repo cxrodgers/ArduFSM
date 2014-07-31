@@ -176,6 +176,10 @@ class PlotterWithServoThrow:
         # Split by trial
         splines = split_by_trial(lines)
 
+        if len(splines) <= 1:
+            # Probably just the first trial
+            return
+
         # Make trials_info
         trials_info = make_trials_info_from_splines(splines)
 
@@ -239,7 +243,7 @@ class PlotterWithServoThrow:
         if 1 in side2perf:
             title_string += 'R: ' + \
                 format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
-        if len(trials_info) > self.cached_anova_len1 + 5 or self.cached_anova_text1 == '':
+        if len(trials_info) > self.cached_anova_len1 or self.cached_anova_text1 == '':
             anova_stats = run_anova(trials_info, remove_bad=True)
             self.cached_anova_text1 = anova_stats
             self.cached_anova_len1 = len(trials_info)
@@ -358,7 +362,8 @@ def split_by_trial(lines):
         splines.append(lines[trial_starts[nstart]:trial_starts[nstart+1]])
     
     # Last trial
-    splines.append(lines[trial_starts[-1]:])
+    if len(trial_starts) >= 1:
+        splines.append(lines[trial_starts[-1]:])
     
     return splines
 
@@ -511,7 +516,10 @@ def calculate_nhit_ntot(df):
     return nhit, ntot
 
 def form_trials_info(rewarded_side, trial_outcomes, bad_trials):
-    """Concatenates provided data, sets dtypes, add prevhoice and choice"""
+    """Concatenates provided data, sets dtypes, add prevhoice and choice
+    
+    TODO: make this work for empty inputs
+    """
     df = pandas.concat([
         pandas.Series(rewarded_side, dtype=np.int, name='rewside'),
         #pandas.Series(trial_types, dtype=np.int, name='typ'),
