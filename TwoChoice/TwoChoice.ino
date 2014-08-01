@@ -58,7 +58,7 @@ struct SERVO_POSITIONS_TYPE
 {
   static const int NEAR = 1150; // position when within whisking range
   static const int FAR = 1900; // position when out of whisking range
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 2000; // 1.5s for dist=10
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000; // 1.5s for dist=10
 } SERVO_POSITIONS;
 
 // Trial variables
