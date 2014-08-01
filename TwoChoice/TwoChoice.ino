@@ -58,7 +58,8 @@ struct SERVO_POSITIONS_TYPE
 {
   static const int NEAR = 1150; // position when within whisking range
   static const int FAR = 1900; // position when out of whisking range
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000; // 1.5s for dist=10
+  int POS_DELTA = 25; // distance between positions
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000;
 } SERVO_POSITIONS;
 
 // Trial variables
@@ -248,7 +249,13 @@ void loop()
       
       // where to put servo to
       current_trial_params.servo_position = SERVO_POSITIONS.NEAR +
-        25*random(0, session_params.servo_throw);
+        SERVO_POSITIONS.POS_DELTA*random(0, session_params.servo_throw);
+
+      // safety
+      if (current_trial_params.servo_position > SERVO_POSITIONS.FAR)
+        current_trial_params.servo_position = SERVO_POSITIONS.FAR;
+      if (current_trial_params.servo_position < SERVO_POSITIONS.NEAR)
+        current_trial_params.servo_position = SERVO_POSITIONS.NEAR;
 
       // Trial start
       Serial.println((String) "TRIAL START " + time);
@@ -658,6 +665,11 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
     {
       s = strs[2];
       session_params.servo_throw = s.toInt();
+    }
+    else if (strcmp(strs[1], "PD") == 0)
+    {
+      s = strs[2];
+      SERVO_POSITIONS.POS_DELTA = s.toInt();
     }
     
   }

@@ -203,6 +203,13 @@ class PlotterWithServoThrow:
             # only update if increased
             if inferred_servo_throw > self.servo_throw:
                 self.servo_throw = inferred_servo_throw
+
+        # extract pos_delta from history
+        st_lines = filter(lambda line: 'SET PD ' in line, lines)
+        if len(st_lines) > 0:
+            st_line = st_lines[-1]
+            inferred_pos_delta = int(st_line.strip().split()[-1])
+            self.pos_delta = inferred_pos_delta
         
         # Add type information to trials_info and generate type names
         trials_info = self.assign_trial_type_to_trials_info(trials_info)
