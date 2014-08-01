@@ -29,8 +29,11 @@ def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay',
     s += pval_to_star(aov_res['pvals']['p_' + variable])
     return s
 
-def run_anova(trials_info, remove_bad=False):
-    """Run anova on trials info and return stats"""
+def _run_anova(trials_info, remove_bad=False):
+    """Helper function that runs anova without parsing stats.
+    
+    Returns None if LinAlgError or ValueError.
+    """
     trials_info = trials_info.copy()
     
     # Remove trials with outcome == spoil or choice == -1 or prevchoice = -1
@@ -47,36 +50,42 @@ def run_anova(trials_info, remove_bad=False):
     trials_info['choice'][trials_info.choice == 0] = -1
     trials_info['rewside'][trials_info.rewside == 0] = -1
     trials_info['prevchoice'][trials_info.prevchoice == 0] = -1
+
+    # ANOVA choice ~ rewside * prevchoice (or possibly +)
+    try:
+        aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
+    except (np.linalg.LinAlgError, ValueError):
+        aov_res = None
+    
+    return aov_res
+    
+
+def run_anova(trials_info, remove_bad=False):
+    """Run anova on trials info and return stats"""
+    # Return variable
+    ss = ''
     
     # Do nothing if insufficient data
-    ss = ''
-    if len(trials_info) >= 10:
-        # ANOVA choice ~ rewside * prevchoice (or possibly +)
-        try:
-            aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
-        except np.linalg.LinAlgError:
-            # eg, always go left
-            return 'lin alg error'
-        
-        # Summarize stay, side, and correct biases
-        ss += anova_text_summarize(aov_res, variable='prevchoice', 
-            pos_word='Stay', neg_word='Switch') + '; '
-        ss += anova_text_summarize(aov_res, variable='Intercept', 
-            pos_word='Right', neg_word='Left') + '; '
-        ss += anova_text_summarize(aov_res, variable='rewside', 
-            pos_word='Correct', neg_word='Incorrect')
-
-    else:
+    if len(trials_info) < 10:
         ss = 'insufficient data'
     
-    #~ # Pval on global perf
-    #~ try:
-        #~ pval = scipy.stats.binom_test(
-            #~ side2perf[0][0] + side2perf[1][0],
-            #~ side2perf[0][1] + side2perf[1][1])
-    #~ except KeyError:
-        #~ pval = 1.0
-    
+    else:
+        # Try to run the anova
+        aov_res = _run_anova(trials_info, remove_bad=remove_bad)
+        
+        # Test for anova error, like LinAlgError or ValueError
+        if aov_res is None:
+            ss = 'anova error'
+
+        else:
+            # Summarize stay, side, and correct biases
+            ss += anova_text_summarize(aov_res, variable='prevchoice', 
+                pos_word='Stay', neg_word='Switch') + '; '
+            ss += anova_text_summarize(aov_res, variable='Intercept', 
+                pos_word='Right', neg_word='Left') + '; '
+            ss += anova_text_summarize(aov_res, variable='rewside', 
+                pos_word='Correct', neg_word='Incorrect')
+
     return ss
 
 
