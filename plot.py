@@ -54,7 +54,7 @@ def _run_anova(trials_info, remove_bad=False):
     # ANOVA choice ~ rewside * prevchoice (or possibly +)
     try:
         aov_res = my.stats.anova(trials_info, 'choice ~ rewside + prevchoice')
-    except (np.linalg.LinAlgError, ValueError):
+    except (np.linalg.LinAlgError, ValueError, TypeError):
         aov_res = None
     
     return aov_res
