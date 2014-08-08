@@ -89,19 +89,18 @@ def run_anova(trials_info, remove_bad=False):
     return ss
 
 
-
-class PlotterWithServoThrow:
-    """Object encapsulating the logic and parameters to plot trials by throw."""
-    def __init__(self, pos_near=1150, pos_delta=25, servo_throw=8,
-        trial_plot_window_size=50):
-        self.pos_near = pos_near
-        self.pos_delta = pos_delta
-        self.servo_throw = servo_throw
+class Plotter(object):
+    """Base class for plotters by stim number or servo throw."""
+    def __init__(self, trial_plot_window_size=50):
+        """Initialize base Plotter class."""
+        # Size of trial window
         self.trial_plot_window_size = trial_plot_window_size
+        
+        # Anova caching
         self.cached_anova_text1 = ''
         self.cached_anova_len1 = 0
         self.cached_anova_text2 = ''
-        self.cached_anova_len2 = 0
+        self.cached_anova_len2 = 0       
     
     def init_handles(self):
         """Create graphics handles"""
@@ -133,50 +132,15 @@ class PlotterWithServoThrow:
         
         # create the window
         plt.show()
-        
-    def assign_trial_type_to_trials_info(self, trials_info):
-        """Returns a copy of trials_info with a column called trial_type.
-        
-        # Sequentially assign from LEFT to RIGHT in increasing servo throw
-        # eg LEFT 1150, LEFT 1175, LEFT 1200, RIGHT 1150, RIGHT 1175, RIGHT 1200
-        """
-        trials_info = trials_info.copy()
-        
-        # Check if any don't integer divide by pos_delta
-        if np.any(np.mod(trials_info['servo_position'] - self.pos_near, 
-            self.pos_delta) != 0):
-            print "error: raw servo positions do not divide by POS_DELTA"
-        
-        # Divide by pos_delta
-        integer_positions = (
-            trials_info['servo_position'] - self.pos_near) / self.pos_delta
-        
-        # Check if any are out of range
-        if np.any(integer_positions < 0) or np.any(
-            integer_positions >= self.servo_throw):
-            print "warning: positions below or above servo throw thresholds"
-            integer_positions[integer_positions < 0] = 0
-            integer_positions[integer_positions >= self.servo_throw] = \
-                self.servo_throw - 1
-
-        # Store integer position
-        trials_info['servo_intpos'] = integer_positions
-        
-        # Finally combine with side info
-        trials_info['trial_type'] = \
-            trials_info['rewside'] * self.servo_throw + integer_positions
-        
-        return trials_info
-
-    def get_list_of_trial_type_names(self):
-        """Name of each trial type."""
-        res = \
-            ['LEFT %d' % n for n in range(self.servo_throw)] + \
-            ['RIGHT %d' % n for n in range(self.servo_throw)]
-        
-        return res
     
-    def update(self, filename):    
+    def update_trial_type_parameters(self, lines):
+        """Update parameters relating to trial type.
+        
+        Does nothing by default but child classes will redefine."""
+        pass
+    
+    def update(self, filename):   
+        """Read info from filename and update the plot"""
         ## Load data and make trials_info
         # Read file
         with file(filename) as fi:
@@ -194,22 +158,8 @@ class PlotterWithServoThrow:
 
 
         ## Define trial types, the ordering on the plot
-        # update servo_throw in case it has increased
-        st_lines = filter(lambda line: 'SET ST ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_servo_throw = int(st_line.strip().split()[-1])
-            
-            # only update if increased
-            if inferred_servo_throw > self.servo_throw:
-                self.servo_throw = inferred_servo_throw
-
-        # extract pos_delta from history
-        st_lines = filter(lambda line: 'SET PD ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_pos_delta = int(st_line.strip().split()[-1])
-            self.pos_delta = inferred_pos_delta
+        # Make any updates to trial type parameters (child-class-dependent)
+        self.update_trial_type_parameters(lines)
         
         # Add type information to trials_info and generate type names
         trials_info = self.assign_trial_type_to_trials_info(trials_info)
@@ -361,6 +311,96 @@ class PlotterWithServoThrow:
             raise
         finally:
             pass
+
+
+
+class PlotterByStimNumber(Plotter):
+    """Plots performance by stim number."""
+    def __init__(self, n_stimuli=6, **base_kwargs):
+        # Initialize base
+        super(PlotterByStimNumber, self).__init__(**base_kwargs)
+        
+        # Initialize me
+        # This could be inferred
+        self.n_stimuli = n_stimuli
+
+    
+
+class PlotterWithServoThrow(Plotter):
+    """Object encapsulating the logic and parameters to plot trials by throw."""
+    def __init__(self, pos_near=1150, pos_delta=25, servo_throw=8,
+        **base_kwargs):
+        # Initialize base
+        super(PlotterWithServoThrow, self).__init__(**base_kwargs)
+        
+        # Initialize me
+        self.pos_near = pos_near
+        self.pos_delta = pos_delta
+        self.servo_throw = servo_throw        
+    
+    def update_trial_type_parameters(self, lines):
+        """Looks for changes in servo throw or pos delta params.
+        
+        lines: read from file
+        """
+        # update servo_throw in case it has increased
+        st_lines = filter(lambda line: 'SET ST ' in line, lines)
+        if len(st_lines) > 0:
+            st_line = st_lines[-1]
+            inferred_servo_throw = int(st_line.strip().split()[-1])
+            
+            # only update if increased
+            if inferred_servo_throw > self.servo_throw:
+                self.servo_throw = inferred_servo_throw
+
+        # extract pos_delta from history
+        st_lines = filter(lambda line: 'SET PD ' in line, lines)
+        if len(st_lines) > 0:
+            st_line = st_lines[-1]
+            inferred_pos_delta = int(st_line.strip().split()[-1])
+            self.pos_delta = inferred_pos_delta    
+    
+    def assign_trial_type_to_trials_info(self, trials_info):
+        """Returns a copy of trials_info with a column called trial_type.
+        
+        # Sequentially assign from LEFT to RIGHT in increasing servo throw
+        # eg LEFT 1150, LEFT 1175, LEFT 1200, RIGHT 1150, RIGHT 1175, RIGHT 1200
+        """
+        trials_info = trials_info.copy()
+        
+        # Check if any don't integer divide by pos_delta
+        if np.any(np.mod(trials_info['servo_position'] - self.pos_near, 
+            self.pos_delta) != 0):
+            print "error: raw servo positions do not divide by POS_DELTA"
+        
+        # Divide by pos_delta
+        integer_positions = (
+            trials_info['servo_position'] - self.pos_near) / self.pos_delta
+        
+        # Check if any are out of range
+        if np.any(integer_positions < 0) or np.any(
+            integer_positions >= self.servo_throw):
+            print "warning: positions below or above servo throw thresholds"
+            integer_positions[integer_positions < 0] = 0
+            integer_positions[integer_positions >= self.servo_throw] = \
+                self.servo_throw - 1
+
+        # Store integer position
+        trials_info['servo_intpos'] = integer_positions
+        
+        # Finally combine with side info
+        trials_info['trial_type'] = \
+            trials_info['rewside'] * self.servo_throw + integer_positions
+        
+        return trials_info
+
+    def get_list_of_trial_type_names(self):
+        """Name of each trial type."""
+        res = \
+            ['LEFT %d' % n for n in range(self.servo_throw)] + \
+            ['RIGHT %d' % n for n in range(self.servo_throw)]
+        
+        return res
 
 
 
