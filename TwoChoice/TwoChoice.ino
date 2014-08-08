@@ -7,6 +7,7 @@
 bool USE_LEVER = 0;
 bool TWO_PIN_STEPPER = 0;
 
+//#define SIX_STIM 1
 
 // Pins
 struct PINS_TYPE 
@@ -90,6 +91,7 @@ struct SESSION_PARAMS_TYPE
 } session_params;
 
 // Stimuli
+#ifdef SIX_STIM
 struct STIMULI_TYPE
 {
   static const int N = 6; // number of positions
@@ -99,6 +101,19 @@ struct STIMULI_TYPE
   // wherever the motor starts will be defined as this position
   static const int ASSUMED_INITIAL_POSITION = 0; 
 } STIMULI;
+#endif
+
+#ifndef SIX_STIM
+struct STIMULI_TYPE
+{
+  static const int N = 2; // number of positions
+  const int POSITIONS[N] = {0, 100}; // array of locations to move to
+  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
+  
+  // wherever the motor starts will be defined as this position
+  static const int ASSUMED_INITIAL_POSITION = 0; 
+} STIMULI;
+#endif
 
 // initial position of stim arm .. user must ensure this is correct
 int stim_arm_position = STIMULI.ASSUMED_INITIAL_POSITION;
