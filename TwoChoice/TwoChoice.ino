@@ -69,6 +69,7 @@ struct TRIAL_PARAMS_TYPE
   String outcome = "spoil";
   String choice = "nogo";
   int servo_position = SERVO_POSITIONS.NEAR;
+  int stim_number = 0;
 } current_trial_params;
 
 // Session params -- combine this with trial variables
@@ -91,12 +92,12 @@ struct SESSION_PARAMS_TYPE
 // Stimuli
 struct STIMULI_TYPE
 {
-  static const int N = 2; // number of positions
-  const int POSITIONS[N] = {50, 150}; // array of locations to move to
-  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
+  static const int N = 6; // number of positions
+  const int POSITIONS[N] = {0, 33, 67, 100, 133, 167}; // array of locations to move to
+  static const int ROTATION_SPEED = 30; // how fast to rotate stepper
   
   // wherever the motor starts will be defined as this position
-  static const int ASSUMED_INITIAL_POSITION = 50; 
+  static const int ASSUMED_INITIAL_POSITION = 0; 
 } STIMULI;
 
 // initial position of stim arm .. user must ensure this is correct
@@ -236,7 +237,11 @@ void loop()
           break;
         case 'X':
           // choose randomly -- ultimately want to get this from user
-          if (random(0, STIMULI.N) == 0)
+          current_trial_params.stim_number = random(0, STIMULI.N);
+          
+          // use the logic that even stimuli correspond to going left
+          // this should come from user to be more robust
+          if (current_trial_params.stim_number % 2 == 0)
             current_trial_params.rewarded_side = 'L';
           else
             current_trial_params.rewarded_side = 'R';
@@ -263,7 +268,8 @@ void loop()
         current_trial_params.rewarded_side);
       Serial.println((String) "TRIAL SERVO_POS " + 
         current_trial_params.servo_position);
-
+      Serial.println((String) "TRIAL STIM_NUMBER " + 
+        current_trial_params.stim_number);
       
       // keep track of how many rewards
       rewards_this_trial = 0;
@@ -276,17 +282,13 @@ void loop()
     case MOVE_SERVO_START:
       /* Start moving servo to move stimulus into position 
       */
-      // rotate the arm while it's moving
-      switch (current_trial_params.rewarded_side)
-      {
-        case 'L':
-          new_position = STIMULI.POSITIONS[0];
-          break;
-        case 'R':
-          new_position = STIMULI.POSITIONS[1];
-          break;
-      }
+      // current stimulus angle comes from indexing into POSITIONS
+      new_position = STIMULI.POSITIONS[current_trial_params.stim_number];
+
+      // rotate it
       rotateStim(new_position);
+
+      // TODO: get rid of this
       delay(.2);
       
       // set position
