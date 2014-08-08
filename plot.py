@@ -90,7 +90,12 @@ def run_anova(trials_info, remove_bad=False):
 
 
 class Plotter(object):
-    """Base class for plotters by stim number or servo throw."""
+    """Base class for plotters by stim number or servo throw.
+    
+    Child classes MUST define the following:
+    assign_trial_type_to_trials_info
+    get_list_of_trial_type_names
+    """
     def __init__(self, trial_plot_window_size=50):
         """Initialize base Plotter class."""
         # Size of trial window
@@ -284,8 +289,8 @@ class Plotter(object):
         
         ## plot division between L and R
         line = self.graphics_handles['label2lines']['divis']
-        line.set_xdata(ax.get_xlim())
-        line.set_ydata([self.servo_throw - .5] * 2)
+        #~ line.set_xdata(ax.get_xlim())
+        #~ line.set_ydata([self.servo_throw - .5] * 2)
         
         ## PLOTTING finalize
         plt.show()
@@ -324,7 +329,37 @@ class PlotterByStimNumber(Plotter):
         # This could be inferred
         self.n_stimuli = n_stimuli
 
+    def update_trial_type_parameters(self, lines):
+        """Looks for changes in number of stimuli.
+        
+        lines: read from file
+        """
+        pass
     
+    def assign_trial_type_to_trials_info(self, trials_info):
+        """Returns a copy of trials_info with a column called trial_type.
+        
+        Trial type is defined by this object as stim number.
+        """
+        trials_info = trials_info.copy()
+        trials_info['trial_type'] = trials_info['stim_number']
+        return trials_info
+
+    def get_list_of_trial_type_names(self):
+        """Return the name of each trial type.
+        
+        This object assumes left and right stimuli are alternating and that
+        the very first trial_type is a left stimulus.
+        
+        Returns ['LEFT 0', 'RIGHT 1', 'LEFT 2', ...] up to self.n_stimuli
+        """
+        res = []
+        for sn in range(self.n_stimuli):
+            # All even are LEFT
+            side = 'LEFT' if np.mod(sn, 2) == 0 else 'RIGHT'
+            res.append(side + ' %d' % sn)        
+        return res
+
 
 class PlotterWithServoThrow(Plotter):
     """Object encapsulating the logic and parameters to plot trials by throw."""
@@ -507,6 +542,13 @@ def identify_servo_positions(splines):
         servo_pos_l.append(int(line.split()[-1]))
     return np.asarray(servo_pos_l)
 
+def identify_stim_numbers(splines):
+    res = []
+    for spline in splines:
+        line = filter(lambda line: line.startswith('TRIAL STIM_NUMBER'), spline)[0]
+        res.append(int(line.split()[-1]))
+    return np.asarray(res)    
+
 def identify_trial_times(splines):
     """Return time of each TRIAL START in splines"""
     res_l = []
@@ -688,6 +730,9 @@ def make_trials_info_from_splines(splines):
     # Position of servo
     raw_servo_positions = identify_servo_positions(splines)
     
+    # Stim number
+    stim_numbers = identify_stim_numbers(splines)
+    
     # Get trials info
     trials_info = form_trials_info(rewarded_side, trial_outcomes, 
         bad_trials)
@@ -696,6 +741,9 @@ def make_trials_info_from_splines(splines):
     ## Stuff to put into form_trials_info, or otherwise normalize
     # Add in servo throw (put this in form_trials_info)
     trials_info['servo_position'] = raw_servo_positions
+
+    # stim_number
+    trials_info['stim_number'] = stim_numbers
     
     # Add in trial times
     trials_info['trial_time'] = identify_trial_times(splines)
