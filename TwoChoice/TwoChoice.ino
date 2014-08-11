@@ -7,6 +7,7 @@
 bool USE_LEVER = 0;
 bool TWO_PIN_STEPPER = 0;
 
+//#define SIX_STIM 1
 
 // Pins
 struct PINS_TYPE 
@@ -58,7 +59,8 @@ struct SERVO_POSITIONS_TYPE
 {
   static const int NEAR = 1150; // position when within whisking range
   static const int FAR = 1900; // position when out of whisking range
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000; // 1.5s for dist=10
+  int POS_DELTA = 25; // distance between positions
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000;
 } SERVO_POSITIONS;
 
 // Trial variables
@@ -68,6 +70,7 @@ struct TRIAL_PARAMS_TYPE
   String outcome = "spoil";
   String choice = "nogo";
   int servo_position = SERVO_POSITIONS.NEAR;
+  int stim_number = 0;
 } current_trial_params;
 
 // Session params -- combine this with trial variables
@@ -88,15 +91,29 @@ struct SESSION_PARAMS_TYPE
 } session_params;
 
 // Stimuli
+#ifdef SIX_STIM
+struct STIMULI_TYPE
+{
+  static const int N = 6; // number of positions
+  const int POSITIONS[N] = {0, 33, 67, 100, 133, 167}; // array of locations to move to
+  static const int ROTATION_SPEED = 30; // how fast to rotate stepper
+  
+  // wherever the motor starts will be defined as this position
+  static const int ASSUMED_INITIAL_POSITION = 0; 
+} STIMULI;
+#endif
+
+#ifndef SIX_STIM
 struct STIMULI_TYPE
 {
   static const int N = 2; // number of positions
-  const int POSITIONS[N] = {50, 150}; // array of locations to move to
+  const int POSITIONS[N] = {0, 100}; // array of locations to move to
   static const int ROTATION_SPEED = 60; // how fast to rotate stepper
   
   // wherever the motor starts will be defined as this position
-  static const int ASSUMED_INITIAL_POSITION = 50; 
+  static const int ASSUMED_INITIAL_POSITION = 0; 
 } STIMULI;
+#endif
 
 // initial position of stim arm .. user must ensure this is correct
 int stim_arm_position = STIMULI.ASSUMED_INITIAL_POSITION;
@@ -235,7 +252,11 @@ void loop()
           break;
         case 'X':
           // choose randomly -- ultimately want to get this from user
-          if (random(0, STIMULI.N) == 0)
+          current_trial_params.stim_number = random(0, STIMULI.N);
+          
+          // use the logic that even stimuli correspond to going left
+          // this should come from user to be more robust
+          if (current_trial_params.stim_number % 2 == 0)
             current_trial_params.rewarded_side = 'L';
           else
             current_trial_params.rewarded_side = 'R';
@@ -248,7 +269,13 @@ void loop()
       
       // where to put servo to
       current_trial_params.servo_position = SERVO_POSITIONS.NEAR +
-        25*random(0, session_params.servo_throw);
+        SERVO_POSITIONS.POS_DELTA*random(0, session_params.servo_throw);
+
+      // safety
+      if (current_trial_params.servo_position > SERVO_POSITIONS.FAR)
+        current_trial_params.servo_position = SERVO_POSITIONS.FAR;
+      if (current_trial_params.servo_position < SERVO_POSITIONS.NEAR)
+        current_trial_params.servo_position = SERVO_POSITIONS.NEAR;
 
       // Trial start
       Serial.println((String) "TRIAL START " + time);
@@ -256,7 +283,8 @@ void loop()
         current_trial_params.rewarded_side);
       Serial.println((String) "TRIAL SERVO_POS " + 
         current_trial_params.servo_position);
-
+      Serial.println((String) "TRIAL STIM_NUMBER " + 
+        current_trial_params.stim_number);
       
       // keep track of how many rewards
       rewards_this_trial = 0;
@@ -269,17 +297,13 @@ void loop()
     case MOVE_SERVO_START:
       /* Start moving servo to move stimulus into position 
       */
-      // rotate the arm while it's moving
-      switch (current_trial_params.rewarded_side)
-      {
-        case 'L':
-          new_position = STIMULI.POSITIONS[0];
-          break;
-        case 'R':
-          new_position = STIMULI.POSITIONS[1];
-          break;
-      }
+      // current stimulus angle comes from indexing into POSITIONS
+      new_position = STIMULI.POSITIONS[current_trial_params.stim_number];
+
+      // rotate it
       rotateStim(new_position);
+
+      // TODO: get rid of this
       delay(.2);
       
       // set position
@@ -658,6 +682,11 @@ int set_session_params(SESSION_PARAMS_TYPE &session_params, String cmd)
     {
       s = strs[2];
       session_params.servo_throw = s.toInt();
+    }
+    else if (strcmp(strs[1], "PD") == 0)
+    {
+      s = strs[2];
+      SERVO_POSITIONS.POS_DELTA = s.toInt();
     }
     
   }
