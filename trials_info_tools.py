@@ -185,8 +185,14 @@ def identify_servo_positions(splines):
 def identify_stim_numbers(splines):
     res = []
     for spline in splines:
-        line = filter(lambda line: line.startswith('TRIAL STIM_NUMBER'), spline)[0]
-        res.append(int(line.split()[-1]))
+        line_l = filter(lambda line: line.startswith('TRIAL STIM_NUMBER'), spline)
+        if len(line_l) == 0:
+            res.append(-1)
+        elif len(line_l) == 1:
+            res.append(line_l[0].split()[-1])
+        else:
+            print "error: multiple stimulus numbers per trial"
+            res.append(line_l[0].split()[-1])
     return np.asarray(res)    
 
 def identify_trial_times(splines):
@@ -249,9 +255,15 @@ def count_hits_by_type_from_trials_info(trials_info, split_key='trial_type'):
     return typ2perf
 
 def calculate_nhit_ntot(df):
+    """Return nhits and ntotal trials"""
     nhit = np.sum(df['outcome'] == 'hit')
     ntot = np.sum(df['outcome'] != 'curr')
     return nhit, ntot
+
+def calculate_safe_perf(df):
+    """Returns nhits / ntots, unless NaN, in which case 0."""
+    nhit, ntot = calculate_nhit_ntot(df)
+    return nhit / float(ntot) if ntot > 0 else 0.
 
 def _run_anova(trials_info, remove_bad=False):
     """Helper function that runs anova without parsing stats.
