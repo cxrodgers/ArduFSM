@@ -1,6 +1,7 @@
 """Methods for parsing and dealing with TrialsInfo"""
-import ArduFSM
-
+import pandas
+import numpy as np
+import my.stats
 
 def load_trials_info_from_file(filename):
     """Load trials_info from file."""
@@ -9,7 +10,7 @@ def load_trials_info_from_file(filename):
         lines = fi.readlines()
 
     # Split by trial
-    splines = ArduFSM.plot.split_by_trial(lines)
+    splines = split_by_trial(lines)
 
     # Form dataframe
     trials_info = make_trials_info_from_splines(splines)    
