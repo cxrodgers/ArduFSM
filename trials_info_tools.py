@@ -61,7 +61,10 @@ def form_trials_info(rewarded_side, trial_outcomes, bad_trials):
         axis=1, verify_integrity=True)
     
     # add a choice column: -1 spoil, 0 go left, 1 go right
+    # this should work: df['choice'][df.outcome == 'error'] = 1 - df['choice'][df.outcome == 'error']
+    # but doesn't for old versions of pandas
     df['choice'] = df['rewside'].copy()    
+    1/0
     df['choice'][
         (df.outcome == 'error') &
         (df.rewside == 0)] = 1
@@ -176,16 +179,29 @@ def identify_trial_outcomes(splines):
     return trial_types, trial_outcomes
 
 def identify_servo_positions(splines):
-    servo_pos_l = []
+    res = []
     for spline in splines:
-        line = filter(lambda line: line.startswith('TRIAL SERVO_POS'), spline)[0]
-        servo_pos_l.append(int(line.split()[-1]))
-    return np.asarray(servo_pos_l)
+        # Find the matching line(s)        
+        line_l = filter(lambda line: line.startswith('TRIAL SERVO_POS'), spline)
+        
+        # Deal with missing/extra data
+        if len(line_l) == 0:
+            res.append(-1)
+        elif len(line_l) == 1:
+            res.append(line_l[0].split()[-1])
+        else:
+            print "error: multiple servo pos per trial"
+            res.append(line_l[0].split()[-1])        
+
+    return np.asarray(res)
 
 def identify_stim_numbers(splines):
     res = []
     for spline in splines:
+        # Find the matching line(s)
         line_l = filter(lambda line: line.startswith('TRIAL STIM_NUMBER'), spline)
+        
+        # Deal with missing/extra data
         if len(line_l) == 0:
             res.append(-1)
         elif len(line_l) == 1:
@@ -193,6 +209,7 @@ def identify_stim_numbers(splines):
         else:
             print "error: multiple stimulus numbers per trial"
             res.append(line_l[0].split()[-1])
+
     return np.asarray(res)    
 
 def identify_trial_times(splines):
