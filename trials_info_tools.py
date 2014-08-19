@@ -5,17 +5,24 @@ import my.stats
 
 def load_trials_info_from_file(filename):
     """Load trials_info from file."""
-    # Read file
-    with file(filename) as fi:
-        lines = fi.readlines()
-
-    # Split by trial
-    splines = split_by_trial(lines)
+    # Get splines
+    splines = load_splines_from_file(filename)
 
     # Form dataframe
     trials_info = make_trials_info_from_splines(splines)    
     
     return trials_info
+
+def load_splines_from_file(filename):
+    """Reads file and splits by trial"""
+    # Read file
+    with file(filename) as fi:
+        lines = fi.readlines()
+
+    # Split by trial
+    splines = split_by_trial(lines)    
+    
+    return splines
 
 def make_trials_info_from_splines(splines):
     ## Make trials_info
@@ -64,7 +71,6 @@ def form_trials_info(rewarded_side, trial_outcomes, bad_trials):
     # this should work: df['choice'][df.outcome == 'error'] = 1 - df['choice'][df.outcome == 'error']
     # but doesn't for old versions of pandas
     df['choice'] = df['rewside'].copy()    
-    1/0
     df['choice'][
         (df.outcome == 'error') &
         (df.rewside == 0)] = 1
