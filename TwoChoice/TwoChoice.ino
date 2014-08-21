@@ -4,10 +4,13 @@
 #include <Servo.h>
 #include <Stepper.h>
 
+
 bool USE_LEVER = 0;
 bool TWO_PIN_STEPPER = 0;
 
-//#define SIX_STIM 1
+// At most one of the following lines should be uncommented
+#define SIX_STIM 1
+//#define FOUR_STIM 1
 
 // Pins
 struct PINS_TYPE 
@@ -60,7 +63,7 @@ struct SERVO_POSITIONS_TYPE
   static const int NEAR = 1150; // position when within whisking range
   static const int FAR = 1900; // position when out of whisking range
   int POS_DELTA = 25; // distance between positions
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3000;
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3500;
 } SERVO_POSITIONS;
 
 // Trial variables
@@ -77,7 +80,7 @@ struct TRIAL_PARAMS_TYPE
 struct SESSION_PARAMS_TYPE
 {
   char force = 'X';
-  unsigned long inter_trial_interval = 2000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
+  unsigned long inter_trial_interval = 3500; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
   unsigned long reward_dur_l = 40;
@@ -97,6 +100,7 @@ struct STIMULI_TYPE
   static const int N = 6; // number of positions
   const int POSITIONS[N] = {0, 33, 67, 100, 133, 167}; // array of locations to move to
   static const int ROTATION_SPEED = 30; // how fast to rotate stepper
+  static const int FIRST_ROTATION = 85;
   
   // wherever the motor starts will be defined as this position
   static const int ASSUMED_INITIAL_POSITION = 0; 
@@ -104,16 +108,35 @@ struct STIMULI_TYPE
 #endif
 
 #ifndef SIX_STIM
+#ifdef FOUR_STIM
+// If not SIX and FOUR
 struct STIMULI_TYPE
 {
-  static const int N = 2; // number of positions
-  const int POSITIONS[N] = {0, 100}; // array of locations to move to
-  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
+  static const int N = 4; // number of positions
+  const int POSITIONS[N] = {0, 50, 100, 150}; // array of locations to move to
+  static const int ROTATION_SPEED = 30; // how fast to rotate stepper
+  static const int FIRST_ROTATION = 75;
   
   // wherever the motor starts will be defined as this position
   static const int ASSUMED_INITIAL_POSITION = 0; 
 } STIMULI;
 #endif
+
+#ifndef FOUR_STIM
+// If not SIX and not FOUR
+struct STIMULI_TYPE
+{
+  static const int N = 2; // number of positions
+  const int POSITIONS[N] = {50, 150}; // array of locations to move to
+  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
+  static const int FIRST_ROTATION = 50;
+  
+  // wherever the motor starts will be defined as this position
+  static const int ASSUMED_INITIAL_POSITION = 50; 
+} STIMULI;
+#endif
+#endif
+
 
 // initial position of stim arm .. user must ensure this is correct
 int stim_arm_position = STIMULI.ASSUMED_INITIAL_POSITION;
@@ -246,9 +269,11 @@ void loop()
       {
         case 'L':
           current_trial_params.rewarded_side = 'L';
+          current_trial_params.stim_number = 0;
           break;
         case 'R':
           current_trial_params.rewarded_side = 'R';
+          current_trial_params.stim_number = 1;
           break;
         case 'X':
           // choose randomly -- ultimately want to get this from user
@@ -712,7 +737,7 @@ void rotateStim(int new_position)
   int necessary_rotation = new_position - stim_arm_position;
   
   // Split into two rotations to control for the sound
-  int rotation1 = 50;
+  int rotation1 = STIMULI.FIRST_ROTATION;
   
   // +ve rotation
   int rotation2 = (necessary_rotation - rotation1 + 200) % 200;
@@ -724,13 +749,15 @@ void rotateStim(int new_position)
   rotate_motor(rotation1);
   rotate_motor(rotation2);
 
-  //~ // Debugging
-  //~ Serial.print("Rotating stim: old ");
-  //~ Serial.print(stim_arm_position);
-  //~ Serial.print(" new ");
-  //~ Serial.print(new_position);
-  //~ Serial.print(" diff ");
-  //~ Serial.println(necessary_rotation);
+  // Debugging
+  /*
+  Serial.print("Rotating stim: old ");
+  Serial.print(stim_arm_position);
+  Serial.print(" new ");
+  Serial.print(new_position);
+  Serial.print(" diff ");
+  Serial.println(necessary_rotation);
+  */
   
   // Return the new, now current, position
   stim_arm_position = new_position;
