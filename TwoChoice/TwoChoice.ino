@@ -6,10 +6,10 @@
 
 
 bool USE_LEVER = 0;
-bool TWO_PIN_STEPPER = 0;
+bool TWO_PIN_STEPPER = 1; //For Rig 3 this should be set to 1
 
 // At most one of the following lines should be uncommented
-#define SIX_STIM 1
+//#define SIX_STIM 1
 //#define FOUR_STIM 1
 
 // Pins
@@ -63,7 +63,7 @@ struct SERVO_POSITIONS_TYPE
   static const int NEAR = 1150; // position when within whisking range
   static const int FAR = 1900; // position when out of whisking range
   int POS_DELTA = 25; // distance between positions
-  static const unsigned long NEAR2FAR_TRAVEL_TIME = 3500;
+  static const unsigned long NEAR2FAR_TRAVEL_TIME = 4500;
 } SERVO_POSITIONS;
 
 // Trial variables
@@ -80,7 +80,7 @@ struct TRIAL_PARAMS_TYPE
 struct SESSION_PARAMS_TYPE
 {
   char force = 'X';
-  unsigned long inter_trial_interval = 3500; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
+  unsigned long inter_trial_interval = 3000; // Ensure this is > NEAR2FAR_TRAVEL_TIME for now
   unsigned long response_window_dur = 45000;
   unsigned long inter_reward_interval = 500; // assuming multiple rewards in response window possible
   unsigned long reward_dur_l = 40;
@@ -99,7 +99,7 @@ struct STIMULI_TYPE
 {
   static const int N = 6; // number of positions
   const int POSITIONS[N] = {0, 33, 67, 100, 133, 167}; // array of locations to move to
-  static const int ROTATION_SPEED = 30; // how fast to rotate stepper
+  static const int ROTATION_SPEED = 20; // how fast to rotate stepper
   static const int FIRST_ROTATION = 85;
   
   // wherever the motor starts will be defined as this position
@@ -114,7 +114,7 @@ struct STIMULI_TYPE
 {
   static const int N = 4; // number of positions
   const int POSITIONS[N] = {0, 50, 100, 150}; // array of locations to move to
-  static const int ROTATION_SPEED = 30; // how fast to rotate stepper
+  static const int ROTATION_SPEED = 20; // how fast to rotate stepper
   static const int FIRST_ROTATION = 75;
   
   // wherever the motor starts will be defined as this position
@@ -128,7 +128,7 @@ struct STIMULI_TYPE
 {
   static const int N = 2; // number of positions
   const int POSITIONS[N] = {50, 150}; // array of locations to move to
-  static const int ROTATION_SPEED = 60; // how fast to rotate stepper
+  static const int ROTATION_SPEED = 20; // how fast to rotate stepper
   static const int FIRST_ROTATION = 50;
   
   // wherever the motor starts will be defined as this position
