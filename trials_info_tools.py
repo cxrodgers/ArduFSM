@@ -194,10 +194,10 @@ def identify_servo_positions(splines):
         if len(line_l) == 0:
             res.append(-1)
         elif len(line_l) == 1:
-            res.append(line_l[0].split()[-1])
+            res.append(int(line_l[0].split()[-1]))
         else:
             print "error: multiple servo pos per trial"
-            res.append(line_l[0].split()[-1])        
+            res.append(int(line_l[0].split()[-1]))        
 
     return np.asarray(res)
 
@@ -211,10 +211,10 @@ def identify_stim_numbers(splines):
         if len(line_l) == 0:
             res.append(-1)
         elif len(line_l) == 1:
-            res.append(line_l[0].split()[-1])
+            res.append(int(line_l[0].split()[-1]))
         else:
             print "error: multiple stimulus numbers per trial"
-            res.append(line_l[0].split()[-1])
+            res.append(int(line_l[0].split()[-1]))
 
     return np.asarray(res)    
 
