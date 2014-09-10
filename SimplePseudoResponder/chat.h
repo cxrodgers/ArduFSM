@@ -16,10 +16,9 @@ struct TRIAL_PARAMS_TYPE
 };
 
 // parsing user commands into parameter setting
-//int set_trial_params(TRIAL_PARAMS_TYPE &trial_params, String cmd);
 int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params, 
-  bool &flag_start_next_trial);
-
+  bool &flag_start_next_trial, String &protocol_cmd, String &argument1,
+  String &argument2);
 
 //// General chat stuff
 String receive_chat();

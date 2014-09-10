@@ -1,8 +1,7 @@
-/* Simple protocol to test the setting of trial parameters.
+/* Simple protocol to test the setting of trial-by-trial settings.
 
-The inter-trial interval can be set. On each trial, the arduino waits this
-long, and then proceeds. The trial release signal but be received before
-it can begin the next trial.
+Waits to receive a rewarded side, and maybe some other stuff.
+Randomly generates a response.
 
 TODO
 ----
@@ -50,6 +49,8 @@ bool flag_start_next_trial = 0;
 // timers
 unsigned long state_timer = -1;
 
+//// Declarations
+int take_action(String protocol_cmd, String argument1);
 
 //// Setup function
 void setup()
@@ -74,6 +75,9 @@ void loop()
   
   // other variables
   String received_chat;
+  String protocol_cmd = (String) "";
+  String argument1 = (String) "";
+  String argument2 = (String) "";
   int status = 1;
   
   
@@ -85,14 +89,28 @@ void loop()
     speak_at += interval;
   }
 
-  // Receive and deal with chat
+  //// Receive and deal with chat
   received_chat = receive_chat();
   if (received_chat.length() > 0)
   {
-    status = handle_chat(received_chat, trial_params, flag_start_next_trial);
+    // Attempt to parse
+    status = handle_chat(received_chat, trial_params, flag_start_next_trial,
+        protocol_cmd, argument1, argument2);
     if (status != 0)
     {
+      // Parse/syntax error
       Serial.println((String) time + " DBG RC_ERR " + (String) status);
+    }
+    else if (protocol_cmd.length() > 0)
+    {
+      // Protocol action required
+      status = take_action(protocol_cmd, argument1, argument2);
+      
+      if (status != 0)
+      {
+        // Parse/syntax error
+        Serial.println((String) time + " DBG TA_ERR " + (String) status);
+      }
     }
   }
   
@@ -155,4 +173,54 @@ void loop()
   return;
 }
 
+
+//// Take protocol action based on user command (ie, setting variable)
+int take_action(String protocol_cmd, String argument1, String argument2)
+{ /* Protocol action.
+  
+  Currently the only possible action is setting a parameter. In this case,
+  protocol_cmd must be "SET". argument1 is the variable name. argument2 is
+  the data.
+  
+  This logic could be incorporated in TrialSpeak, but we would need to provide
+  the abbreviation, full name, datatype, and optional handling logic for
+  each possible variable. So it seems to make more sense here.
+  
+  Return values:
+  0 - command parsed successfully
+  2 - unimplemented protocol_cmd
+  4 - unknown variable on SET command
+  5 - data conversion error
+  */
+  int conversion_var;
+  
+  if (protocol_cmd == "SET")
+  {
+    if (argument1 == "ITI")
+    {
+      // convert to Int, check for parse error (that is, zero), set ITI
+      conversion_var = argument2.toInt();
+      if (conversion_var == 0)
+      {
+        return 5;
+      }
+      else 
+      {
+        trial_params.inter_trial_interval = conversion_var;
+      }
+    }
+    else
+    {
+      // unknown variable
+      return 4;
+    }
+  }    
+  else
+  {
+    // unknown command
+    return 2;
+  }
+  
+  return 0;
+}
 

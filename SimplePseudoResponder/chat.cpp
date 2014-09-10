@@ -76,15 +76,23 @@ String receive_chat()
 //// Begin TrialSpeak code.
 // This function is gummed up with specific trial protocol stuff.
 int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params, 
-  bool &flag_start_next_trial)
+  bool &flag_start_next_trial, String &protocol_cmd, String &argument1,
+  String &argument2)
 { /* Parses a received line and takes appropriate action.
   
+  Currently the only command this can parse is RELEASE_TRL. Other general
+  TrialSpeak commands should go here.
+
+  If a protocol-specific command is received (e.g., "SET"), then 
+  the following String variables are set:
+    protocol_cmd, argument1, argument2
+  This will be with the first word (command), and 2nd and 3rd words.
+    
   Return values:
   0 - command parsed successfully
   1 - command contained no tokens or was empty
   2 - unimplemented command (first word)
   3 - syntax error: number of words did not match command
-  4 - unknown variable on SET command
   */
   char *pch;
   char cmd_carr[received_chat.length() + 1];
@@ -129,15 +137,10 @@ int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params,
       // syntax error
       return 3;
     }
-    if (strcmp(strs[1], "ITI") == 0)
-    {
-      trial_params.inter_trial_interval = ((String) strs[2]).toInt();
-    }
-    else
-    {
-      // unknown variable
-      return 4;
-    }
+    protocol_cmd = (String) "SET";
+    argument1 = (String) strs[1];
+    argument2 = (String) strs[2];
+    return 0;
   }  
   
   //// Releasing a trial
