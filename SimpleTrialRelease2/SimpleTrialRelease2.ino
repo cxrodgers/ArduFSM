@@ -13,6 +13,12 @@ from general TrialSpeak parsing code in chat.cpp
 * Some standard way to create waiting states.
 * Think about fixing the variables at the beginning of each trial.
 
+
+Here are the things that the user should have to change for each protocol:
+* Enum of states
+* User-defined states in switch statement
+* trial_params
+
 */
 #include "chat.h"
 
@@ -93,6 +99,9 @@ void loop()
   //// Begin state-dependent operations
   switch (current_state)
   {
+    //// TRIAL_START
+    // This one should be the same for all protocols, although we need
+    // to figure out how to not hard-code the parameter names.
     case TRIAL_START:
       // Set up the trial based on received trial parameters
       Serial.println((String) time + " TRL_START");
@@ -101,6 +110,9 @@ void loop()
       next_state = INTER_TRIAL_INTERVAL;
       break;
 
+
+    //// User defined states
+    // This one is the canonical waiting state form.
     case INTER_TRIAL_INTERVAL:
       // Wait the specified amount of time
       if (state_timer == -1)
@@ -114,6 +126,9 @@ void loop()
       }
       break;
     
+    
+    //// WAIT_FOR_NEXT_TRIAL
+    // This one should be the same for all protocols.
     case WAIT_FOR_NEXT_TRIAL:
       // Wait until we receive permission to continue  
       if (flag_start_next_trial)
