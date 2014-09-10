@@ -79,7 +79,12 @@ int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params,
   bool &flag_start_next_trial)
 { /* Parses a received line and takes appropriate action.
   
-  Returns 1 if cannot parse command.
+  Return values:
+  0 - command parsed successfully
+  1 - command contained no tokens or was empty
+  2 - unimplemented command (first word)
+  3 - syntax error: number of words did not match command
+  4 - unknown variable on SET command
   */
   char *pch;
   char cmd_carr[received_chat.length() + 1];
@@ -87,7 +92,7 @@ int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params,
   int n_strs = 0;
   String s;
 
-  // Return if nothing
+  // Return if nothing. Typically the calling code already protects this.
   if (received_chat.length() <= 1)
   {
     return 1;
@@ -103,7 +108,8 @@ int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params,
     pch = strtok(NULL, " ");
   }
   
-  // Return if nothing
+  // Return if nothing. Typically the calling code has already trimmed and
+  // checked for empty, so this shouldn't happen.
   if (n_strs == 0)
   {
     return 1;
