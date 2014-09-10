@@ -56,9 +56,13 @@ String receive_chat()
     Serial.print((String) millis() + " ACK ");
     
     // Strip the newline
-    // This needs to take Windows newlines into account too
-    Serial.print(receive_line.substring(0, receive_line.length()-1));
+    receive_line.trim();
+
+    // Now print
+    Serial.print(receive_line);
     Serial.println("");   
+    
+    // Store in return value and reset line to empty
     return_value = receive_line;
     receive_line = "";
   }
