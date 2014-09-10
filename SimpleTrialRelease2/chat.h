@@ -1,3 +1,7 @@
+// Header file for chatting.
+// Also includes some TrialSpeak stuff that is dependent on specific 
+// trial protocol, so this should be changed.
+
 #include "Arduino.h"
 
 
@@ -12,7 +16,9 @@ struct TRIAL_PARAMS_TYPE
 };
 
 // parsing user commands into parameter setting
-int set_trial_params(TRIAL_PARAMS_TYPE &trial_params, String cmd);
+//int set_trial_params(TRIAL_PARAMS_TYPE &trial_params, String cmd);
+int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params, 
+  bool &flag_start_next_trial);
 
 
 //// General chat stuff

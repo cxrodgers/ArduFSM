@@ -58,6 +58,7 @@ void loop()
   
   // other variables
   String received_chat;
+  int status = 1;
   
   
   //// Perform actions that occur on every call, independent of state
@@ -70,7 +71,14 @@ void loop()
 
   // Receive and deal with chat
   received_chat = receive_chat();
-  handle_chat(received_chat, flag_start_next_trial, trial_params);
+  if (received_chat.length() > 0)
+  {
+    status = handle_chat(received_chat, trial_params, flag_start_next_trial);
+    if (status != 0)
+    {
+      Serial.println((String) time + " DBG RC_ERR " + (String) status);
+    }
+  }
   
   //// Begin state-dependent operations
   switch (current_state)
