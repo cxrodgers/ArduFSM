@@ -3,6 +3,16 @@
 The inter-trial interval can be set. On each trial, the arduino waits this
 long, and then proceeds. The trial release signal but be received before
 it can begin the next trial.
+
+TODO
+----
+* Separate the trial protocol specific code, like setting parameters,
+from general TrialSpeak parsing code in chat.cpp
+* Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
+  into chat.cpp.
+* Some standard way to create waiting states.
+* Think about fixing the variables at the beginning of each trial.
+
 */
 #include "chat.h"
 
