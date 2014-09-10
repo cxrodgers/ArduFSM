@@ -2,9 +2,10 @@ import numpy as np, pandas, time
 import matplotlib.pyplot as plt
 import my
 import scipy.stats
-from trials_info_tools import * # replace this with specifics
+import trials_info_tools # replace this with specifics
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
+
 
 def format_perf_string(nhit, ntot):
     """Helper function for turning hits and totals into a fraction."""
@@ -12,23 +13,6 @@ def format_perf_string(nhit, ntot):
     res = '%d/%d=%0.2f' % (nhit, ntot, perf)
     return res
 
-def pval_to_star(pval):
-    if pval < .001:
-        return '***'
-    elif pval < .01:
-        return '**'
-    elif pval < .05:
-        return '*'
-    else:
-        return ''
-
-def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay', 
-    neg_word='Switch'):
-    """Turn anova results into human-readable summary."""
-    s = pos_word if aov_res['fit']['fit_' + variable] > 0 else neg_word
-    s += ' %0.2f' % aov_res['ess']['ess_' + variable]
-    s += pval_to_star(aov_res['pvals']['p_' + variable])
-    return s
 
 
 
@@ -96,14 +80,14 @@ class Plotter(object):
             lines = fi.readlines()
 
         # Split by trial
-        splines = split_by_trial(lines)
+        splines = trials_info_tools.split_by_trial(lines)
 
         if len(splines) <= 1:
             # Probably just the first trial
             return
 
         # Make trials_info
-        trials_info = make_trials_info_from_splines(splines)
+        trials_info = trials_info_tools.make_trials_info_from_splines(splines)
 
 
         ## Define trial types, the ordering on the plot
@@ -117,21 +101,24 @@ class Plotter(object):
         
         ## Count performance by type
         # Hits by type
-        typ2perf = count_hits_by_type_from_trials_info(
+        typ2perf = trials_info_tools.count_hits_by_type_from_trials_info(
             trials_info[~trials_info.bad])
-        typ2perf_all = count_hits_by_type_from_trials_info(trials_info)
+        typ2perf_all = trials_info_tools.count_hits_by_type_from_trials_info(
+            trials_info)
         
         # Hits by side
-        side2perf = count_hits_by_type_from_trials_info(
+        side2perf = trials_info_tools.count_hits_by_type_from_trials_info(
             trials_info[~trials_info.bad], split_key='rewside')
-        side2perf_all = count_hits_by_type_from_trials_info(
+        side2perf_all = trials_info_tools.count_hits_by_type_from_trials_info(
             trials_info, split_key='rewside')            
         
         # Combined
-        total_nhit, total_ntot = calculate_nhit_ntot(trials_info[~trials_info.bad])
+        total_nhit, total_ntot = trials_info_tools.calculate_nhit_ntot(
+            trials_info[~trials_info.bad])
 
         # Turn the typ2perf into ticklabels
-        ytick_labels = typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all)
+        ytick_labels = typ2perf2ytick_labels(trial_type_names, 
+            typ2perf, typ2perf_all)
 
 
         ## count rewards
@@ -159,7 +146,8 @@ class Plotter(object):
             title_string += 'R: ' + \
                 format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
         if len(trials_info) > self.cached_anova_len1 or self.cached_anova_text1 == '':
-            anova_stats = run_anova(trials_info, remove_bad=True)
+            anova_stats = trials_info_tools.run_anova(
+                trials_info, remove_bad=True)
             self.cached_anova_text1 = anova_stats
             self.cached_anova_len1 = len(trials_info)
         else:
@@ -177,7 +165,8 @@ class Plotter(object):
             title_string += 'R_A: ' + \
                 format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
         if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
-            anova_stats = run_anova(trials_info, remove_bad=False)
+            anova_stats = trials_info_tools.run_anova(
+                trials_info, remove_bad=False)
             self.cached_anova_text2 = anova_stats
             self.cached_anova_len2 = len(trials_info)
         else:

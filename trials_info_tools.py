@@ -46,6 +46,7 @@ def make_trials_info_from_splines(splines):
     ## Stuff to put into form_trials_info, or otherwise normalize
     # Add in servo throw (put this in form_trials_info)
     trials_info['servo_position'] = raw_servo_positions
+    trials_info['servo_position'] = trials_info['servo_position'].astype(np.int)
 
     # stim_number
     trials_info['stim_number'] = stim_numbers
@@ -288,6 +289,9 @@ def calculate_safe_perf(df):
     nhit, ntot = calculate_nhit_ntot(df)
     return nhit / float(ntot) if ntot > 0 else 0.
 
+
+
+## ANOVA stuff
 def _run_anova(trials_info, remove_bad=False):
     """Helper function that runs anova without parsing stats.
     
@@ -317,7 +321,24 @@ def _run_anova(trials_info, remove_bad=False):
         aov_res = None
     
     return aov_res
+
+def pval_to_star(pval):
+    if pval < .001:
+        return '***'
+    elif pval < .01:
+        return '**'
+    elif pval < .05:
+        return '*'
+    else:
+        return ''
     
+def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay', 
+    neg_word='Switch'):
+    """Turn anova results into human-readable summary."""
+    s = pos_word if aov_res['fit']['fit_' + variable] > 0 else neg_word
+    s += ' %0.2f' % aov_res['ess']['ess_' + variable]
+    s += pval_to_star(aov_res['pvals']['p_' + variable])
+    return s
 
 def run_anova(trials_info, remove_bad=False):
     """Run anova on trials info and return stats"""
