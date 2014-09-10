@@ -27,6 +27,7 @@ Here are the things that the user should have to change for each protocol:
 enum STATE_TYPE
 {
   TRIAL_START,
+  RESPONSE_WINDOW,
   INTER_TRIAL_INTERVAL,
   WAIT_FOR_NEXT_TRIAL
 } current_state = TRIAL_START;
@@ -35,7 +36,23 @@ enum STATE_TYPE
 //// Global trial parameters structure. This holds the current value of
 // all parameters. Should probably also make a copy to hold the latched
 // values on each trial.
+// Characteristics of each trial. These can all be modified by the user.
+// However, there is no guarantee that the newest value will be used until
+// the current trial is released.
+struct TRIAL_PARAMS_TYPE
+{
+  unsigned long inter_trial_interval = 3000;
+};
 TRIAL_PARAMS_TYPE trial_params;
+
+//// Global trial results structure. Can be set by user code. Will be reported
+// during mandatory INTER_TRIAL_INTERVAL state.
+// Results of trial
+struct TRIAL_RESULTS_TYPE
+{
+  int response = 0;
+};
+TRIAL_RESULTS_TYPE trial_results;
 
 
 //// Miscellaneous globals
@@ -74,6 +91,7 @@ void loop()
   STATE_TYPE next_state = current_state;
   
   // other variables
+  TRIAL_RESULTS_TYPE default_trial_results;
   String received_chat;
   String protocol_cmd = (String) "";
   String argument1 = (String) "";
@@ -94,7 +112,7 @@ void loop()
   if (received_chat.length() > 0)
   {
     // Attempt to parse
-    status = handle_chat(received_chat, trial_params, flag_start_next_trial,
+    status = handle_chat(received_chat, flag_start_next_trial,
         protocol_cmd, argument1, argument2);
     if (status != 0)
     {
@@ -125,20 +143,36 @@ void loop()
       Serial.println((String) time + " TRL_START");
       Serial.println((String) time + " TRLP ITI " + trial_params.inter_trial_interval);
     
+      // Set up trial_results to defaults
+      trial_results = default_trial_results;
+    
+      next_state = RESPONSE_WINDOW;
+      break;
+
+    //// User defined states
+    case RESPONSE_WINDOW:
+      // Randomly choose a response
+      trial_results.response = random(0, 2) + 1;
+      
       next_state = INTER_TRIAL_INTERVAL;
       break;
 
-
-    //// User defined states
-    // This one is the canonical waiting state form.
+    //// INTER_TRIAL_INTERVAL
+    // Example of canonical waiting state.
+    // Also announced trial_results.
     case INTER_TRIAL_INTERVAL:
       // Wait the specified amount of time
       if (state_timer == -1)
       {
+        // Start timer and run first-time code
         state_timer = time + trial_params.inter_trial_interval;
+        
+        Serial.println((String) time + " TRLR RESPONSE " + 
+          (String) trial_results.response);
       }
       if (time > state_timer)
       {
+        // Check timer and run every-time code
         next_state = WAIT_FOR_NEXT_TRIAL;
         state_timer = -1;
       }

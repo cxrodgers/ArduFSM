@@ -75,7 +75,7 @@ String receive_chat()
 
 //// Begin TrialSpeak code.
 // This function is gummed up with specific trial protocol stuff.
-int handle_chat(String received_chat, TRIAL_PARAMS_TYPE &trial_params, 
+int handle_chat(String received_chat, 
   bool &flag_start_next_trial, String &protocol_cmd, String &argument1,
   String &argument2)
 { /* Parses a received line and takes appropriate action.
