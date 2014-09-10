@@ -229,7 +229,7 @@ class Plotter(object):
         plt.show()
         plt.draw()    
     
-    def update_till_interrupt(self, filename):
+    def update_till_interrupt(self, filename, interval=.3):
         # update over and over
         PROFILE_MODE = False
 
@@ -238,7 +238,7 @@ class Plotter(object):
                 self.update(filename)
                 
                 if not PROFILE_MODE:
-                    time.sleep(.3)
+                    time.sleep(interval)
                 else:
                     break
 
@@ -371,7 +371,7 @@ class PlotterWithServoThrow(Plotter):
         return res
 
 
-
+## This is all for the updating by time, instead of trial
 def update_by_time_till_interrupt(plotter, filename):
     # update over and over
     PROFILE_MODE = False
@@ -446,6 +446,7 @@ def update_by_time(plotter, filename):
 
 
 
+## Utility functions
 def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
     """Go through types and make ytick label about the perf for each."""
     ytick_labels = []
