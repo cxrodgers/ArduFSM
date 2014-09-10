@@ -192,21 +192,17 @@ int take_action(String protocol_cmd, String argument1, String argument2)
   4 - unknown variable on SET command
   5 - data conversion error
   */
-  int conversion_var;
+  int status;
   
   if (protocol_cmd == "SET")
   {
     if (argument1 == "ITI")
     {
       // convert to Int, check for parse error (that is, zero), set ITI
-      conversion_var = argument2.toInt();
-      if (conversion_var == 0)
+      status = safe_int_convert(argument2, trial_params.inter_trial_interval);
+      if (status != 0)
       {
         return 5;
-      }
-      else 
-      {
-        trial_params.inter_trial_interval = conversion_var;
       }
     }
     else
@@ -224,3 +220,25 @@ int take_action(String protocol_cmd, String argument1, String argument2)
   return 0;
 }
 
+
+int safe_int_convert(String string_data, long unsigned int &variable)
+{ /* Check that string_data can be converted to int before setting variable.
+  
+  Currently, variable cannot be set to 0 using this script. That is because
+  toInt returns 0 upon error condition.
+  
+  Not sure how to handle the case when variable is some other kind of int?
+  
+  Returns 1 if string data converts to 0 (ie, an error occurs).
+  */
+  int conversion_var = string_data.toInt();
+  if (conversion_var == 0)
+  {
+    return 1;
+  }
+  else 
+  {
+    variable = conversion_var;
+  }  
+  return 0;
+}
