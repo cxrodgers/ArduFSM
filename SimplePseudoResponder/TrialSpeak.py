@@ -124,7 +124,7 @@ def check_if_trial_released(trial):
 ## Writing functions
 def command_set_parameter(param_name, param_value):
     """Returns the command to use to set a parameter."""
-    return 'SET %s %s' % (param_name, str(param_value))
+    return 'SET %s %s' % (param_name, str(int(param_value)))
 
 def command_release_trial():
     """Returns the command to use to release the current trial."""
