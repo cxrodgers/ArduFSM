@@ -16,6 +16,8 @@ def make_trials_info_from_splines(lines_split_by_trial):
         trial_start : time in seconds at which TRL_START was issued
         trial_released: time in seconds at which trial was released
         All parameters listed for each trial.
+    
+    Currently returns None if no data available.
     """
     rec_l = []
     for spline in lines_split_by_trial:
@@ -37,6 +39,10 @@ def make_trials_info_from_splines(lines_split_by_trial):
         
         # Append results
         rec_l.append(rec)
+    
+    if len(lines_split_by_trial) == 0:
+        # Or if we couldn't find parameters above?
+        return None
     
     # DataFrame
     trials_info = pandas.DataFrame.from_records(rec_l)

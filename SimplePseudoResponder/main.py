@@ -10,6 +10,10 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200,
 # The ones that are fixed at the beginning
 initial_params = {
     'MRT': 3,
+    'RWSD': 1,
+    'STPPOS': 1,
+    'SRVPOS': 1,
+    'ITI': 3000,
     }
 
 def generate_trial_params(trial_matrix):
@@ -31,13 +35,14 @@ def generate_trial_params(trial_matrix):
         else:
             res['RWSD'] = last_trial['rwsd']
     
-    res['STPPOS'] = np.random.randint(10)
-    res['SRVPOS'] = np.random.randint(10)
-    res['ITI'] = np.random.randint(1000)
+    res['STPPOS'] = np.random.randint(1, 10)
+    res['SRVPOS'] = np.random.randint(1, 10)
+    res['ITI'] = np.random.randint(10000)
     
     return res
 
 ## Main loop
+last_released_trial = 0
 try:
     while True:
         # Update chatter
@@ -47,25 +52,37 @@ try:
         splines = TrialSpeak.load_splines_from_file(logfilename)
         trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
         
-        # Release the last trial if it hasn't already happened
-        # Actually what would probaby be better is to maintain an updated
-        # trials_info, and then to check whether we've sent the release command,
-        # rather than looking for ACK.
-        if len(splines) >= 1:
-            last_trial = splines[-1]
+        # Switch on which trial, and whether it's been released and/or completed
+        if trial_matrix is None: # or if splines is empty?
+            # It's the first tiral
+            # Send each initial param
+            for param_name, param_val in initial_params.items():
+                chatter.write_to_device(
+                    TrialSpeak.command_set_parameter(
+                        param_name, param_val))            
             
-            # Release the trial if it hasn't happened already
-            if not TrialSpeak.check_if_trial_released(last_trial):
-                # Choose params
-                params = generate_trial_params(trial_matrix)
-                # Set them
-                for param_name, param_val in params.items():
-                    chatter.write_to_device(
-                        TrialSpeak.command_set_parameter(
-                            param_name, param_val))
-                
-                # Release
-                chatter.write_to_device(TrialSpeak.command_release_trial())
+            # Release
+            chatter.write_to_device(TrialSpeak.command_release_trial())
+        elif 'response' not in trial_matrix or trial_matrix['response'].isnull().irow(-1):
+            # Trial has not completed, keep waiting
+            continue
+        elif last_released_trial == len(trial_matrix):
+            # Trial has been completed, and already released
+            continue
+        else:
+            # Trial has been completed, and needs to be released
+            params = generate_trial_params(trial_matrix)
+
+            # Set them
+            for param_name, param_val in params.items():
+                chatter.write_to_device(
+                    TrialSpeak.command_set_parameter(
+                        param_name, param_val))
+            
+            # Release
+            chatter.write_to_device(TrialSpeak.command_release_trial())
+            
+            last_released_trial = len(trial_matrix)
         
 
 ## End cleanly upon keyboard interrupt signal

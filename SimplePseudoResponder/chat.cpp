@@ -76,7 +76,7 @@ String receive_chat()
 //// Begin TrialSpeak code.
 // This function is gummed up with specific trial protocol stuff.
 int handle_chat(String received_chat, 
-  bool &flag_start_next_trial, String &protocol_cmd, String &argument1,
+  bool &flag_start_trial, String &protocol_cmd, String &argument1,
   String &argument2)
 { /* Parses a received line and takes appropriate action.
   
@@ -126,9 +126,6 @@ int handle_chat(String received_chat,
   //// Parse according to TrialSpeak convention.
   // First switch on first word, then on number of strings, then potentially
   // on subsequent words.
-  // Figure out how to offload the protocol-specific parameters to
-  // something in the protocol file.
-  
   //// Setting a variable
   if (strcmp(strs[0], "SET") == 0)
   {
@@ -153,7 +150,7 @@ int handle_chat(String received_chat,
     }
     else
     {
-      flag_start_next_trial = 1;
+      flag_start_trial = 1;
     }
   }
   
@@ -166,33 +163,3 @@ int handle_chat(String received_chat,
   return 0;
 }   
 
-
-// Alternate implementations graveyard
-//// Basic TrialSpeak stuff
-//~ int handle_chat(received_chat, flag_start_next_trial, trial_params)
-//~ { /* Parse received_chat and set the flag or trial params as appropriate.
-  //~ */
-  //~ check_for_release_trial(received_chat, flag_start_next_trial);
-  //~ if (received_chat == String("RELEASE_TRL\n"))
-  //~ {
-    //~ flag_start_next_trial = 1;
-  //~ }
-  //~ int status = set_trial_params(trial_params, received_chat);
-  
-  //~ // Error message
-  //~ if (status != 0)
-  //~ {
-    //~ Serial.println("DBG parse error");
-  //~ }
-    //~ Serial.println((String) "DBG cannot parse " + received_chat);
-//~ }
-
-
-//~ int check_for_release_trial(received_chat, bool &flag_start_next_trial)
-//~ { /* Checks if the release trial command was received and sets flag if so */    
-  //~ if (received_chat == String("RELEASE_TRL\n"))
-  //~ {
-    //~ flag_start_next_trial = 1;
-  //~ }
-  //~ return 0;
-//~ }

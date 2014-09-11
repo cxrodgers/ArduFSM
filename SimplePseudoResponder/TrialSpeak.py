@@ -124,6 +124,8 @@ def check_if_trial_released(trial):
 ## Writing functions
 def command_set_parameter(param_name, param_value):
     """Returns the command to use to set a parameter."""
+    if int(param_value) == 0:
+        print "warning: cannot send zeros"
     return 'SET %s %s' % (param_name, str(int(param_value)))
 
 def command_release_trial():

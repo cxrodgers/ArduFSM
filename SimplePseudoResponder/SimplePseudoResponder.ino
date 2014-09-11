@@ -25,11 +25,11 @@ Here are the things that the user should have to change for each protocol:
 // Defines the finite state machine for this protocol
 enum STATE_TYPE
 {
+  WAIT_TO_START_TRIAL,
   TRIAL_START,
   RESPONSE_WINDOW,
-  INTER_TRIAL_INTERVAL,
-  WAIT_FOR_NEXT_TRIAL
-} current_state = TRIAL_START;
+  INTER_TRIAL_INTERVAL
+} current_state = WAIT_TO_START_TRIAL;
 
 
 //// Global trial parameters structure. This holds the current value of
@@ -62,7 +62,7 @@ unsigned long speak_at = 1000;
 unsigned long interval = 1000;
 
 // flag to remember whether we've received the start next trial signal
-bool flag_start_next_trial = 0;
+bool flag_start_trial = 0;
 
 // timers
 unsigned long state_timer = -1;
@@ -112,7 +112,7 @@ void loop()
   if (received_chat.length() > 0)
   {
     // Attempt to parse
-    status = handle_chat(received_chat, flag_start_next_trial,
+    status = handle_chat(received_chat, flag_start_trial,
         protocol_cmd, argument1, argument2);
     if (status != 0)
     {
@@ -135,9 +135,21 @@ void loop()
   //// Begin state-dependent operations
   switch (current_state)
   {
-    //// TRIAL_START
-    // This one should be the same for all protocols, although we need
-    // to figure out how to not hard-code the parameter names.
+    //// Wait till the trial is released. Same for all protocols.
+    case WAIT_TO_START_TRIAL:
+      // Wait until we receive permission to continue  
+      if (flag_start_trial)
+      {
+        // Announce that we have ended the trial and reset the flag
+        Serial.println((String) time + " TRL_RELEASED");
+        flag_start_trial = 0;
+        
+        // Proceed to next trial
+        next_state = TRIAL_START;
+      }
+      break;
+
+    //// TRIAL_START. Same for all protocols.
     case TRIAL_START:
       // Set up the trial based on received trial parameters
       Serial.println((String) time + " TRL_START");
@@ -158,10 +170,12 @@ void loop()
 
     //// User defined states
     case RESPONSE_WINDOW:
-      // Randomly choose a response
-      results_values[tridx_RESPONSE] = random(0, 2) + 1;
-      
-      next_state = INTER_TRIAL_INTERVAL;
+      if (random(0, 10000) < 30)  
+      {
+        // Randomly choose a response
+        results_values[tridx_RESPONSE] = random(0, 2) + 1;
+        next_state = INTER_TRIAL_INTERVAL;
+      }
       break;
 
     //// INTER_TRIAL_INTERVAL
@@ -184,26 +198,9 @@ void loop()
       if (time > state_timer)
       {
         // Check timer and run every-time code
-        next_state = WAIT_FOR_NEXT_TRIAL;
+        next_state = WAIT_TO_START_TRIAL;
         state_timer = -1;
       }
-      break;
-    
-    
-    //// WAIT_FOR_NEXT_TRIAL
-    // This one should be the same for all protocols.
-    case WAIT_FOR_NEXT_TRIAL:
-      // Wait until we receive permission to continue  
-      if (flag_start_next_trial)
-      {
-        // Announce that we have ended the trial and reset the flag
-        Serial.println((String) time + " TRL_RELEASED");
-        flag_start_next_trial = 0;
-        
-        // Proceed to next trial
-        next_state = TRIAL_START;
-      }
-      
       break;
   }
   
