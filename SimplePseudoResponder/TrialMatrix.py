@@ -31,6 +31,10 @@ def make_trials_info_from_splines(lines_split_by_trial):
         trial_params = TrialSpeak.get_trial_parameters(parsed_lines)
         rec.update(trial_params)
         
+        # Trial results
+        trial_results = TrialSpeak.get_trial_results(parsed_lines)
+        rec.update(trial_results)
+        
         # Append results
         rec_l.append(rec)
     

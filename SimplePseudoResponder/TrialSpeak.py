@@ -10,6 +10,7 @@ release_trial_token = 'RELEASE_TRL'
 trial_released_token = 'TRL_RELEASED'
 start_trial_token = 'TRL_START'
 trial_param_token = 'TRLP'
+trial_result_token = 'TRLR'
 
 ## Reading functions
 def load_splines_from_file(filename):
@@ -97,14 +98,19 @@ def get_trial_release_time(parsed_lines):
     else:
         return int(rows['time'].irow(0)) / 1000.
 
-def get_trial_parameters(parsed_lines):
+def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     """Returns the value of trial parameters"""
     rec = {}
-    rows = my.pick_rows(parsed_lines, command=trial_param_token)
+    rows = my.pick_rows(parsed_lines, command=command_string)
     for arg in rows['argument'].values:
         name, value = arg.split()
-        rec[name] = value
+        rec[name.lower()] = value
     return rec
+
+def get_trial_results(parsed_lines, command_string=trial_result_token):
+    """Returns the value of trial results"""
+    # We can use the same code but another token
+    return get_trial_parameters(parsed_lines, command_string=command_string)
 
 def check_if_trial_released(trial):
     """Checks if ACK RELEASE_TRL is in trial"""
