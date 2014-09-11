@@ -1,10 +1,24 @@
 # Test script for SimpleTrialRelease
 import ArduFSM
 import TrialSpeak, TrialMatrix
+import numpy as np
 
 logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
     serial_timeout=.1)
+
+
+def generate_trial_params(trial_matrix):
+    """Given trial matrix so far, generate params for next"""
+    return {
+        'ITI' : len(trial_matrix) * 1000,
+        
+        # A bunch of random params, all ignored
+        'rewsiderewsiderewsiderewsiderewsiderewside' : np.random.randint(2),
+        'stimulus' : np.random.randint(10),
+        'speed' : np.random.randint(10),
+        'texture' : np.random.randint(10),
+        }
 
 ## Main loop
 try:
@@ -25,9 +39,16 @@ try:
             
             # Release the trial if it hasn't happened already
             if not TrialSpeak.check_if_trial_released(last_trial):
-                # Set the new ITI to the number of trials elapsed and release
-                chatter.write_to_device(
-                    TrialSpeak.command_set_parameter('ITI', len(splines) * 1000))
+                # Choose params
+                params = generate_trial_params(trial_matrix)
+                
+                # Set them
+                for param_name, param_val in params.items():
+                    chatter.write_to_device(
+                        TrialSpeak.command_set_parameter(
+                            param_name, param_val))
+                
+                # Release
                 chatter.write_to_device(TrialSpeak.command_release_trial())
         
 
