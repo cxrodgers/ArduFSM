@@ -72,8 +72,11 @@ class Chatter:
         ## Set up TO_DEV
         # Read from this pipe whenever something writes to it, and send
         # to device
-        if not os.path.exists(from_user):
-            os.mkfifo(from_user)
+        # Begin by deleting any existing FIFO, which should prevent stale
+        # data from coming through.
+        if os.path.exists(from_user):
+            os.remove(from_user)
+        os.mkfifo(from_user)
         self.pipein = os.open(from_user, os.O_RDONLY | os.O_NONBLOCK)
 
         ## Set up FROM_DEV
