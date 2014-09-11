@@ -7,17 +7,35 @@ logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
     serial_timeout=.1)
 
+# The ones that are fixed at the beginning
+initial_params = {
+    'MRT': 3,
+    }
+
 def generate_trial_params(trial_matrix):
     """Given trial matrix so far, generate params for next"""
-    return {
-        'ITI' : len(trial_matrix) * 1000,
-        
-        # A bunch of random params, all ignored
-        'STPPOS' : np.random.randint(10),
-        'MRT' : np.random.randint(10),
-        'RWSD' : np.random.randint(10),
-        'SRVPOS' : np.random.randint(10),
-        }
+    res = {}
+    # First check that the last trial hasn't been released
+    assert trial_matrix['release_time'].isnull().irow(-1)
+    
+    # But that it has been responded
+    assert not trial_matrix['response'].isnull().irow(-1)
+    
+    if len(trial_matrix) < 2:
+        res['RWSD'] = 1
+    else:
+        # Get last trial
+        last_trial = trial_matrix.irow(-1)
+        if last_trial['response'] == last_trial['rwsd']:
+            res['RWSD'] = {1: 2, 2:1}[last_trial['rwsd']]
+        else:
+            res['RWSD'] = last_trial['rwsd']
+    
+    res['STPPOS'] = np.random.randint(10)
+    res['SRVPOS'] = np.random.randint(10)
+    res['ITI'] = np.random.randint(1000)
+    
+    return res
 
 ## Main loop
 try:
@@ -40,7 +58,6 @@ try:
             if not TrialSpeak.check_if_trial_released(last_trial):
                 # Choose params
                 params = generate_trial_params(trial_matrix)
-                
                 # Set them
                 for param_name, param_val in params.items():
                     chatter.write_to_device(

@@ -9,7 +9,7 @@ TODO
   into chat.cpp.
 * Some standard way to create waiting states.
 * Think about fixing the variables at the beginning of each trial.
-
+* Wait to receive params for first trial before starting
 
 Here are the things that the user should have to change for each protocol:
 * Enum of states
@@ -44,7 +44,7 @@ enum STATE_TYPE
 #define tpidx_SRVPOS 3
 #define tpidx_ITI 4
 String param_abbrevs[N_TRIAL_PARAMS] = {"STPPOS", "MRT", "RWSD", "SRVPOS", "ITI"};
-unsigned long param_values[N_TRIAL_PARAMS] = {0, 1, 0, 0, 3000};
+unsigned long param_values[N_TRIAL_PARAMS] = {0, 1, 1, 0, 3000};
 
 //// Global trial results structure. Can be set by user code. Will be reported
 // during mandatory INTER_TRIAL_INTERVAL state.
