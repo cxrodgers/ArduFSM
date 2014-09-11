@@ -10,6 +10,7 @@ TODO
 * Some standard way to create waiting states.
 * Think about fixing the variables at the beginning of each trial.
 * Wait to receive params for first trial before starting
+* move definitions of trial_params to header file, so can be auto-generated
 
 Here are the things that the user should have to change for each protocol:
 * Enum of states
@@ -46,14 +47,13 @@ enum STATE_TYPE
 String param_abbrevs[N_TRIAL_PARAMS] = {"STPPOS", "MRT", "RWSD", "SRVPOS", "ITI"};
 unsigned long param_values[N_TRIAL_PARAMS] = {0, 1, 1, 0, 3000};
 
-//// Global trial results structure. Can be set by user code. Will be reported
-// during mandatory INTER_TRIAL_INTERVAL state.
-// Results of trial
-struct TRIAL_RESULTS_TYPE
-{
-  int response = 0;
-};
-TRIAL_RESULTS_TYPE trial_results;
+//// Global trial results structure. Can be set by user-defined states. 
+// Will be reported during mandatory INTER_TRIAL_INTERVAL state.
+#define N_TRIAL_RESULTS 1
+#define tridx_RESPONSE 0
+String results_abbrevs[N_TRIAL_RESULTS] = {"RESPONSE"};
+unsigned long results_values[N_TRIAL_RESULTS] = {0};
+unsigned long default_results_values[N_TRIAL_RESULTS] = {0};
 
 
 //// Miscellaneous globals
@@ -92,7 +92,6 @@ void loop()
   STATE_TYPE next_state = current_state;
   
   // other variables
-  TRIAL_RESULTS_TYPE default_trial_results;
   String received_chat;
   String protocol_cmd = (String) "";
   String argument1 = (String) "";
@@ -149,7 +148,10 @@ void loop()
       }
     
       // Set up trial_results to defaults
-      trial_results = default_trial_results;
+      for(int i=0; i < N_TRIAL_RESULTS; i++)
+      {
+        results_values[i] = default_results_values[i];
+      }      
     
       next_state = RESPONSE_WINDOW;
       break;
@@ -157,7 +159,7 @@ void loop()
     //// User defined states
     case RESPONSE_WINDOW:
       // Randomly choose a response
-      trial_results.response = random(0, 2) + 1;
+      results_values[tridx_RESPONSE] = random(0, 2) + 1;
       
       next_state = INTER_TRIAL_INTERVAL;
       break;
@@ -170,10 +172,14 @@ void loop()
       if (state_timer == -1)
       {
         // Start timer and run first-time code
-        state_timer = time + param_values[tpidx_ITI];//trial_params.inter_trial_interval;
-        
-        Serial.println((String) time + " TRLR RESPONSE " + 
-          (String) trial_results.response);
+        state_timer = time + param_values[tpidx_ITI];
+
+        // First-time code: Report results
+        for(int i=0; i < N_TRIAL_RESULTS; i++)
+        {
+          Serial.println((String) time + " TRLR " + (String) results_abbrevs[i] + 
+            " " + (String) results_values[i]);
+        }
       }
       if (time > state_timer)
       {
