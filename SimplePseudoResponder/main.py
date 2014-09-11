@@ -7,17 +7,16 @@ logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
     serial_timeout=.1)
 
-
 def generate_trial_params(trial_matrix):
     """Given trial matrix so far, generate params for next"""
     return {
         'ITI' : len(trial_matrix) * 1000,
         
         # A bunch of random params, all ignored
-        'rewsiderewsiderewsiderewsiderewsiderewside' : np.random.randint(2),
-        'stimulus' : np.random.randint(10),
-        'speed' : np.random.randint(10),
-        'texture' : np.random.randint(10),
+        'STPPOS' : np.random.randint(10),
+        'MRT' : np.random.randint(10),
+        'RWSD' : np.random.randint(10),
+        'SRVPOS' : np.random.randint(10),
         }
 
 ## Main loop

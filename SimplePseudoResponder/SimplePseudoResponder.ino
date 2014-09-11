@@ -5,8 +5,6 @@ Randomly generates a response.
 
 TODO
 ----
-* Separate the trial protocol specific code, like setting parameters,
-from general TrialSpeak parsing code in chat.cpp
 * Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
   into chat.cpp.
 * Some standard way to create waiting states.
@@ -16,7 +14,7 @@ from general TrialSpeak parsing code in chat.cpp
 Here are the things that the user should have to change for each protocol:
 * Enum of states
 * User-defined states in switch statement
-* trial_params
+* param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
 
 */
 #include "chat.h"
@@ -39,11 +37,14 @@ enum STATE_TYPE
 // Characteristics of each trial. These can all be modified by the user.
 // However, there is no guarantee that the newest value will be used until
 // the current trial is released.
-struct TRIAL_PARAMS_TYPE
-{
-  unsigned long inter_trial_interval = 3000;
-};
-TRIAL_PARAMS_TYPE trial_params;
+#define N_TRIAL_PARAMS 5
+#define tpidx_STPPOS 0
+#define tpidx_MRT 1
+#define tpidx_RWSD 2
+#define tpidx_SRVPOS 3
+#define tpidx_ITI 4
+String param_abbrevs[N_TRIAL_PARAMS] = {"STPPOS", "MRT", "RWSD", "SRVPOS", "ITI"};
+unsigned long param_values[N_TRIAL_PARAMS] = {0, 1, 0, 0, 3000};
 
 //// Global trial results structure. Can be set by user code. Will be reported
 // during mandatory INTER_TRIAL_INTERVAL state.
@@ -141,7 +142,11 @@ void loop()
     case TRIAL_START:
       // Set up the trial based on received trial parameters
       Serial.println((String) time + " TRL_START");
-      Serial.println((String) time + " TRLP ITI " + trial_params.inter_trial_interval);
+      for(int i=0; i < N_TRIAL_PARAMS; i++)
+      {
+        Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
+          " " + (String) param_values[i]);
+      }
     
       // Set up trial_results to defaults
       trial_results = default_trial_results;
@@ -165,7 +170,7 @@ void loop()
       if (state_timer == -1)
       {
         // Start timer and run first-time code
-        state_timer = time + trial_params.inter_trial_interval;
+        state_timer = time + param_values[tpidx_ITI];//trial_params.inter_trial_interval;
         
         Serial.println((String) time + " TRLR RESPONSE " + 
           (String) trial_results.response);
@@ -230,19 +235,30 @@ int take_action(String protocol_cmd, String argument1, String argument2)
   
   if (protocol_cmd == "SET")
   {
-    if (argument1 == "ITI")
+    // Find index into param_abbrevs
+    int idx = -1;
+    for (int i=0; i < N_TRIAL_PARAMS; i++)
     {
-      // convert to Int, check for parse error (that is, zero), set ITI
-      status = safe_int_convert(argument2, trial_params.inter_trial_interval);
+      if (param_abbrevs[i] == argument1)
+      {
+        idx = i;
+        break;
+      }
+    }
+    
+    // Error if not found, otherwise set
+    if (idx == -1)
+    {
+      return 4;
+    }
+    else
+    {
+      // Convert to int
+      status = safe_int_convert(argument2, param_values[idx]);
       if (status != 0)
       {
         return 5;
       }
-    }
-    else
-    {
-      // unknown variable
-      return 4;
     }
   }    
   else
