@@ -104,7 +104,7 @@ def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     rows = my.pick_rows(parsed_lines, command=command_string)
     for arg in rows['argument'].values:
         name, value = arg.split()
-        rec[name.lower()] = value
+        rec[name.lower()] = int(value)
     return rec
 
 def get_trial_results(parsed_lines, command_string=trial_result_token):
