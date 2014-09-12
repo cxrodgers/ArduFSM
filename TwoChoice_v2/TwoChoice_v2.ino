@@ -174,7 +174,7 @@ void setup()
     if (status != 0)
     {
       Serial.println("comm error in setup");
-      delay(200);
+      delay(1000);
     }
   }
   
@@ -338,9 +338,58 @@ void loop()
       {
         results_values[i] = default_results_values[i];
       }      
+      
+      
+      //// User-defined code goes here
+      // Could have it's own state, really
+      rewards_this_trial = 0;
     
-      next_state = RESPONSE_WINDOW;
+      next_state = MOVE_SERVO;
       break;
+    
+    
+    //// Example of a complex waiting state
+    // We want to start the servo moving, rotate while moving,
+    // start response window when the timer is up.
+    case MOVE_SERVO:
+      linServo.write(param_values[tpidx_SRVPOS]);
+      servo_timer = time + param_value[tpidx_SRVTT];
+    
+      next_state = ROTATE_STIM1;
+      break;
+    
+    case ROTATE_STIM1;
+      // rotate_motor(param_value[tpidx__STPFR], 20);
+      if (param_values[tpidx__2PSTP])
+      {
+        digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+      }
+      else
+      {
+        digitalWrite(ENABLE_STEPPER, HIGH);
+      }
+      
+      // BLOCKING CALL //
+      // Replace with more iterations of smaller steps
+      stimStepper.step(param_values[tpidx__STPPOS]);
+      
+      // disable
+      if (param_values[tpidx__2PSTP])
+      {
+        digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+      }
+      else
+      {
+        digitalWrite(ENABLE_STEPPER, LOW);
+      }            
+      
+      // Necessary? Can't hurt too much more given that the call is blocking..
+      //delay(STPPAUSE_T);
+      
+      next_state = INTER_ROTATION_PAUSE;
+      break;
+    
+      
 
     //// User defined states
     case RESPONSE_WINDOW:
