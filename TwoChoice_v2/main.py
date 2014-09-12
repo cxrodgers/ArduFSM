@@ -5,7 +5,7 @@ import numpy as np
 
 logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1)
+    serial_timeout=.1, serial_port='/dev/ttyACM1')
 
 # The ones that are fixed at the beginning
 initial_params = {
@@ -23,14 +23,14 @@ def generate_trial_params(trial_matrix):
     assert trial_matrix['release_time'].isnull().irow(-1)
     
     # But that it has been responded
-    assert not trial_matrix['response'].isnull().irow(-1)
+    assert not trial_matrix['resp'].isnull().irow(-1)
     
     if len(trial_matrix) < 2:
         res['RWSD'] = 1
     else:
         # Get last trial
         last_trial = trial_matrix.irow(-1)
-        if last_trial['response'] == last_trial['rwsd']:
+        if last_trial['resp'] == last_trial['rwsd']:
             res['RWSD'] = {1: 2, 2:1}[last_trial['rwsd']]
         else:
             res['RWSD'] = last_trial['rwsd']
@@ -63,7 +63,7 @@ try:
             
             # Release
             chatter.write_to_device(TrialSpeak.command_release_trial())
-        elif 'response' not in trial_matrix or trial_matrix['response'].isnull().irow(-1):
+        elif 'resp' not in trial_matrix or trial_matrix['resp'].isnull().irow(-1):
             # Trial has not completed, keep waiting
             continue
         elif last_released_trial == len(trial_matrix):
