@@ -414,11 +414,11 @@ void loop()
     case TRIAL_START:
       // Set up the trial based on received trial parameters
       Serial.println((String) time + " TRL_START");
-      //~ for(int i=0; i < N_TRIAL_PARAMS; i++)
-      //~ {
-        //~ Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
-          //~ " " + (String) param_values[i]);
-      //~ }
+      for(int i=0; i < N_TRIAL_PARAMS; i++)
+      {
+        Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
+          " " + (String) param_values[i]);
+      }
     
       // Set up trial_results to defaults
       for(int i=0; i < N_TRIAL_RESULTS; i++)
@@ -466,6 +466,25 @@ void loop()
     case RESPONSE_WINDOW:
       srw.run(time, touched);
       break;
+    
+    case REWARD_L:
+      Serial.println((String) time + " DBG open L");
+      state_timer = -1;
+      next_state = INTER_TRIAL_INTERVAL;
+      break;
+    
+    case REWARD_R:
+      Serial.println((String) time + " DBG open R");
+    state_timer = -1;
+      next_state = INTER_TRIAL_INTERVAL;
+      break;
+    
+    case ERROR:
+      Serial.println((String) time + " DBG error");
+    state_timer = -1;
+      next_state = INTER_TRIAL_INTERVAL;
+      break;
+      
     
     //// INTER_TRIAL_INTERVAL
     // Example of canonical waiting state.

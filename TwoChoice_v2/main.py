@@ -78,10 +78,8 @@ try:
             continue
         elif last_released_trial == len(trial_matrix):
             # Trial has been completed, and already released
-            1/0
             continue
         else:
-            1/0
             # Trial has been completed, and needs to be released
             params = generate_trial_params(trial_matrix)
 
