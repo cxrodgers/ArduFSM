@@ -9,6 +9,7 @@ TODO
   as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
 * Some standard way to create waiting states.
 * move definitions of trial_params to header file, so can be auto-generated
+* diagnostics: which state it is in on each call (or subset of calls)
 
 Here are the things that the user should have to change for each protocol:
 * Enum of states
@@ -16,37 +17,6 @@ Here are the things that the user should have to change for each protocol:
 * param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
 
 
-Template for a waiting state. Try to make it match this syntax.
-case A_WAITING_STATE:
-  // Wait the specified amount of time
-  if (state_timer == -1)
-  {
-    // Start timer and run first-time code
-    state_timer = time + WAITING_TIME;
-
-    a_waiting_state_run_once();
-  }
-  else
-  {
-    a_waiting_state_run_many_times();
-  }
-  
-  if (time > state_timer)
-  {
-    a_waiting_state_run_when_done();
-    
-    // Check timer and run every-time code
-    next_state = NEXT_STATE;
-    state_timer = -1;
-  }
-  break;
-
-Eventually this could be some kind of object:
-case A_WAITING_STATE:
-  waiting_state_obj.run();
-
-Where the object derives from something that implements the basic pattern
-above, and the user just filles in the run_once(), run_many_times(), etc
 */
 #include "chat.h"
 #include "hwconstants.h"
@@ -54,7 +24,13 @@ above, and the user just filles in the run_once(), run_many_times(), etc
 #include <Wire.h> # also for mpr121
 #include <Servo.h>
 #include <Stepper.h>
+#include "TimedState.h"
 
+//// Defines for commonly used things
+// Move this to TrialSpeak
+#define LEFT 1
+#define RIGHT 2
+#define NOGO 3
 
 //// States
 // Defines the finite state machine for this protocol
@@ -62,14 +38,14 @@ enum STATE_TYPE
 {
   WAIT_TO_START_TRIAL,
   TRIAL_START,
-  MOVE_SERVO_START,
-  MOVE_SERVO_WAIT,
-  RESPONSE_WINDOW_START,
+  ROTATE_STEPPER1,
+  INTER_ROTATION_PAUSE,
+  ROTATE_STEPPER2,
+  MOVE_SERVO,
+  WAIT_FOR_SERVO_MOVE,
   RESPONSE_WINDOW,
   REWARD_L,
   REWARD_R,
-  REWARD_TIMER_L,
-  REWARD_TIMER_R,
   POST_REWARD_TIMER_START,
   POST_REWARD_TIMER_WAIT,
   START_INTER_TRIAL_INTERVAL,
@@ -78,6 +54,7 @@ enum STATE_TYPE
   PRE_SERVO_WAIT,
   SERVO_WAIT
 } current_state = WAIT_TO_START_TRIAL;
+
 
 //// Global trial parameters structure. This holds the current value of
 // all parameters. Should probably also make a copy to hold the latched
@@ -93,7 +70,7 @@ enum STATE_TYPE
 #define N_TRIAL_PARAMS 19
 #define tpidx_STPPOS 0
 #define tpidx_MRT 1
-#define tpidx_RWSD 2
+#define tpidx_REWSIDE 2
 #define tpidx_SRVPOS 3
 #define tpidx_ITI 4
 #define tpidx_2PSTP 5
@@ -116,7 +93,7 @@ String param_abbrevs[N_TRIAL_PARAMS] = {
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP",
   };
-unsigned long param_values[N_TRIAL_PARAMS] = {
+long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   -1, 1900, 4500, 45000, 500,
   40, 40, 2000, 1, 1,
@@ -130,8 +107,8 @@ unsigned long param_values[N_TRIAL_PARAMS] = {
 #define tridx_RESPONSE 0
 #define tridx_OUTCOME 1
 String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
-unsigned long results_values[N_TRIAL_RESULTS] = {0, 0};
-unsigned long default_results_values[N_TRIAL_RESULTS] = {0, 0};
+long results_values[N_TRIAL_RESULTS] = {0, 0};
+long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
 
 //// Miscellaneous globals
@@ -143,7 +120,7 @@ unsigned long interval = 1000;
 bool flag_start_trial = 0;
 
 // timers
-unsigned long state_timer = -1;
+long state_timer = -1;
 
 
 //// Declarations
@@ -152,12 +129,15 @@ int take_action(String protocol_cmd, String argument1);
 
 
 //// User-defined variables, etc, go here
-// initial position of stim arm .. user must ensure this is correct
-int stim_arm_position = param_values[tpidx_STEP_INITIAL_POS];
 unsigned int rewards_this_trial = 0;
+long servo_timer;
+STATE_TYPE next_state; 
 
 // touched monitor
 uint16_t sticky_touched = 0;
+
+// initial position of stim arm .. user must ensure this is correct
+long sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
 
 // Servo
 Servo linServo;
@@ -168,6 +148,81 @@ Stepper stimStepper = Stepper(200, PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN
 
 // Declare
 void rotate_motor(int rotation, unsigned int delay_ms=100);
+int state_inter_rotation_pause(unsigned long time, long state_duration,
+    STATE_TYPE& next_state);
+int state_rotate_stepper1(STATE_TYPE& next_state);
+int state_rotate_stepper2(STATE_TYPE& next_state);
+int state_wait_for_servo_move(unsigned long time, unsigned long timer,
+    STATE_TYPE& next_state);
+
+//// State definitions
+class StateResponseWindow : public TimedState {
+  protected:
+    int var = 0;  
+    void s_setup();  
+    void loop(uint16_t touched);
+    void s_finish();
+  
+  public:
+    StateResponseWindow(unsigned long t, unsigned long d) : TimedState(t, d) { };
+};
+
+void StateResponseWindow::s_setup()
+{
+  
+}
+
+void StateResponseWindow::loop(uint16_t touched)
+{
+  int current_response;
+  bool licking_l;
+  bool licking_r;
+  
+  licking_l = (get_touched_channel(touched, 0) == 1);
+  licking_r = (get_touched_channel(touched, 1) == 1);
+  // transition if max rewards reached
+  if (rewards_this_trial >= param_values[tpidx_MRT])
+  {
+    next_state = PRE_SERVO_WAIT;
+    flag_stop = 1;
+    return;
+  }
+
+  // Do nothing if both or neither are being licked.
+  // Otherwise, assign current_response.
+  if (!licking_l && !licking_r)
+    return;
+  else if (licking_l && licking_r)
+    return;
+  else if (licking_l && !licking_r)
+    current_response = LEFT;
+  else if (!licking_l && licking_r)
+    current_response = RIGHT;
+  else
+    Serial.println("this should never happen");
+
+  // Only assign result if this is the first response
+  if (results_values[tridx_RESPONSE] == 0)
+    results_values[tridx_RESPONSE] = current_response;
+  
+  // Move to reward state, or error if TOE is set, or otherwise stay
+  if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
+    next_state = REWARD_L;
+  else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
+    next_state = REWARD_L;
+  else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
+    next_state = ERROR;
+}
+
+void StateResponseWindow::s_finish()
+{
+  // If response is still not set, mark as spoiled
+  if (results_values[tridx_RESPONSE] == 0)
+    results_values[tridx_RESPONSE] = NOGO;
+
+  next_state = INTER_TRIAL_INTERVAL;
+}
+
 
 //// Setup function
 void setup()
@@ -310,7 +365,7 @@ void loop()
   unsigned long time = millis();
   
   // The next state, by default the same as the current state
-  STATE_TYPE next_state = current_state;
+  next_state = current_state;
   
   // misc
   int status = 1;
@@ -359,11 +414,11 @@ void loop()
     case TRIAL_START:
       // Set up the trial based on received trial parameters
       Serial.println((String) time + " TRL_START");
-      for(int i=0; i < N_TRIAL_PARAMS; i++)
-      {
-        Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
-          " " + (String) param_values[i]);
-      }
+      //~ for(int i=0; i < N_TRIAL_PARAMS; i++)
+      //~ {
+        //~ Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
+          //~ " " + (String) param_values[i]);
+      //~ }
     
       // Set up trial_results to defaults
       for(int i=0; i < N_TRIAL_RESULTS; i++)
@@ -373,6 +428,9 @@ void loop()
       
       
       //// User-defined code goes here
+      // declare the states
+      static StateResponseWindow srw(0, param_values[tpidx_RESP_WIN_DUR]);
+      
       // Could have it's own state, really
       rewards_this_trial = 0;
     
@@ -385,54 +443,30 @@ void loop()
     // start response window when the timer is up.
     case MOVE_SERVO:
       linServo.write(param_values[tpidx_SRVPOS]);
-      servo_timer = time + param_value[tpidx_SRVTT];
-    
-      next_state = ROTATE_STIM1;
+      servo_timer = time + param_values[tpidx_SRV_TRAVEL_TIME];
+      next_state = ROTATE_STEPPER1;
       break;
     
-    case ROTATE_STIM1;
-      // rotate_motor(param_value[tpidx__STPFR], 20);
-      if (param_values[tpidx__2PSTP])
-      {
-        digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
-      }
-      else
-      {
-        digitalWrite(ENABLE_STEPPER, HIGH);
-      }
-      
-      // BLOCKING CALL //
-      // Replace with more iterations of smaller steps
-      stimStepper.step(param_values[tpidx__STPPOS]);
-      
-      // disable
-      if (param_values[tpidx__2PSTP])
-      {
-        digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
-      }
-      else
-      {
-        digitalWrite(ENABLE_STEPPER, LOW);
-      }            
-      
-      // Necessary? Can't hurt too much more given that the call is blocking..
-      //delay(STPPAUSE_T);
-      
-      next_state = INTER_ROTATION_PAUSE;
+    case ROTATE_STEPPER1:
+      state_rotate_stepper1(next_state);
       break;
     
-      
+    case INTER_ROTATION_PAUSE:
+      state_inter_rotation_pause(time, 50, next_state);
+      break;
+    
+    case ROTATE_STEPPER2:
+      state_rotate_stepper2(next_state);
+      break;
 
-    //// User defined states
+    case WAIT_FOR_SERVO_MOVE:
+      state_wait_for_servo_move(time, servo_timer, next_state);
+      break;
+    
     case RESPONSE_WINDOW:
-      if (random(0, 10000) < 30)  
-      {
-        // Randomly choose a response
-        results_values[tridx_RESPONSE] = random(0, 2) + 1;
-        next_state = INTER_TRIAL_INTERVAL;
-      }
+      srw.run(time, touched);
       break;
-
+    
     //// INTER_TRIAL_INTERVAL
     // Example of canonical waiting state.
     // Also announced trial_results.
@@ -529,7 +563,7 @@ int take_action(String protocol_cmd, String argument1, String argument2)
 }
 
 
-int safe_int_convert(String string_data, long unsigned int &variable)
+int safe_int_convert(String string_data, long &variable)
 { /* Check that string_data can be converted to int before setting variable.
   
   Currently, variable cannot be set to 0 using this script. That is because
@@ -550,3 +584,105 @@ int safe_int_convert(String string_data, long unsigned int &variable)
   }  
   return 0;
 }
+
+
+int state_inter_rotation_pause(unsigned long time, long state_duration,
+    STATE_TYPE& next_state)
+{
+  // Wait the specified amount of time
+  if (state_timer == -1)
+  {
+    // Start timer and run first-time code
+    state_timer = time + state_duration; // hard coded 50ms pause
+
+    //a_waiting_state_run_once();
+  }
+  else
+  {
+    //a_waiting_state_run_many_times();
+  }
+  
+  if (time > state_timer)
+  {
+    //a_waiting_state_run_when_done();
+    
+    // Check timer and run every-time code
+    next_state = ROTATE_STEPPER2;
+    state_timer = 0;
+  }
+  
+  return 0;
+}
+
+int state_wait_for_servo_move(unsigned long time, unsigned long timer,
+    STATE_TYPE& next_state)
+{
+  //a_waiting_state_run_many_times();
+  
+  if (time > timer)
+  {
+    //a_waiting_state_run_when_done();
+    
+    // Check timer and run every-time code
+    next_state = RESPONSE_WINDOW;
+    timer = 0;
+  }
+  
+  return 0;  
+}
+
+
+int state_rotate_stepper1(STATE_TYPE& next_state)
+{
+  rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
+  next_state = INTER_ROTATION_PAUSE;
+  return 0;    
+}
+
+int state_rotate_stepper2(STATE_TYPE& next_state)
+{
+  int remaining_rotation = param_values[tpidx_STPPOS] - 
+    param_values[tpidx_STEP_FIRST_ROTATION] - sticky_stepper_position;
+  
+  rotate(remaining_rotation);
+  
+  next_state = WAIT_FOR_SERVO_MOVE;
+  return 0;    
+}
+
+int rotate(long n_steps)
+{
+  // rotate_motor(param_values[tpidx_STEP_FIRST_ROTATION], 20);
+  if (param_values[tpidx_2PSTP])
+  {
+    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+  }
+  else
+  {
+    digitalWrite(ENABLE_STEPPER, HIGH);
+  }
+  
+  // pause?
+  
+  // BLOCKING CALL //
+  // Replace with more iterations of smaller steps
+  stimStepper.step(n_steps);
+  
+  // pause?
+  
+  // disable
+  if (param_values[tpidx_2PSTP])
+  {
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+  }
+  else
+  {
+    digitalWrite(ENABLE_STEPPER, LOW);
+  }    
+  
+  return 0;
+}
+
+  
+
+
