@@ -18,6 +18,11 @@ touchStates[i] = (touched & (1 << i)) >> i;
 */
 uint16_t touched = 0;
 
+int get_touched_channel(uint16_t touched, unsigned int i)
+{
+  return (touched & (1 << i)) >> i;
+}
+
 
 // subfunctions for MPR121 operation
 uint16_t pollTouchInputs()
