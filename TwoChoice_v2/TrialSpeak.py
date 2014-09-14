@@ -29,10 +29,13 @@ def split_by_trial(lines):
     Returns: splines, a list of list of lines, each beginning with
     TRIAL START (which is when the current trial params are determined).
     """
+    if len(lines) == 0:
+        return [[]]
+    
     # Find the trial start lines
     # This could be done in a couple of ways. Which is most efficient?
     # This method: split by space, check for token in position 1
-    trial_starts = []
+    trial_starts = [0]
     for nline, line in enumerate(lines):        
         sp_line = line.split()
         if len(sp_line) > 1 and sp_line[1] == start_trial_token:
@@ -83,10 +86,13 @@ def parse_lines_into_df(lines):
 def get_trial_start_time(parsed_lines):
     """Returns the time of the start of the trial in seconds"""
     rows = my.pick_rows(parsed_lines, command=start_trial_token)
-    if len(rows) != 1:
-        raise ValueError("trial start is not unique")
-    return int(rows['time'].irow(0)) / 1000.
-
+    
+    if len(rows) > 1:
+        raise ValueError("too many trial start lines")
+    elif len(rows) == 0:
+        return None
+    else:
+        return int(rows['time'].irow(0)) / 1000.
     
 def get_trial_release_time(parsed_lines):
     """Returns the time of trial release in seconds"""

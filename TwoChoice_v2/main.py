@@ -42,7 +42,7 @@ def generate_trial_params(trial_matrix):
     return res
 
 ## Main loop
-last_released_trial = 0
+last_released_trial = -1
 try:
     while True:
         # Update chatter
@@ -50,26 +50,38 @@ try:
         
         # Check log
         splines = TrialSpeak.load_splines_from_file(logfilename)
+        
+        # Really we should wait until we hear something from the arduino
+        # Simply wait till at least one line has been received
+        if len(splines) == 0 or len(splines[0]) == 0:
+            continue
+
+        # Construct trial_matrix. I believe this will always have at least
+        # one line in it now, even if it's composed entirely of Nones.
         trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
         
         # Switch on which trial, and whether it's been released and/or completed
-        if trial_matrix is None: # or if splines is empty?
+        #if len(splines) == 0: # or trial_matrix is None?: # or if splines is empty?
+        if last_released_trial == -1:
             # It's the first tiral
             # Send each initial param
             for param_name, param_val in initial_params.items():
-                chatter.write_to_device(
-                    TrialSpeak.command_set_parameter(
-                        param_name, param_val))            
+                cmd = TrialSpeak.command_set_parameter(param_name, param_val)           
+                chatter.write_to_device(cmd)
             
             # Release
             chatter.write_to_device(TrialSpeak.command_release_trial())
+            last_released_trial = 0
+            
         elif 'resp' not in trial_matrix or trial_matrix['resp'].isnull().irow(-1):
             # Trial has not completed, keep waiting
             continue
         elif last_released_trial == len(trial_matrix):
             # Trial has been completed, and already released
+            1/0
             continue
         else:
+            1/0
             # Trial has been completed, and needs to be released
             params = generate_trial_params(trial_matrix)
 
