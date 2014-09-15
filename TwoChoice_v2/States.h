@@ -119,5 +119,13 @@ class StateWaitForServoMove : public TimedState {
     StateWaitForServoMove(unsigned long d) : TimedState(d) { };
 };
 
+class StateInterTrialInterval : public TimedState {
+  protected:
+    void s_setup();
+    void s_finish();
+  
+  public:
+    StateInterTrialInterval(unsigned long d) : TimedState(d) { };
+};
 
 #endif

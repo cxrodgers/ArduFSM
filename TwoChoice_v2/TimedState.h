@@ -40,6 +40,7 @@ above, and the user just filles in the run_once(), run_many_times(), etc
 class TimedState
 {
   protected:
+    unsigned long time_of_last_call = 0;
     unsigned long timer = 0;
     unsigned long duration = 0;
     bool flag_stop = 0;

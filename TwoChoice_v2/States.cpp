@@ -115,6 +115,23 @@ void StateWaitForServoMove::s_finish()
   next_state = RESPONSE_WINDOW;   
 }
 
+//// Inter-trial interval
+void StateInterTrialInterval::s_setup()
+{
+  // First-time code: Report results
+  for(int i=0; i < N_TRIAL_RESULTS; i++)
+  {
+    Serial.println((String) time_of_last_call + " TRLR " + (String) results_abbrevs[i] + 
+      " " + (String) results_values[i]);
+  }
+}
+
+void StateInterTrialInterval::s_finish()
+{
+  next_state = WAIT_TO_START_TRIAL;   
+}
+
+
 
 //// Non-class states
 int state_rotate_stepper1(STATE_TYPE& next_state)

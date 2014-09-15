@@ -163,6 +163,9 @@ void loop()
   static StateInterRotationPause state_interrotation_pause(50);
   static StateWaitForServoMove state_wait_for_servo_move(
     param_values[tpidx_SRV_TRAVEL_TIME]);
+  static StateInterTrialInterval state_inter_trial_interval(
+    param_values[tpidx_ITI]);
+
     
   // The next state, by default the same as the current state
   next_state = current_state;
@@ -228,11 +231,14 @@ void loop()
       
       
       //// User-defined code goes here
-      // declare the states
+      // declare the states. Here we're both updating the parameters
+      // in case they've changed, and resetting all timers.
       srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
       state_interrotation_pause = StateInterRotationPause(50);
       state_wait_for_servo_move = StateWaitForServoMove(
         param_values[tpidx_SRV_TRAVEL_TIME]);
+      state_inter_trial_interval = StateInterTrialInterval(
+        param_values[tpidx_ITI]);
       
       // Could have it's own state, really
       rewards_this_trial = 0;
@@ -292,30 +298,9 @@ void loop()
       next_state = INTER_TRIAL_INTERVAL;
       break;
       
-    
-    //// INTER_TRIAL_INTERVAL
-    // Example of canonical waiting state.
-    // Also announced trial_results.
     case INTER_TRIAL_INTERVAL:
-      // Wait the specified amount of time
-      if (state_timer == -1)
-      {
-        // Start timer and run first-time code
-        state_timer = time + param_values[tpidx_ITI];
-
-        // First-time code: Report results
-        for(int i=0; i < N_TRIAL_RESULTS; i++)
-        {
-          Serial.println((String) time + " TRLR " + (String) results_abbrevs[i] + 
-            " " + (String) results_values[i]);
-        }
-      }
-      if (time > state_timer)
-      {
-        // Check timer and run every-time code
-        next_state = WAIT_TO_START_TRIAL;
-        state_timer = -1;
-      }
+      // Announce trial_results
+      state_inter_trial_interval.run(time);
       break;
   }
   
