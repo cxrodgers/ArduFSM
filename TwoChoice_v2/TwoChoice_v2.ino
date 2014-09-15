@@ -35,23 +35,18 @@ extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
 
 //// Miscellaneous globals
-
-
 // flag to remember whether we've received the start next trial signal
+// currently being used in both setup() and loop() so it can't be staticked
 bool flag_start_trial = 0;
-
-// timers
-extern long state_timer;
 
 
 //// Declarations
 int take_action(String protocol_cmd, String argument1, String argument2);
 
 
-
 //// User-defined variables, etc, go here
+/// these should all be staticked into loop()
 unsigned int rewards_this_trial = 0;
-long servo_timer;
 STATE_TYPE next_state; 
 
 // touched monitor
@@ -60,6 +55,8 @@ uint16_t sticky_touched = 0;
 // initial position of stim arm .. user must ensure this is correct
 extern long sticky_stepper_position;
 
+
+/// not sure how to static these since they are needed by both loop and setup
 // Servo
 Servo linServo;
 
@@ -282,19 +279,16 @@ void loop()
     
     case REWARD_L:
       Serial.println((String) time + " DBG open L");
-      state_timer = -1;
       next_state = INTER_TRIAL_INTERVAL;
       break;
     
     case REWARD_R:
       Serial.println((String) time + " DBG open R");
-    state_timer = -1;
       next_state = INTER_TRIAL_INTERVAL;
       break;
     
     case ERROR:
       Serial.println((String) time + " DBG error");
-    state_timer = -1;
       next_state = INTER_TRIAL_INTERVAL;
       break;
       

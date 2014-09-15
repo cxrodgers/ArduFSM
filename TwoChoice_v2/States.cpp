@@ -5,6 +5,8 @@
 #include "Stepper.h"
 
 extern STATE_TYPE next_state;
+
+// These should go into some kind of Protocol.h or something
 String param_abbrevs[N_TRIAL_PARAMS] = {
   "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
@@ -18,12 +20,11 @@ long param_values[N_TRIAL_PARAMS] = {
   2000, 20, 50, 50,
   };
 
-
 String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
 long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
-long state_timer = -1;
+// This should be passed to the necessary function
 long sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];  
 
 
