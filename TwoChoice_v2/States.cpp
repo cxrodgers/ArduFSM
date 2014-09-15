@@ -94,29 +94,23 @@ void StateResponseWindow::s_finish()
 void StateInterRotationPause::s_finish()
 {
   next_state = ROTATE_STEPPER2;
-  state_timer = 0;
+}
+
+
+//// Wait for servo move
+void StateWaitForServoMove::s_setup()
+{
+  next_state = ROTATE_STEPPER1;   
+}
+
+
+void StateWaitForServoMove::s_finish()
+{
+  next_state = RESPONSE_WINDOW;   
 }
 
 
 //// Non-class states
-int state_wait_for_servo_move(unsigned long time, unsigned long timer,
-    STATE_TYPE& next_state)
-{
-  //a_waiting_state_run_many_times();
-  
-  if (time > timer)
-  {
-    //a_waiting_state_run_when_done();
-    
-    // Check timer and run every-time code
-    next_state = RESPONSE_WINDOW;
-    timer = 0;
-  }
-  
-  return 0;  
-}
-
-
 int state_rotate_stepper1(STATE_TYPE& next_state)
 {
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);

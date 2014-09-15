@@ -107,5 +107,14 @@ class StateInterRotationPause : public TimedState {
     StateInterRotationPause(unsigned long d) : TimedState(d) { };
 };
 
+class StateWaitForServoMove : public TimedState {
+  protected:
+    void s_setup();
+    void s_finish();
+  
+  public:
+    StateWaitForServoMove(unsigned long d) : TimedState(d) { };
+};
+
 
 #endif

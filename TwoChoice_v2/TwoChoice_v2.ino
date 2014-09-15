@@ -159,6 +159,10 @@ void loop()
 
   // statics
   static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
+  static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
+  static StateInterRotationPause state_interrotation_pause(50);
+  static StateWaitForServoMove state_wait_for_servo_move(
+    param_values[tpidx_SRV_TRAVEL_TIME]);
     
   // The next state, by default the same as the current state
   next_state = current_state;
@@ -225,8 +229,10 @@ void loop()
       
       //// User-defined code goes here
       // declare the states
-      static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
-      static StateInterRotationPause state_interrotation_pause(50);
+      srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
+      state_interrotation_pause = StateInterRotationPause(50);
+      state_wait_for_servo_move = StateWaitForServoMove(
+        param_values[tpidx_SRV_TRAVEL_TIME]);
       
       // Could have it's own state, really
       rewards_this_trial = 0;
@@ -235,13 +241,13 @@ void loop()
       break;
     
     
-    //// Example of a complex waiting state
-    // We want to start the servo moving, rotate while moving,
-    // start response window when the timer is up.
     case MOVE_SERVO:
+      // Start the servo moving and its timer
+      // Should immediately go to ROTATE_STEPPER1, while th etimer is running.
+      // After rotating, we'll wait for the timer to be completed.
+      // This object is really more of a timer than a state.
       linServo.write(param_values[tpidx_SRVPOS]);
-      servo_timer = time + param_values[tpidx_SRV_TRAVEL_TIME];
-      next_state = ROTATE_STEPPER1;
+      state_wait_for_servo_move.run(time);
       break;
     
     case ROTATE_STEPPER1:
@@ -257,7 +263,7 @@ void loop()
       break;
 
     case WAIT_FOR_SERVO_MOVE:
-      state_wait_for_servo_move(time, servo_timer, next_state);
+      state_wait_for_servo_move.run(time);
       break;
     
     case RESPONSE_WINDOW:
