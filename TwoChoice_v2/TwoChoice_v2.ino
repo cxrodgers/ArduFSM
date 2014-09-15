@@ -226,6 +226,7 @@ void loop()
       //// User-defined code goes here
       // declare the states
       static StateResponseWindow srw(0, param_values[tpidx_RESP_WIN_DUR]);
+      static StateInterRotationPause state_interrotation_pause(0, 50);
       
       // Could have it's own state, really
       rewards_this_trial = 0;
@@ -248,7 +249,7 @@ void loop()
       break;
     
     case INTER_ROTATION_PAUSE:
-      state_inter_rotation_pause(time, 50, next_state);
+      state_interrotation_pause.run(time);
       break;
     
     case ROTATE_STEPPER2:
@@ -260,7 +261,8 @@ void loop()
       break;
     
     case RESPONSE_WINDOW:
-      srw.run(time, touched);
+      srw.update(touched, rewards_this_trial);
+      srw.run(time);
       break;
     
     case REWARD_L:

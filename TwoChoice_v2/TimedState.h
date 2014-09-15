@@ -43,13 +43,14 @@ class TimedState
     unsigned long timer = 0;
     unsigned long duration = 0;
     bool flag_stop = 0;
-    virtual void s_setup();
-    virtual void loop(uint16_t touched);
-    virtual void s_finish();
+    virtual void s_setup() {};
+    virtual void loop() {};
+    virtual void s_finish() {};
   
   public:
     TimedState(unsigned long t, unsigned long d) : timer(t), duration(d) { };
-    void run(unsigned long time, uint16_t touched);
+    void run(unsigned long time);
+    virtual void update() {};
 };
 
 #endif

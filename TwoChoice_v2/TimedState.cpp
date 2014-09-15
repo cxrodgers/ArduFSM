@@ -1,6 +1,6 @@
 #include "TimedState.h"
 
-void TimedState::run(unsigned long time, uint16_t touched)
+void TimedState::run(unsigned long time)
 {
   // boiler plate timer code
   if (timer == 0)
@@ -17,6 +17,7 @@ void TimedState::run(unsigned long time, uint16_t touched)
   }
   else
   {
-    loop(touched);
+    loop();
   }
 };
+

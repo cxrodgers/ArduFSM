@@ -89,13 +89,23 @@ int rotate(long n_steps);
 
 class StateResponseWindow : public TimedState {
   protected:
-    int var = 0;  
-    void s_setup();  
-    void loop(uint16_t touched);
+    uint16_t my_touched = 0;
+    unsigned int my_rewards_this_trial = 0;
+    void loop();
     void s_finish();
   
   public:
+    void update(uint16_t touched, unsigned int rewards_this_trial);
     StateResponseWindow(unsigned long t, unsigned long d) : TimedState(t, d) { };
 };
+
+class StateInterRotationPause : public TimedState {
+  protected:
+    void s_finish();
+  
+  public:
+    StateInterRotationPause(unsigned long t, unsigned long d) : TimedState(t, d) { };
+};
+
 
 #endif

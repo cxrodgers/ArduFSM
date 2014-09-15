@@ -5,7 +5,6 @@
 #include "Stepper.h"
 
 extern STATE_TYPE next_state;
-extern unsigned int rewards_this_trial;
 String param_abbrevs[N_TRIAL_PARAMS] = {
   "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
@@ -31,21 +30,24 @@ long sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
 //// State definitions
 extern Stepper stimStepper;
 
-void StateResponseWindow::s_setup()
+
+//// StateResponseWindow
+void StateResponseWindow::update(uint16_t touched, unsigned int rewards_this_trial)
 {
-  
+ my_touched = touched;
+ my_rewards_this_trial = rewards_this_trial;
 }
 
-void StateResponseWindow::loop(uint16_t touched)
+void StateResponseWindow::loop()
 {
   int current_response;
   bool licking_l;
   bool licking_r;
   
-  licking_l = (get_touched_channel(touched, 0) == 1);
-  licking_r = (get_touched_channel(touched, 1) == 1);
+  licking_l = (get_touched_channel(my_touched, 0) == 1);
+  licking_r = (get_touched_channel(my_touched, 1) == 1);
   // transition if max rewards reached
-  if (rewards_this_trial >= param_values[tpidx_MRT])
+  if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
     next_state = PRE_SERVO_WAIT;
     flag_stop = 1;
@@ -88,34 +90,15 @@ void StateResponseWindow::s_finish()
 }
 
 
-int state_inter_rotation_pause(unsigned long time, long state_duration,
-    STATE_TYPE& next_state)
+//// Interrotation pause
+void StateInterRotationPause::s_finish()
 {
-  // Wait the specified amount of time
-  if (state_timer == -1)
-  {
-    // Start timer and run first-time code
-    state_timer = time + state_duration; // hard coded 50ms pause
-
-    //a_waiting_state_run_once();
-  }
-  else
-  {
-    //a_waiting_state_run_many_times();
-  }
-  
-  if (time > state_timer)
-  {
-    //a_waiting_state_run_when_done();
-    
-    // Check timer and run every-time code
-    next_state = ROTATE_STEPPER2;
-    state_timer = 0;
-  }
-  
-  return 0;
+  next_state = ROTATE_STEPPER2;
+  state_timer = 0;
 }
 
+
+//// Non-class states
 int state_wait_for_servo_move(unsigned long time, unsigned long timer,
     STATE_TYPE& next_state)
 {
