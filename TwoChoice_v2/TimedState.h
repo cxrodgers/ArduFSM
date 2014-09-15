@@ -48,7 +48,7 @@ class TimedState
     virtual void s_finish() {};
   
   public:
-    TimedState(unsigned long t, unsigned long d) : timer(t), duration(d) { };
+    TimedState(unsigned long d) : duration(d) { };
     void run(unsigned long time);
     virtual void update() {};
 };

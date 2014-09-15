@@ -96,7 +96,7 @@ class StateResponseWindow : public TimedState {
   
   public:
     void update(uint16_t touched, unsigned int rewards_this_trial);
-    StateResponseWindow(unsigned long t, unsigned long d) : TimedState(t, d) { };
+    StateResponseWindow(unsigned long d) : TimedState(d) { };
 };
 
 class StateInterRotationPause : public TimedState {
@@ -104,7 +104,7 @@ class StateInterRotationPause : public TimedState {
     void s_finish();
   
   public:
-    StateInterRotationPause(unsigned long t, unsigned long d) : TimedState(t, d) { };
+    StateInterRotationPause(unsigned long d) : TimedState(d) { };
 };
 
 

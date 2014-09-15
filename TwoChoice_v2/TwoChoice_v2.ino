@@ -225,8 +225,8 @@ void loop()
       
       //// User-defined code goes here
       // declare the states
-      static StateResponseWindow srw(0, param_values[tpidx_RESP_WIN_DUR]);
-      static StateInterRotationPause state_interrotation_pause(0, 50);
+      static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
+      static StateInterRotationPause state_interrotation_pause(50);
       
       // Could have it's own state, really
       rewards_this_trial = 0;
