@@ -25,106 +25,27 @@ Here are the things that the user should have to change for each protocol:
 #include <Servo.h>
 #include <Stepper.h>
 #include "TimedState.h"
-
-//// Defines for commonly used things
-// Move this to TrialSpeak
-#define LEFT 1
-#define RIGHT 2
-#define NOGO 3
-
-//// States
-// Defines the finite state machine for this protocol
-enum STATE_TYPE
-{
-  WAIT_TO_START_TRIAL,
-  TRIAL_START,
-  ROTATE_STEPPER1,
-  INTER_ROTATION_PAUSE,
-  ROTATE_STEPPER2,
-  MOVE_SERVO,
-  WAIT_FOR_SERVO_MOVE,
-  RESPONSE_WINDOW,
-  REWARD_L,
-  REWARD_R,
-  POST_REWARD_TIMER_START,
-  POST_REWARD_TIMER_WAIT,
-  START_INTER_TRIAL_INTERVAL,
-  INTER_TRIAL_INTERVAL,
-  ERROR,
-  PRE_SERVO_WAIT,
-  SERVO_WAIT
-} current_state = WAIT_TO_START_TRIAL;
+#include "States.h"
 
 
-//// Global trial parameters structure. This holds the current value of
-// all parameters. Should probably also make a copy to hold the latched
-// values on each trial.
-// Characteristics of each trial. These can all be modified by the user.
-// However, there is no guarantee that the newest value will be used until
-// the current trial is released.
-// Various types:
-// * Should be latched, must be set at beginning ("RD_L")
-// * Should be latched, can use default here ("SRVFAR")
-// * Need to be set on every trial, else error ("STPPOS")
-// Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 19
-#define tpidx_STPPOS 0
-#define tpidx_MRT 1
-#define tpidx_REWSIDE 2
-#define tpidx_SRVPOS 3
-#define tpidx_ITI 4
-#define tpidx_2PSTP 5
-#define tpidx_SRV_FAR 6
-#define tpidx_SRV_TRAVEL_TIME 7
-#define tpidx_RESP_WIN_DUR 8
-#define tpidx_INTER_REWARD_INTERVAL 9
-#define tpidx_REWARD_DUR_L 10
-#define tpidx_REWARD_DUR_R 11
-#define tpidx_SERVO_SETUP_T 12
-#define tpidx_PRE_SERVO_WAIT 13
-#define tpidx_TERMINATE_ON_ERR 14
-#define tpidx_ERROR_TIMEOUT 15
-#define tpidx_STEP_SPEED 16
-#define tpidx_STEP_FIRST_ROTATION 17
-#define tpidx_STEP_INITIAL_POS 18
-String param_abbrevs[N_TRIAL_PARAMS] = {
-  "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
-  "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
-  "RD_L", "RD_R", "SRVST", "PSW", "TOE",
-  "TO", "STPSPD", "STPFR", "STPIP",
-  };
-long param_values[N_TRIAL_PARAMS] = {
-  1, 1, 1, 1, 3000,
-  -1, 1900, 4500, 45000, 500,
-  40, 40, 2000, 1, 1,
-  2000, 20, 50, 50,
-  };
-
-
-//// Global trial results structure. Can be set by user-defined states. 
-// Will be reported during mandatory INTER_TRIAL_INTERVAL state.
-#define N_TRIAL_RESULTS 2
-#define tridx_RESPONSE 0
-#define tridx_OUTCOME 1
-String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
-long results_values[N_TRIAL_RESULTS] = {0, 0};
-long default_results_values[N_TRIAL_RESULTS] = {0, 0};
-
+extern String param_abbrevs[N_TRIAL_PARAMS];
+extern long param_values[N_TRIAL_PARAMS];
+extern String results_abbrevs[N_TRIAL_RESULTS];
+extern long results_values[N_TRIAL_RESULTS];
+extern long default_results_values[N_TRIAL_RESULTS];
 
 //// Miscellaneous globals
-// Debugging announcements
-unsigned long speak_at = 1000;
-unsigned long interval = 1000;
+
 
 // flag to remember whether we've received the start next trial signal
 bool flag_start_trial = 0;
 
 // timers
-long state_timer = -1;
+extern long state_timer;
 
 
 //// Declarations
-int take_action(String protocol_cmd, String argument1);
+int take_action(String protocol_cmd, String argument1, String argument2);
 
 
 
@@ -137,7 +58,7 @@ STATE_TYPE next_state;
 uint16_t sticky_touched = 0;
 
 // initial position of stim arm .. user must ensure this is correct
-long sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
+extern long sticky_stepper_position;
 
 // Servo
 Servo linServo;
@@ -145,83 +66,6 @@ Servo linServo;
 // Stepper
 // TODO: do not assign now, because we might set it up as a 2-pin stepper later
 Stepper stimStepper = Stepper(200, PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
-
-// Declare
-void rotate_motor(int rotation, unsigned int delay_ms=100);
-int state_inter_rotation_pause(unsigned long time, long state_duration,
-    STATE_TYPE& next_state);
-int state_rotate_stepper1(STATE_TYPE& next_state);
-int state_rotate_stepper2(STATE_TYPE& next_state);
-int state_wait_for_servo_move(unsigned long time, unsigned long timer,
-    STATE_TYPE& next_state);
-
-//// State definitions
-class StateResponseWindow : public TimedState {
-  protected:
-    int var = 0;  
-    void s_setup();  
-    void loop(uint16_t touched);
-    void s_finish();
-  
-  public:
-    StateResponseWindow(unsigned long t, unsigned long d) : TimedState(t, d) { };
-};
-
-void StateResponseWindow::s_setup()
-{
-  
-}
-
-void StateResponseWindow::loop(uint16_t touched)
-{
-  int current_response;
-  bool licking_l;
-  bool licking_r;
-  
-  licking_l = (get_touched_channel(touched, 0) == 1);
-  licking_r = (get_touched_channel(touched, 1) == 1);
-  // transition if max rewards reached
-  if (rewards_this_trial >= param_values[tpidx_MRT])
-  {
-    next_state = PRE_SERVO_WAIT;
-    flag_stop = 1;
-    return;
-  }
-
-  // Do nothing if both or neither are being licked.
-  // Otherwise, assign current_response.
-  if (!licking_l && !licking_r)
-    return;
-  else if (licking_l && licking_r)
-    return;
-  else if (licking_l && !licking_r)
-    current_response = LEFT;
-  else if (!licking_l && licking_r)
-    current_response = RIGHT;
-  else
-    Serial.println("this should never happen");
-
-  // Only assign result if this is the first response
-  if (results_values[tridx_RESPONSE] == 0)
-    results_values[tridx_RESPONSE] = current_response;
-  
-  // Move to reward state, or error if TOE is set, or otherwise stay
-  if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
-    next_state = REWARD_L;
-  else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
-    next_state = REWARD_L;
-  else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
-    next_state = ERROR;
-}
-
-void StateResponseWindow::s_finish()
-{
-  // If response is still not set, mark as spoiled
-  if (results_values[tridx_RESPONSE] == 0)
-    results_values[tridx_RESPONSE] = NOGO;
-
-  next_state = INTER_TRIAL_INTERVAL;
-}
 
 
 //// Setup function
@@ -302,57 +146,6 @@ void setup()
 }
 
 
-int communications(unsigned long time)
-{ /* Run the chat receiving and debug announcing stuff, independent of
-    any state machine or user protocol stuff.
-  
-    Announces time, as necessary.
-    Receives any chat and handles it, including calling take_action.
-  */
-  // comm variables
-  String received_chat;
-  String protocol_cmd = (String) "";
-  String argument1 = (String) "";
-  String argument2 = (String) "";
-  int status = 1;
-  
-  
-  //// Perform actions that occur on every call, independent of state
-  // Announce the time
-  if (time >= speak_at)
-  {
-    Serial.println((String) time + " DBG");
-    speak_at += interval;
-  }
-
-  //// Receive and deal with chat
-  received_chat = receive_chat();
-  if (received_chat.length() > 0)
-  {
-    // Attempt to parse
-    status = handle_chat(received_chat, flag_start_trial,
-        protocol_cmd, argument1, argument2);
-    if (status != 0)
-    {
-      // Parse/syntax error
-      Serial.println((String) time + " DBG RC_ERR " + (String) status);
-    }
-    else if (protocol_cmd.length() > 0)
-    {
-      // Protocol action required
-      status = take_action(protocol_cmd, argument1, argument2);
-      
-      if (status != 0)
-      {
-        // Parse/syntax error
-        Serial.println((String) time + " DBG TA_ERR " + (String) status);
-      }
-    }
-  }
-  
-  return 0;
-}
-
 
 //// Loop function
 void loop()
@@ -363,13 +156,16 @@ void loop()
   //// Variable declarations
   // get the current time as early as possible in this function
   unsigned long time = millis();
-  
+
+  // statics
+  static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
+    
   // The next state, by default the same as the current state
   next_state = current_state;
+    
   
   // misc
   int status = 1;
-  
   
   //// User protocol variables
   uint16_t touched = 0;
@@ -604,103 +400,6 @@ int safe_int_convert(String string_data, long &variable)
   return 0;
 }
 
-
-int state_inter_rotation_pause(unsigned long time, long state_duration,
-    STATE_TYPE& next_state)
-{
-  // Wait the specified amount of time
-  if (state_timer == -1)
-  {
-    // Start timer and run first-time code
-    state_timer = time + state_duration; // hard coded 50ms pause
-
-    //a_waiting_state_run_once();
-  }
-  else
-  {
-    //a_waiting_state_run_many_times();
-  }
-  
-  if (time > state_timer)
-  {
-    //a_waiting_state_run_when_done();
-    
-    // Check timer and run every-time code
-    next_state = ROTATE_STEPPER2;
-    state_timer = 0;
-  }
-  
-  return 0;
-}
-
-int state_wait_for_servo_move(unsigned long time, unsigned long timer,
-    STATE_TYPE& next_state)
-{
-  //a_waiting_state_run_many_times();
-  
-  if (time > timer)
-  {
-    //a_waiting_state_run_when_done();
-    
-    // Check timer and run every-time code
-    next_state = RESPONSE_WINDOW;
-    timer = 0;
-  }
-  
-  return 0;  
-}
-
-
-int state_rotate_stepper1(STATE_TYPE& next_state)
-{
-  rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
-  next_state = INTER_ROTATION_PAUSE;
-  return 0;    
-}
-
-int state_rotate_stepper2(STATE_TYPE& next_state)
-{
-  int remaining_rotation = param_values[tpidx_STPPOS] - 
-    param_values[tpidx_STEP_FIRST_ROTATION] - sticky_stepper_position;
-  
-  rotate(remaining_rotation);
-  
-  next_state = WAIT_FOR_SERVO_MOVE;
-  return 0;    
-}
-
-int rotate(long n_steps)
-{
-  // rotate_motor(param_values[tpidx_STEP_FIRST_ROTATION], 20);
-  if (param_values[tpidx_2PSTP])
-  {
-    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
-  }
-  else
-  {
-    digitalWrite(ENABLE_STEPPER, HIGH);
-  }
-  
-  // pause?
-  
-  // BLOCKING CALL //
-  // Replace with more iterations of smaller steps
-  stimStepper.step(n_steps);
-  
-  // pause?
-  
-  // disable
-  if (param_values[tpidx_2PSTP])
-  {
-    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
-  }
-  else
-  {
-    digitalWrite(ENABLE_STEPPER, LOW);
-  }    
-  
-  return 0;
-}
 
   
 

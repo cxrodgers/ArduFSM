@@ -1,3 +1,6 @@
+#ifndef __TIMEDSTATE_H_INCLUDED__
+#define __TIMEDSTATE_H_INCLUDED__
+
 #include "Arduino.h"
 /*
 
@@ -49,4 +52,4 @@ class TimedState
     void run(unsigned long time, uint16_t touched);
 };
 
-
+#endif
