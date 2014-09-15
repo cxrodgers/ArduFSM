@@ -2,6 +2,7 @@
 #define __STATES_H_INCLUDED__
 
 #include "TimedState.h"
+#include <Servo.h>
 
 //// Global trial parameters structure. This holds the current value of
 // all parameters. Should probably also make a copy to hold the latched
@@ -109,10 +110,12 @@ class StateInterRotationPause : public TimedState {
 
 class StateWaitForServoMove : public TimedState {
   protected:
+    Servo my_linServo;
     void s_setup();
     void s_finish();
   
   public:
+    void update(Servo linServo);
     StateWaitForServoMove(unsigned long d) : TimedState(d) { };
 };
 

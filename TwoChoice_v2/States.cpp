@@ -98,11 +98,17 @@ void StateInterRotationPause::s_finish()
 
 
 //// Wait for servo move
-void StateWaitForServoMove::s_setup()
+void StateWaitForServoMove::update(Servo linServo)
 {
-  next_state = ROTATE_STEPPER1;   
+  // Actually this belongs in the constructor.
+  my_linServo = linServo;
 }
 
+void StateWaitForServoMove::s_setup()
+{
+  my_linServo.write(param_values[tpidx_SRVPOS]);
+  next_state = ROTATE_STEPPER1;   
+}
 
 void StateWaitForServoMove::s_finish()
 {

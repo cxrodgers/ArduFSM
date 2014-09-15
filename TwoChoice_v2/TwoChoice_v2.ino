@@ -246,7 +246,10 @@ void loop()
       // Should immediately go to ROTATE_STEPPER1, while th etimer is running.
       // After rotating, we'll wait for the timer to be completed.
       // This object is really more of a timer than a state.
-      linServo.write(param_values[tpidx_SRVPOS]);
+      // OTOH, could argue that MOVE_SERVO and WAIT_FOR_SERVO_MOVE are 
+      // the same state, and this distinction is just between the s_setup
+      // and the rest of it.
+      state_wait_for_servo_move.update(linServo);
       state_wait_for_servo_move.run(time);
       break;
     
