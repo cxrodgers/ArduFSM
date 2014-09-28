@@ -1,3 +1,6 @@
+#ifndef __HWCONSTANTS_H_INCLUDED__
+#define __HWCONSTANTS_H_INCLUDED__
+
 // Define all constants that are true for all rigs
 // Rig-specific changes can be made by setting parameters in the usual way
 // Otherwise we need different versions of the protocol
@@ -28,3 +31,5 @@
 
 // Servo
 #define LINEAR_SERVO 4
+
+#endif

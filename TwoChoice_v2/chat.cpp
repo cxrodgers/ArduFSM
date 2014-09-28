@@ -7,12 +7,17 @@
 
 
 
-
+extern bool flag_start_trial;
+extern int take_action(String protocol_cmd, String argument1, String argument2);
 
 //// Globals for receiving chats
 // These need to persist across calls to receive_chat
 String receive_buffer = "";
 String receive_line = "";
+
+// Debugging announcements
+unsigned long speak_at = 1000;
+unsigned long interval = 1000;
 
 
 //// Functions for receiving chats
@@ -74,7 +79,57 @@ String receive_chat()
 
 
 //// Begin TrialSpeak code.
-// This function is gummed up with specific trial protocol stuff.
+int communications(unsigned long time)
+{ /* Run the chat receiving and debug announcing stuff, independent of
+    any state machine or user protocol stuff.
+  
+    Announces time, as necessary.
+    Receives any chat and handles it, including calling take_action.
+  */
+  // comm variables
+  String received_chat;
+  String protocol_cmd = (String) "";
+  String argument1 = (String) "";
+  String argument2 = (String) "";
+  int status = 1;
+  
+  
+  //// Perform actions that occur on every call, independent of state
+  // Announce the time
+  if (time >= speak_at)
+  {
+    Serial.println((String) time + " DBG");
+    speak_at += interval;
+  }
+
+  //// Receive and deal with chat
+  received_chat = receive_chat();
+  if (received_chat.length() > 0)
+  {
+    // Attempt to parse
+    status = handle_chat(received_chat, flag_start_trial,
+        protocol_cmd, argument1, argument2);
+    if (status != 0)
+    {
+      // Parse/syntax error
+      Serial.println((String) time + " DBG RC_ERR " + (String) status);
+    }
+    else if (protocol_cmd.length() > 0)
+    {
+      // Protocol action required
+      status = take_action(protocol_cmd, argument1, argument2);
+      
+      if (status != 0)
+      {
+        // Parse/syntax error
+        Serial.println((String) time + " DBG TA_ERR " + (String) status);
+      }
+    }
+  }
+  
+  return 0;
+}
+
 int handle_chat(String received_chat, 
   bool &flag_start_trial, String &protocol_cmd, String &argument1,
   String &argument2)

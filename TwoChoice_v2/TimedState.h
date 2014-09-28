@@ -1,3 +1,6 @@
+#ifndef __TIMEDSTATE_H_INCLUDED__
+#define __TIMEDSTATE_H_INCLUDED__
+
 #include "Arduino.h"
 /*
 
@@ -37,16 +40,18 @@ above, and the user just filles in the run_once(), run_many_times(), etc
 class TimedState
 {
   protected:
+    unsigned long time_of_last_call = 0;
     unsigned long timer = 0;
     unsigned long duration = 0;
     bool flag_stop = 0;
-    virtual void s_setup();
-    virtual void loop(uint16_t touched);
-    virtual void s_finish();
+    virtual void s_setup() {};
+    virtual void loop() {};
+    virtual void s_finish() {};
   
   public:
-    TimedState(unsigned long t, unsigned long d) : timer(t), duration(d) { };
-    void run(unsigned long time, uint16_t touched);
+    TimedState(unsigned long d) : duration(d) { };
+    void run(unsigned long time);
+    virtual void update() {};
 };
 
-
+#endif

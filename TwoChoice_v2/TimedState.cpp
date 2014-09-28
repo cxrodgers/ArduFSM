@@ -1,7 +1,10 @@
 #include "TimedState.h"
 
-void TimedState::run(unsigned long time, uint16_t touched)
+void TimedState::run(unsigned long time)
 {
+  // always store time of last call
+  time_of_last_call = time;    
+    
   // boiler plate timer code
   if (timer == 0)
   {
@@ -17,6 +20,7 @@ void TimedState::run(unsigned long time, uint16_t touched)
   }
   else
   {
-    loop(touched);
+    loop();
   }
 };
+
