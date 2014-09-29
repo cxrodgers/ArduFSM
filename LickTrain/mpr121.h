@@ -57,8 +57,10 @@
 
 // Global Constants
 // CR: I like 0x15 and 0x10
-#define TOU_THRESH	0x15
-#define	REL_THRESH	0x10
+// AK: For rigs 1 and 3, 06 x 01 seems to work better
+// CR: Try 0x06 and 0x03 too
+#define TOU_THRESH	0x06
+#define	REL_THRESH	0x03
 
 
 uint16_t pollTouchInputs(void);
