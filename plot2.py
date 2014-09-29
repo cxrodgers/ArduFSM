@@ -93,6 +93,26 @@ class Plotter(object):
         # one line in it now, even if it's composed entirely of Nones.
         trials_info = TrialMatrix.make_trials_info_from_splines(splines)
 
+        ## Translate condensed trialspeak into full data
+        # Put this part into TrialSpeak.py
+        trials_info['bad'] = False # fake this for now
+        trials_info = trials_info.rename(columns={
+            'rwsd': 'rewside',
+            'resp': 'choice',
+            'outc': 'outcome',
+            'srvpos': 'servo_position',
+            })
+        trials_info['outcome'] = trials_info['outcome'].replace({
+            0 : 'hit',
+            2 : 'error',
+            3 : 'wrong_port',
+            })
+
+        ## This is needed for anova, not sure where it belongs
+        trials_info['prevchoice'] = trials_info['choice'].shift(1)
+        trials_info['prevchoice'][trials_info.prevchoice.isnull()] = -1
+        trials_info['prevchoice'] = trials_info['prevchoice'].astype(np.int)        
+
 
         ## Define trial types, the ordering on the plot
         # Make any updates to trial type parameters (child-class-dependent)
