@@ -1,8 +1,13 @@
+"""A "fork" of plot.py to make it work with TwoChoice_v2.
+
+"""
+
 import numpy as np, pandas, time
 import matplotlib.pyplot as plt
 import my
 import scipy.stats
 import trials_info_tools # replace this with specifics
+import TrialSpeak, TrialMatrix
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
@@ -75,19 +80,18 @@ class Plotter(object):
     def update(self, filename):   
         """Read info from filename and update the plot"""
         ## Load data and make trials_info
-        # Read file
-        with file(filename) as fi:
-            lines = fi.readlines()
-
-        # Split by trial
-        splines = trials_info_tools.split_by_trial(lines)
-
-        if len(splines) <= 1:
-            # Probably just the first trial
+        # Check log
+        lines = TrialSpeak.read_lines_from_file(filename)
+        splines = TrialSpeak.split_by_trial(lines)        
+        
+        # Really we should wait until we hear something from the arduino
+        # Simply wait till at least one line has been received
+        if len(splines) == 0 or len(splines[0]) == 0:
             return
 
-        # Make trials_info
-        trials_info = trials_info_tools.make_trials_info_from_splines(splines)
+        # Construct trial_matrix. I believe this will always have at least
+        # one line in it now, even if it's composed entirely of Nones.
+        trials_info = TrialMatrix.make_trials_info_from_splines(splines)
 
 
         ## Define trial types, the ordering on the plot
