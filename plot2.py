@@ -95,18 +95,10 @@ class Plotter(object):
 
         ## Translate condensed trialspeak into full data
         # Put this part into TrialSpeak.py
-        trials_info['bad'] = False # fake this for now
-        trials_info = trials_info.rename(columns={
-            'rwsd': 'rewside',
-            'resp': 'choice',
-            'outc': 'outcome',
-            'srvpos': 'servo_position',
-            })
-        trials_info['outcome'] = trials_info['outcome'].replace({
-            0 : 'hit',
-            2 : 'error',
-            3 : 'wrong_port',
-            })
+        trials_info = TrialSpeak.translate_trial_matrix(trials_info)
+        
+        # fake this for now
+        trials_info['bad'] = False 
 
         ## This is needed for anova, not sure where it belongs
         trials_info['prevchoice'] = trials_info['choice'].shift(1)

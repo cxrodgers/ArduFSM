@@ -82,6 +82,23 @@ def parse_lines_into_df(lines):
     df['time'] = df['time'].astype(np.int)
     return df
 
+def translate_trial_matrix(trial_matrix):
+    """Replace shorthand with longhand, eg, resp -> response."""
+    trial_matrix = trial_matrix.copy()
+    trial_matrix = trial_matrix.rename(columns={
+        'rwsd': 'rewside',
+        'resp': 'choice',
+        'outc': 'outcome',
+        'srvpos': 'servo_position',
+        })
+    trial_matrix['outcome'] = trial_matrix['outcome'].replace({
+        0 : 'hit',
+        2 : 'error',
+        3 : 'wrong_port',
+        })
+    
+    return trial_matrix
+    
 
 def get_trial_start_time(parsed_lines):
     """Returns the time of the start of the trial in seconds"""
