@@ -157,6 +157,7 @@ void loop()
   // statics
   static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
   static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
+  static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
   static StateInterRotationPause state_interrotation_pause(50);
   static StateWaitForServoMove state_wait_for_servo_move(
     param_values[tpidx_SRV_TRAVEL_TIME]);
@@ -231,6 +232,7 @@ void loop()
       // declare the states. Here we're both updating the parameters
       // in case they've changed, and resetting all timers.
       srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
+      sfrw = StateFakeResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
       state_interrotation_pause = StateInterRotationPause(50);
       state_wait_for_servo_move = StateWaitForServoMove(
         param_values[tpidx_SRV_TRAVEL_TIME]);
@@ -273,8 +275,11 @@ void loop()
       break;
     
     case RESPONSE_WINDOW:
-      srw.update(touched, rewards_this_trial);
-      srw.run(time);
+      //srw.update(touched, rewards_this_trial);
+      //srw.run(time);
+    
+      sfrw.update(touched, rewards_this_trial);
+      sfrw.run(time);
       break;
     
     case REWARD_L:

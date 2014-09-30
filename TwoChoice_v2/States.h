@@ -1,3 +1,18 @@
+/* Header file for declaring protocol-specific states.
+This implements a two-alternative choice task with two lick ports.
+
+Defines the following
+* tpidx_ macros ... these allow you to index into trial_params
+* tridx_ macros ... same, but for trial results
+* the STATE_TYPE enum, which defines all possible states
+* declarations for state functions and state objects, especially those derived
+  from TimedState.
+
+To define a new state, you should declare it here and put its implementation
+into States.cpp.
+*/
+
+
 #ifndef __STATES_H_INCLUDED__
 #define __STATES_H_INCLUDED__
 
@@ -98,6 +113,19 @@ class StateResponseWindow : public TimedState {
   public:
     void update(uint16_t touched, unsigned int rewards_this_trial);
     StateResponseWindow(unsigned long d) : TimedState(d) { };
+};
+
+class StateFakeResponseWindow : public TimedState {
+  /* A version of StateResponseWindow that randomly makes decisions */
+  protected:
+    uint16_t my_touched = 0;
+    unsigned int my_rewards_this_trial = 0;
+    void loop();
+    void s_finish();
+  
+  public:
+    void update(uint16_t touched, unsigned int rewards_this_trial);
+    StateFakeResponseWindow(unsigned long d) : TimedState(d) { };
 };
 
 class StateInterRotationPause : public TimedState {

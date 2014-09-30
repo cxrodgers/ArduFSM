@@ -1,3 +1,14 @@
+/* Implementation file for declaring protocol-specific states.
+This implements a two-alternative choice task with two lick ports.
+
+Defines the following:
+* param_abbrevs, which defines the shorthand for the trial parameters
+* param_values, which define the defaults for those parameters
+* results_abbrevs, results_values, default_results_values
+* implements the state functions and state objects
+
+*/
+
 #include "States.h"
 #include "mpr121.h"
 #include "Arduino.h"
@@ -45,8 +56,10 @@ void StateResponseWindow::loop()
   bool licking_l;
   bool licking_r;
   
-  licking_l = (get_touched_channel(my_touched, 0) == 1);
-  licking_r = (get_touched_channel(my_touched, 1) == 1);
+  // random response  
+  licking_l = (random(0, 10000) < 3);    
+  licking_r = (random(0, 10000) < 3);   
+    
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -82,6 +95,67 @@ void StateResponseWindow::loop()
 }
 
 void StateResponseWindow::s_finish()
+{
+  // If response is still not set, mark as spoiled
+  if (results_values[tridx_RESPONSE] == 0)
+    results_values[tridx_RESPONSE] = NOGO;
+
+  next_state = INTER_TRIAL_INTERVAL;
+}
+
+
+
+//// StateFakeResponseWindow
+void StateFakeResponseWindow::update(uint16_t touched, unsigned int rewards_this_trial)
+{
+  my_touched = touched;
+  my_rewards_this_trial = rewards_this_trial;
+}
+
+void StateFakeResponseWindow::loop()
+{
+  int current_response;
+  bool licking_l;
+  bool licking_r;
+  
+  licking_l = (get_touched_channel(my_touched, 0) == 1);
+  licking_r = (get_touched_channel(my_touched, 1) == 1);
+
+  // transition if max rewards reached
+  if (my_rewards_this_trial >= param_values[tpidx_MRT])
+  {
+    next_state = PRE_SERVO_WAIT;
+    flag_stop = 1;
+    return;
+  }
+
+  // Do nothing if both or neither are being licked.
+  // Otherwise, assign current_response.
+  if (!licking_l && !licking_r)
+    return;
+  else if (licking_l && licking_r)
+    return;
+  else if (licking_l && !licking_r)
+    current_response = LEFT;
+  else if (!licking_l && licking_r)
+    current_response = RIGHT;
+  else
+    Serial.println("this should never happen");
+
+  // Only assign result if this is the first response
+  if (results_values[tridx_RESPONSE] == 0)
+    results_values[tridx_RESPONSE] = current_response;
+  
+  // Move to reward state, or error if TOE is set, or otherwise stay
+  if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
+    next_state = REWARD_L;
+  else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
+    next_state = REWARD_L;
+  else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
+    next_state = ERROR;
+}
+
+void StateFakeResponseWindow::s_finish()
 {
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
