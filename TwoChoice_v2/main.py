@@ -60,6 +60,7 @@ try:
         # Construct trial_matrix. I believe this will always have at least
         # one line in it now, even if it's composed entirely of Nones.
         trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
+        translated_trial_matrix = TrialSpeak.translate_trial_matrix(trial_matrix)
         
         # Switch on which trial, and whether it's been released and/or completed
         #if len(splines) == 0: # or trial_matrix is None?: # or if splines is empty?

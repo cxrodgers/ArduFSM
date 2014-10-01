@@ -64,10 +64,14 @@ into States.cpp.
 
 
 //// Defines for commonly used things
-// Move this to TrialSpeak
+// Move this to TrialSpeak, and rename CHOICE_LEFT etc
 #define LEFT 1
 #define RIGHT 2
 #define NOGO 3
+
+#define OUTCOME_HIT 1
+#define OUTCOME_ERROR 2
+#define OUTCOME_SPOIL 3
 
 //// States
 // Defines the finite state machine for this protocol

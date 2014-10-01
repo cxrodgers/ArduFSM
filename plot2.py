@@ -100,11 +100,6 @@ class Plotter(object):
         # fake this for now
         trials_info['bad'] = False 
 
-        ## This is needed for anova, not sure where it belongs
-        trials_info['prevchoice'] = trials_info['choice'].shift(1)
-        trials_info['prevchoice'][trials_info.prevchoice.isnull()] = -1
-        trials_info['prevchoice'] = trials_info['prevchoice'].astype(np.int)        
-
 
         ## Define trial types, the ordering on the plot
         # Make any updates to trial type parameters (child-class-dependent)
@@ -180,13 +175,19 @@ class Plotter(object):
         if 1 in side2perf_all:
             title_string += 'R_A: ' + \
                 format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
-        if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
-            anova_stats = trials_info_tools.run_anova(
-                trials_info, remove_bad=False)
-            self.cached_anova_text2 = anova_stats
-            self.cached_anova_len2 = len(trials_info)
-        else:
-            anova_stats = self.cached_anova_text2
+        #~ if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
+            #~ # Need to numericate before anova
+            #~ ## This is needed for anova, not sure where it belongs
+            #~ trials_info['prevchoice'] = trials_info['choice'].shift(1)
+            #~ trials_info['prevchoice'][trials_info.prevchoice.isnull()] = -1
+            #~ trials_info['prevchoice'] = trials_info['prevchoice'].astype(np.int)                    
+            
+            #~ anova_stats = trials_info_tools.run_anova(
+                #~ trials_info, remove_bad=False)
+            #~ self.cached_anova_text2 = anova_stats
+            #~ self.cached_anova_len2 = len(trials_info)
+        #~ else:
+            #~ anova_stats = self.cached_anova_text2
         title_string += '. Biases: ' + anova_stats
         
         ## PLOTTING REWARDS

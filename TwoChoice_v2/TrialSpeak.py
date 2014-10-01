@@ -12,6 +12,12 @@ start_trial_token = 'TRL_START'
 trial_param_token = 'TRLP'
 trial_result_token = 'TRLR'
 
+# dictionary for actions
+LEFT = 1
+RIGHT = 2
+NOGO = 3
+
+
 ## Reading functions
 def load_splines_from_file(filename):
     """Reads lines from file and split into list of lists by trial"""
@@ -97,11 +103,21 @@ def translate_trial_matrix(trial_matrix):
         'outc': 'outcome',
         'srvpos': 'servo_position',
         })
-    trial_matrix['outcome'] = trial_matrix['outcome'].replace({
-        0 : 'hit',
-        2 : 'error',
-        3 : 'wrong_port',
-        })
+    
+    
+    # How to deal with current trial here?
+    if 'outcome' in trial_matrix:
+        trial_matrix['outcome'] = trial_matrix['outcome'].replace({
+            1 : 'hit',
+            2 : 'error',
+            3 : 'wrong_port',
+            })
+    if 'choice' in trial_matrix:
+        trial_matrix['choice'] = trial_matrix['choice'].replace({
+            LEFT : 'left',
+            RIGHT : 'right',
+            NOGO : 'nogo',
+            })
     
     return trial_matrix
     

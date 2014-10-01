@@ -87,18 +87,30 @@ void StateResponseWindow::loop()
   
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
+  {
     next_state = REWARD_L;
+    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+  }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
-    next_state = REWARD_L;
+  {
+    next_state = REWARD_R;
+    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+  }
   else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
+  {
     next_state = ERROR;
+    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+  }
 }
 
 void StateResponseWindow::s_finish()
 {
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
+  {
     results_values[tridx_RESPONSE] = NOGO;
+    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+  }
 
   next_state = INTER_TRIAL_INTERVAL;
 }
@@ -148,18 +160,30 @@ void StateFakeResponseWindow::loop()
   
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
+  {
     next_state = REWARD_L;
+    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+  }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
-    next_state = REWARD_L;
+  {
+    next_state = REWARD_R;
+    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+  }
   else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
+  {
     next_state = ERROR;
+    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+  }
 }
 
 void StateFakeResponseWindow::s_finish()
 {
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
+  {
     results_values[tridx_RESPONSE] = NOGO;
+    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+  }
 
   next_state = INTER_TRIAL_INTERVAL;
 }
