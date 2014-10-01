@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 
 # Most recent file
-filename = sorted(glob.glob('ardulines.*'))[-1]
+#filename = sorted(glob.glob('ardulines.*'))[-1]
+filename = 'out.log'
 
 # Read it
 with file(filename) as fi:
