@@ -26,9 +26,9 @@ String param_abbrevs[N_TRIAL_PARAMS] = {
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
-  -1, 1900, 4500, 45000, 500,
+  0, 1900, 4500, 45000, 500,
   40, 40, 2000, 1, 1,
-  2000, 20, 50, 50,
+  2000, 60, 50, 50,
   };
 
 String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -238,7 +238,7 @@ int rotate(long n_steps)
   {
     digitalWrite(ENABLE_STEPPER, HIGH);
   }
-  
+
   // pause?
   
   // BLOCKING CALL //
@@ -246,7 +246,7 @@ int rotate(long n_steps)
   stimStepper.step(n_steps);
   
   // pause?
-  
+
   // disable
   if (param_values[tpidx_2PSTP])
   {
@@ -256,6 +256,5 @@ int rotate(long n_steps)
   {
     digitalWrite(ENABLE_STEPPER, LOW);
   }    
-  
   return 0;
 }

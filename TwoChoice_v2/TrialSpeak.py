@@ -72,6 +72,12 @@ def parse_lines_into_df(lines):
     for line in lines:
         sp_line = line.split()
         
+        # Skip anything with no strings or without a time argument first
+        try:
+            int(sp_line[0])
+        except (IndexError, ValueError):
+            continue
+        
         # If longer than 3, join the 3rd to the end into a single argument
         if len(sp_line) > 3:
             sp_line = [sp_line[0], sp_line[1], ' '.join(sp_line[2:])]

@@ -28,6 +28,8 @@ Here are the things that the user should have to change for each protocol:
 #include "States.h"
 
 
+#define FAKE_RESPONDER 0
+
 extern String param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern String results_abbrevs[N_TRIAL_RESULTS];
@@ -137,6 +139,8 @@ void setup()
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
 
+  stimStepper.setSpeed(param_values[tpidx_STEP_SPEED]);
+  
   // linear servo setup
   linServo.write(param_values[tpidx_SRV_FAR]);
   delay(param_values[tpidx_SERVO_SETUP_T]);
@@ -193,7 +197,6 @@ void loop()
     sticky_touched = touched;
   }  
   
-
   //// Begin state-dependent operations
   switch (current_state)
   {
@@ -275,11 +278,16 @@ void loop()
       break;
     
     case RESPONSE_WINDOW:
-      //srw.update(touched, rewards_this_trial);
-      //srw.run(time);
-    
-      sfrw.update(touched, rewards_this_trial);
-      sfrw.run(time);
+      if (FAKE_RESPONDER)
+      {
+        srw.update(touched, rewards_this_trial);
+        srw.run(time);
+      } 
+      else 
+      {
+        sfrw.update(touched, rewards_this_trial);
+        sfrw.run(time);
+      }
       break;
     
     case REWARD_L:

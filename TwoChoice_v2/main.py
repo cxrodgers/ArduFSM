@@ -5,7 +5,7 @@ import numpy as np
 
 logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1, serial_port='/dev/ttyACM0')
+    serial_timeout=.1, serial_port='/dev/ttyACM1')
 
 # The ones that are fixed at the beginning
 initial_params = {
@@ -14,7 +14,7 @@ initial_params = {
     'STPPOS': 1,
     'SRVPOS': 1,
     'ITI': 3000,
-    'RWIN': 3000,
+    'RWIN': 10000,
     }
 
 def generate_trial_params(trial_matrix):
