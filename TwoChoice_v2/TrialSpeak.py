@@ -13,9 +13,16 @@ trial_param_token = 'TRLP'
 trial_result_token = 'TRLR'
 
 # dictionary for actions
+# this must match the arduino code
 LEFT = 1
 RIGHT = 2
 NOGO = 3
+
+# dictionary for outcomes
+# this assumes two-alternative choice
+HIT = 1
+ERROR = 2
+SPOIL = 3
 
 
 ## Reading functions
@@ -94,6 +101,17 @@ def parse_lines_into_df(lines):
     df['time'] = df['time'].astype(np.int)
     return df
 
+
+def my_replace(ser, d):
+    """Some bug in pandas 0.12.0 replace function."""
+    # Need to convert to object incase new val has different type
+    ser = ser.copy().astype(np.object)
+    
+    for val, new_val in d.items():
+        ser[ser == val] = new_val
+    return ser
+
+
 def translate_trial_matrix(trial_matrix):
     """Replace shorthand with longhand, eg, resp -> response."""
     trial_matrix = trial_matrix.copy()
@@ -107,18 +125,25 @@ def translate_trial_matrix(trial_matrix):
     
     # How to deal with current trial here?
     if 'outcome' in trial_matrix:
-        trial_matrix['outcome'] = trial_matrix['outcome'].replace({
-            1 : 'hit',
-            2 : 'error',
-            3 : 'wrong_port',
-            })
+        #~ trial_matrix['outcome'] = trial_matrix['outcome'].replace({
+            #~ 1 : 'hit',
+            #~ 2 : 'error',
+            #~ 3 : 'wrong_port',
+            #~ })
+        
+        trial_matrix['outcome'] = my_replace(trial_matrix['outcome'], {
+            HIT: 'hit', ERROR: 'error', SPOIL: 'spoil'})
     if 'choice' in trial_matrix:
-        trial_matrix['choice'] = trial_matrix['choice'].replace({
-            LEFT : 'left',
-            RIGHT : 'right',
-            NOGO : 'nogo',
-            })
-    
+        #~ trial_matrix['choice'] = trial_matrix['choice'].replace({
+            #~ LEFT : 'left',
+            #~ RIGHT : 'right',
+            #~ NOGO : 'nogo',
+            #~ })
+        
+        trial_matrix['choice'] = my_replace(trial_matrix['choice'], {
+            LEFT: 'left', RIGHT: 'right', NOGO: 'nogo'})
+        
+
     return trial_matrix
     
 
