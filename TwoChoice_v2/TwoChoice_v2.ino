@@ -301,7 +301,7 @@ void loop()
       break;
     
     case ERROR:
-      Serial.println((String) time + " DBG error");
+      Serial.println((String) time + " DBG wrong choice");
       next_state = INTER_TRIAL_INTERVAL;
       break;
       
