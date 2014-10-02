@@ -211,7 +211,7 @@ class Plotter(object):
             line = self.graphics_handles['label2lines'][outcome]
             line.set_xdata(np.where(msk)[0])
             line.set_ydata(trials_info['trial_type'][msk])
-        
+
         # plot vert bars where bad trials occurred
         msk = trials_info['bad']
         line = self.graphics_handles['label2lines']['bad']
@@ -227,7 +227,9 @@ class Plotter(object):
         ax.set_yticklabels(ytick_labels, size='small')
         
         # The ylimits go BACKWARDS so that trial types are from top to bottom
-        ax.set_ylim((len(trial_type_names) - .5, -.5))
+        ymax = trials_info['trial_type'].max()
+        ymin = trials_info['trial_type'].min()
+        ax.set_ylim((ymax + .5, ymin -.5))
         
         # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
         ax.set_xlim((
