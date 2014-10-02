@@ -88,11 +88,11 @@ def make_trials_info_from_splines(lines_split_by_trial,
         #~ raise ValueError("outcome column missing")
 
     #~ if 'choice' not in trial_matrix:
-        raise ValueError("choice column missing")
+        #~ raise ValueError("choice column missing")
         #~ return trial_matrix
 
     #~ if 'rewside' not in trial_matrix:
-        raise ValueError("rewside column missing")
+        #~ raise ValueError("rewside column missing")
         #~ return trial_matrix
     
     #~ # error by default
