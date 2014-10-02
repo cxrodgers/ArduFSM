@@ -56,9 +56,12 @@ void StateResponseWindow::loop()
   bool licking_l;
   bool licking_r;
   
-  // random response  
-  licking_l = (random(0, 10000) < 3);    
-  licking_r = (random(0, 10000) < 3);   
+  // get the licking state 
+  // overridden in FakeResponseWindow
+  set_licking_variables(licking_l, licking_r);
+  
+  //~ licking_l = (get_touched_channel(my_touched, 0) == 1);
+  //~ licking_r = (get_touched_channel(my_touched, 1) == 1); 
     
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
@@ -116,6 +119,25 @@ void StateResponseWindow::s_finish()
 }
 
 
+void StateResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
+{
+  licking_l = (get_touched_channel(my_touched, 0) == 1);
+  licking_r = (get_touched_channel(my_touched, 1) == 1);    
+}
+
+void StateFakeResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
+{
+  licking_l = (random(0, 10000) < 3);    
+  licking_r = (random(0, 10000) < 3);   
+}
+
+void StateFakeResponseWindow2::set_licking_variables(bool &licking_l, bool &licking_r)
+{
+  licking_l = (random(0, 10000) < 3);    
+  licking_r = (random(0, 10000) < 3);   
+}
+
+
 
 //// StateFakeResponseWindow
 void StateFakeResponseWindow::update(uint16_t touched, unsigned int rewards_this_trial)
@@ -130,8 +152,8 @@ void StateFakeResponseWindow::loop()
   bool licking_l;
   bool licking_r;
   
-  licking_l = (get_touched_channel(my_touched, 0) == 1);
-  licking_r = (get_touched_channel(my_touched, 1) == 1);
+  licking_l = (random(0, 10000) < 3);    
+  licking_r = (random(0, 10000) < 3); 
 
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])

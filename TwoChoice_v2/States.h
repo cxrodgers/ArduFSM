@@ -113,6 +113,7 @@ class StateResponseWindow : public TimedState {
     unsigned int my_rewards_this_trial = 0;
     void loop();
     void s_finish();
+    virtual void set_licking_variables(bool &, bool &);
   
   public:
     void update(uint16_t touched, unsigned int rewards_this_trial);
@@ -126,10 +127,20 @@ class StateFakeResponseWindow : public TimedState {
     unsigned int my_rewards_this_trial = 0;
     void loop();
     void s_finish();
+    void set_licking_variables(bool &, bool &);
   
   public:
     void update(uint16_t touched, unsigned int rewards_this_trial);
     StateFakeResponseWindow(unsigned long d) : TimedState(d) { };
+};
+
+class StateFakeResponseWindow2 : public StateResponseWindow {
+  protected:
+    void set_touched_randomly();
+    void set_licking_variables(bool &, bool &);
+  
+  public:
+    StateFakeResponseWindow2(unsigned long d) : StateResponseWindow(d) { };
 };
 
 class StateInterRotationPause : public TimedState {
