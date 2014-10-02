@@ -79,7 +79,7 @@ void StateResponseWindow::loop()
   else if (!licking_l && licking_r)
     current_response = RIGHT;
   else
-    Serial.println("this should never happen");
+    Serial.println("ERR this should never happen");
 
   // Only assign result if this is the first response
   if (results_values[tridx_RESPONSE] == 0)
@@ -87,17 +87,21 @@ void StateResponseWindow::loop()
   
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
-  {
+  { // Hit on left
     next_state = REWARD_L;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
-  {
+  { // Hit on right
     next_state = REWARD_R;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
   else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
-  {
+  { // Error made, TOE is false
+    // Decide how to deal with this non-TOE case
+  }
+  else
+  { // Error made, TOE is true
     next_state = ERROR;
     results_values[tridx_OUTCOME] = OUTCOME_ERROR;
   }

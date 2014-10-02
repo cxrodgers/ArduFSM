@@ -125,24 +125,14 @@ def translate_trial_matrix(trial_matrix):
     
     # How to deal with current trial here?
     if 'outcome' in trial_matrix:
-        #~ trial_matrix['outcome'] = trial_matrix['outcome'].replace({
-            #~ 1 : 'hit',
-            #~ 2 : 'error',
-            #~ 3 : 'wrong_port',
-            #~ })
-        
         trial_matrix['outcome'] = my_replace(trial_matrix['outcome'], {
             HIT: 'hit', ERROR: 'error', SPOIL: 'spoil'})
     if 'choice' in trial_matrix:
-        #~ trial_matrix['choice'] = trial_matrix['choice'].replace({
-            #~ LEFT : 'left',
-            #~ RIGHT : 'right',
-            #~ NOGO : 'nogo',
-            #~ })
-        
         trial_matrix['choice'] = my_replace(trial_matrix['choice'], {
             LEFT: 'left', RIGHT: 'right', NOGO: 'nogo'})
-        
+    if 'rewside' in trial_matrix:
+        trial_matrix['rewside'] = my_replace(trial_matrix['rewside'], {
+            LEFT: 'left', RIGHT: 'right'})
 
     return trial_matrix
     

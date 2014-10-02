@@ -247,6 +247,7 @@ class Plotter(object):
         ## PLOTTING finalize
         plt.show()
         plt.draw()    
+        1/0
     
     def update_till_interrupt(self, filename, interval=.3):
         # update over and over
@@ -376,8 +377,9 @@ class PlotterWithServoThrow(Plotter):
         trials_info['servo_intpos'] = integer_positions
         
         # Finally combine with side info
+        is_right = trials_info['rewside'] == 'right'
         trials_info['trial_type'] = \
-            trials_info['rewside'] * self.servo_throw + integer_positions
+            is_right * self.servo_throw + integer_positions
         
         return trials_info
 
