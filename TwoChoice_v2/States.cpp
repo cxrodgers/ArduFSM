@@ -60,9 +60,6 @@ void StateResponseWindow::loop()
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
   
-  //~ licking_l = (get_touched_channel(my_touched, 0) == 1);
-  //~ licking_r = (get_touched_channel(my_touched, 1) == 1); 
-    
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -118,96 +115,19 @@ void StateResponseWindow::s_finish()
   next_state = INTER_TRIAL_INTERVAL;
 }
 
-
 void StateResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
-{
+{ /* Gets the current licking status from the touched variable for each port */
   licking_l = (get_touched_channel(my_touched, 0) == 1);
   licking_r = (get_touched_channel(my_touched, 1) == 1);    
 }
 
+
+//// StateFakeResponsewindow
+// Differs only in that it randomly fakes a response
 void StateFakeResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
-{
+{ /* Fakes a response by randomly choosing lick status for each */
   licking_l = (random(0, 10000) < 3);    
   licking_r = (random(0, 10000) < 3);   
-}
-
-void StateFakeResponseWindow2::set_licking_variables(bool &licking_l, bool &licking_r)
-{
-  licking_l = (random(0, 10000) < 3);    
-  licking_r = (random(0, 10000) < 3);   
-}
-
-
-
-//// StateFakeResponseWindow
-void StateFakeResponseWindow::update(uint16_t touched, unsigned int rewards_this_trial)
-{
-  my_touched = touched;
-  my_rewards_this_trial = rewards_this_trial;
-}
-
-void StateFakeResponseWindow::loop()
-{
-  int current_response;
-  bool licking_l;
-  bool licking_r;
-  
-  licking_l = (random(0, 10000) < 3);    
-  licking_r = (random(0, 10000) < 3); 
-
-  // transition if max rewards reached
-  if (my_rewards_this_trial >= param_values[tpidx_MRT])
-  {
-    next_state = PRE_SERVO_WAIT;
-    flag_stop = 1;
-    return;
-  }
-
-  // Do nothing if both or neither are being licked.
-  // Otherwise, assign current_response.
-  if (!licking_l && !licking_r)
-    return;
-  else if (licking_l && licking_r)
-    return;
-  else if (licking_l && !licking_r)
-    current_response = LEFT;
-  else if (!licking_l && licking_r)
-    current_response = RIGHT;
-  else
-    Serial.println("this should never happen");
-
-  // Only assign result if this is the first response
-  if (results_values[tridx_RESPONSE] == 0)
-    results_values[tridx_RESPONSE] = current_response;
-  
-  // Move to reward state, or error if TOE is set, or otherwise stay
-  if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
-  {
-    next_state = REWARD_L;
-    results_values[tridx_OUTCOME] = OUTCOME_HIT;
-  }
-  else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
-  {
-    next_state = REWARD_R;
-    results_values[tridx_OUTCOME] = OUTCOME_HIT;
-  }
-  else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
-  {
-    next_state = ERROR;
-    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
-  }
-}
-
-void StateFakeResponseWindow::s_finish()
-{
-  // If response is still not set, mark as spoiled
-  if (results_values[tridx_RESPONSE] == 0)
-  {
-    results_values[tridx_RESPONSE] = NOGO;
-    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
-  }
-
-  next_state = INTER_TRIAL_INTERVAL;
 }
 
 
