@@ -1,11 +1,13 @@
 # Test script for SimpleTrialRelease
 import ArduFSM
 import TrialSpeak, TrialMatrix
-import numpy as np
+import numpy as np, pandas
+import my
+import time
 
 logfilename = 'out.log'
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1, serial_port='/dev/ttyACM1')
+    serial_timeout=.1, serial_port='/dev/ttyACM0')
 
 # The ones that are fixed at the beginning
 initial_params = {
@@ -17,6 +19,17 @@ initial_params = {
     'RWIN': 10000,
     }
 
+# Define the possible types of trials here
+# This should be loaded from disk, not written to disk.
+trial_types = pandas.DataFrame.from_records([
+    {'name':'CV-L-1150-050', 'srvpos':1150, 'stppos':50, 'rewside':'left',},
+    {'name':'CC-R-1150-150', 'srvpos':1150, 'stppos':150, 'rewside':'right',},
+    {'name':'CV-L-1175-050', 'srvpos':1175, 'stppos':50, 'rewside':'left',},
+    {'name':'CC-R-1175-150', 'srvpos':1175, 'stppos':150, 'rewside':'right',},
+    ])
+trial_types.to_pickle('trial_types_2stppos')
+
+
 def generate_trial_params(trial_matrix):
     """Given trial matrix so far, generate params for next"""
     res = {}
@@ -24,21 +37,32 @@ def generate_trial_params(trial_matrix):
     assert trial_matrix['release_time'].isnull().irow(-1)
     
     # But that it has been responded
-    assert not trial_matrix['resp'].isnull().irow(-1)
+    assert not trial_matrix['choice'].isnull().irow(-1)
     
+    # Set side to left by default, and otherwise forced alt
     if len(trial_matrix) < 2:
-        res['RWSD'] = 1
+        res['RWSD'] = 'left'
     else:
         # Get last trial
         last_trial = trial_matrix.irow(-1)
-        if last_trial['resp'] == last_trial['rwsd']:
-            res['RWSD'] = {1: 2, 2:1}[last_trial['rwsd']]
+        if last_trial['choice'] == last_trial['rewside']:
+            res['RWSD'] = {'left': 'right', 'right':'left'}[last_trial['rewside']]
         else:
-            res['RWSD'] = last_trial['rwsd']
+            res['RWSD'] = last_trial['rewside']
     
-    res['STPPOS'] = np.random.randint(1, 10)
-    res['SRVPOS'] = np.random.randint(1, 10)
+    # Use the forced side to choose from trial_types
+    sub_trial_types = my.pick_rows(trial_types, rewside=res['RWSD'])
+    assert len(sub_trial_types) > 0
+    idx = sub_trial_types.index[np.random.randint(0, len(sub_trial_types))]
+    
+    res['STPPOS'] = trial_types['stppos'][idx]
+    res['SRVPOS'] = trial_types['srvpos'][idx]
     res['ITI'] = np.random.randint(10000)
+    
+    # Untranslate the rewside
+    # This should be done more consistently, eg, use real phrases above here
+    # and only untranslate at this point.
+    res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
     
     return res
 
@@ -83,13 +107,14 @@ try:
             continue
         else:
             # Trial has been completed, and needs to be released
-            params = generate_trial_params(trial_matrix)
+            params = generate_trial_params(translated_trial_matrix)
 
             # Set them
             for param_name, param_val in params.items():
                 chatter.write_to_device(
                     TrialSpeak.command_set_parameter(
                         param_name, param_val))
+                time.sleep(1.0)
             
             # Release
             chatter.write_to_device(TrialSpeak.command_release_trial())

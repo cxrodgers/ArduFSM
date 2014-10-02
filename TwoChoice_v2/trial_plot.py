@@ -1,10 +1,14 @@
 # Plot behavioral results versus trial
 
-import numpy as np, glob
+import numpy as np, glob, pandas
 import ArduFSM
 import ArduFSM.plot2
 import time
 import matplotlib.pyplot as plt
+
+
+# Load trial types that were used from disk]
+trial_types = pandas.read_pickle('trial_types_2stppos')
 
 
 # Most recent file
@@ -16,8 +20,7 @@ with file(filename) as fi:
     lines = fi.readlines()
 
 # initiate plotter object
-plotter = ArduFSM.plot2.PlotterWithServoThrow(
-    pos_near=1150, pos_delta=25, servo_throw=1)
+plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
 
 # initiate the graphics
 plotter.init_handles()
@@ -26,5 +29,5 @@ plotter.init_handles()
 plotter.update(filename)
 
 # update forever
-plotter.update_till_interrupt(filename, interval=1)
+#~ plotter.update_till_interrupt(filename, interval=1)
 

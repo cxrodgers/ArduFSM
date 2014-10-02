@@ -147,7 +147,7 @@ class Plotter(object):
         # turn the rewards into a title string
         title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
         
-        
+        anova_stats = ''
         ## A line of info about unforced trials
         title_string += 'UF: '
         if 0 in side2perf:
@@ -156,13 +156,13 @@ class Plotter(object):
         if 1 in side2perf:
             title_string += 'R: ' + \
                 format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
-        if len(trials_info) > self.cached_anova_len1 or self.cached_anova_text1 == '':
-            anova_stats = trials_info_tools.run_anova(
-                trials_info, remove_bad=True)
-            self.cached_anova_text1 = anova_stats
-            self.cached_anova_len1 = len(trials_info)
-        else:
-            anova_stats = self.cached_anova_text1
+        #~ if len(trials_info) > self.cached_anova_len1 or self.cached_anova_text1 == '':
+            #~ anova_stats = trials_info_tools.run_anova(
+                #~ trials_info, remove_bad=True)
+            #~ self.cached_anova_text1 = anova_stats
+            #~ self.cached_anova_len1 = len(trials_info)
+        #~ else:
+            #~ anova_stats = self.cached_anova_text1
         title_string += '. Biases: ' + anova_stats
         title_string += '\n'
         
@@ -247,7 +247,6 @@ class Plotter(object):
         ## PLOTTING finalize
         plt.show()
         plt.draw()    
-        1/0
     
     def update_till_interrupt(self, filename, interval=.3):
         # update over and over
@@ -316,79 +315,105 @@ class PlotterByStimNumber(Plotter):
 
 class PlotterWithServoThrow(Plotter):
     """Object encapsulating the logic and parameters to plot trials by throw."""
-    def __init__(self, pos_near=1150, pos_delta=25, servo_throw=8,
-        **base_kwargs):
+    def __init__(self, trial_types, **base_kwargs):
         # Initialize base
         super(PlotterWithServoThrow, self).__init__(**base_kwargs)
         
         # Initialize me
-        self.pos_near = pos_near
-        self.pos_delta = pos_delta
-        self.servo_throw = servo_throw        
-    
-    def update_trial_type_parameters(self, lines):
-        """Looks for changes in servo throw or pos delta params.
+        self.trial_types = trial_types
         
-        lines: read from file
-        """
-        # update servo_throw in case it has increased
-        st_lines = filter(lambda line: 'SET ST ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_servo_throw = int(st_line.strip().split()[-1])
-            
-            # only update if increased
-            if inferred_servo_throw > self.servo_throw:
-                self.servo_throw = inferred_servo_throw
-
-        # extract pos_delta from history
-        st_lines = filter(lambda line: 'SET PD ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_pos_delta = int(st_line.strip().split()[-1])
-            self.pos_delta = inferred_pos_delta    
-    
     def assign_trial_type_to_trials_info(self, trials_info):
         """Returns a copy of trials_info with a column called trial_type.
         
-        # Sequentially assign from LEFT to RIGHT in increasing servo throw
-        # eg LEFT 1150, LEFT 1175, LEFT 1200, RIGHT 1150, RIGHT 1175, RIGHT 1200
+        We match the srvpos and stppos variables in trials_info to the 
+        corresponding rows of self.trial_types. The index of the matching row
+        is the trial type for that trial.
+        
+        Warnings are issued if keywords are missing, multiple matches are 
+        found (in which case the first is used), or no match is found
+        (in which case the first trial type is used, although this should
+        probably be changed to None).
         """
         trials_info = trials_info.copy()
         
-        # Check if any don't integer divide by pos_delta
-        if np.any(np.mod(trials_info['servo_position'] - self.pos_near, 
-            self.pos_delta) != 0):
-            print "error: raw servo positions do not divide by POS_DELTA"
+        # Set up the pick kwargs for how we're going to pick the matching type
+        # The key is the name in self.trial_types, and the value is the name
+        # in trials_info
+        pick_kwargs = {'stppos': 'stepper_pos', 'srvpos': 'servo_pos', 
+            'rewside': 'rewside'}
         
-        # Divide by pos_delta
-        integer_positions = (
-            trials_info['servo_position'] - self.pos_near) / self.pos_delta
+        # Test for missing kwargs
+        warn_missing_kwarg = []
+        for key, val in pick_kwargs.items():
+            if val not in trials_info.columns:
+                pick_kwargs.pop(key)
+                warn_missing_kwarg.append(key)
+        if len(warn_missing_kwarg) > 0:
+            print "warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg)
         
-        # Check if any are out of range
-        if np.any(integer_positions < 0) or np.any(
-            integer_positions >= self.servo_throw):
-            print "warning: positions below or above servo throw thresholds"
-            integer_positions[integer_positions < 0] = 0
-            integer_positions[integer_positions >= self.servo_throw] = \
-                self.servo_throw - 1
+        # Iterate over trials
+        # Could probably be done more efficiently with a groupby
+        trial_types_l = []
+        warn_no_matches = []
+        warn_multiple_matches = []
+        warn_missing_data = []
+        warn_type_error = []
+        for idx, ti_row in trials_info.iterrows():
+            # Pick the matching row in trial_types
+            trial_pick_kwargs = dict([
+                (k, ti_row[v]) for k, v in pick_kwargs.items() 
+                if not pandas.isnull(ti_row[v])])
+            
+            # Try to pick
+            try:
+                pick_idxs = my.pick(self.trial_types, **trial_pick_kwargs)
+            except TypeError:
+                # typically, comparing string with int
+                warn_type_error.append(idx)
+                pick_idxs = [0]
+            
+            # error check missing data
+            if len(trial_pick_kwargs) < len(pick_kwargs):
+                warn_missing_data.append(idx)            
+            
+            # error-check and reduce to single index
+            if len(pick_idxs) == 0:
+                # no match, use the first trial type
+                1/0
+                warn_no_matches.append(idx)
+                pick_idx = 0
+            elif len(pick_idxs) > 1:
+                # multiple match
+                warn_multiple_matches.append(idx)
+                pick_idx = pick_idxs[0]
+            else:
+                # no error
+                pick_idx = pick_idxs[0]
+            
+            # Store result
+            trial_types_l.append(pick_idx)
 
-        # Store integer position
-        trials_info['servo_intpos'] = integer_positions
-        
-        # Finally combine with side info
-        is_right = trials_info['rewside'] == 'right'
-        trials_info['trial_type'] = \
-            is_right * self.servo_throw + integer_positions
-        
+        # issue warnings
+        if len(warn_type_error) > 0:
+            print "error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error))
+        if len(warn_missing_data) > 0:
+            print "error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data))
+        if len(warn_no_matches) > 0:
+            print "error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches))
+        elif len(warn_multiple_matches) > 0:
+            print "error: multiple matches found on some trials"
+
+        # Put into trials_info and return
+        trials_info['trial_type'] = trial_types_l
         return trials_info
 
     def get_list_of_trial_type_names(self):
         """Name of each trial type."""
-        res = \
-            ['LEFT %d' % n for n in range(self.servo_throw)] + \
-            ['RIGHT %d' % n for n in range(self.servo_throw)]
-        
+        res = list(self.trial_types['name'])        
         return res
 
 

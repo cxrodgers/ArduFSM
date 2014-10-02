@@ -119,7 +119,8 @@ def translate_trial_matrix(trial_matrix):
         'rwsd': 'rewside',
         'resp': 'choice',
         'outc': 'outcome',
-        'srvpos': 'servo_position',
+        'srvpos': 'servo_pos',
+        'stppos': 'stepper_pos'
         })
     
     
