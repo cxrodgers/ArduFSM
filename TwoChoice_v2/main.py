@@ -1,13 +1,14 @@
 # Test script for SimpleTrialRelease
 import ArduFSM
+import ArduFSM.chat2
 import TrialSpeak, TrialMatrix
 import numpy as np, pandas
 import my
 import time
 
 logfilename = 'out.log'
-chatter = ArduFSM.chat.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1, serial_port='/dev/ttyACM0')
+chatter = ArduFSM.chat2.Chatter(to_user=logfilename, baud_rate=115200, 
+    serial_timeout=.1, serial_port='/dev/ttyACM1')
 
 # The ones that are fixed at the beginning
 initial_params = {
@@ -80,13 +81,12 @@ def choose_params_send_and_release(translated_trial_matrix):
 
     # Set them
     for param_name, param_val in params.items():
-        chatter.write_to_device(
+        chatter.queued_write_to_device(
             TrialSpeak.command_set_parameter(
                 param_name, param_val))
-        time.sleep(1.0)
     
     # Release
-    chatter.write_to_device(TrialSpeak.command_release_trial())    
+    chatter.queued_write_to_device(TrialSpeak.command_release_trial())    
 
 def is_current_trial_incomplete(translated_trial_matrix):
     if len(translated_trial_matrix) < 1:
@@ -110,7 +110,9 @@ try:
         # Behavior depends on how much data has been received
         if len(splines) == 0:
             # No data received, or possibly munged data received.
-            # Add some more error checks for this            
+            # Add some more error checks for this   
+            # Are we starting at time 0? Is the encoding corrupted?
+            # Is the TrialSpeak version right?
             continue
         if len(splines) == 1:
             # Some data has been received, so the Arduino has booted up.
@@ -121,8 +123,7 @@ try:
                 # Send each initial param
                 for param_name, param_val in initial_params.items():
                     cmd = TrialSpeak.command_set_parameter(param_name, param_val)           
-                    chatter.write_to_device(cmd)
-                    time.sleep(0.5)
+                    chatter.queued_write_to_device(cmd)
                 
                 # Mark as sent
                 initial_params_sent = True
