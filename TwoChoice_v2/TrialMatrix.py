@@ -17,15 +17,27 @@ def make_trials_info_from_splines(lines_split_by_trial,
         trial_start : time in seconds at which TRL_START was issued
         trial_released: time in seconds at which trial was released
         All parameters listed for each trial.
+ 
+
+    The first entry in lines_split_by_trial is taken to be info about setup,
+    not about the first trial.
     
-    Always inserts columns for always_insert, even if they weren't present.
+    Behavior depends on the length of lines_split_by_trial:
+        0:  it is empty, so None is returned
+        1:  only setup info, so None is returned
+        >1: the first entry is ignored, and subsequent entries become
+            rows in the resulting DataFrame.
+
+    If a DataFrame is returned, then the columns in always_insert are
+    always inserted, even if they weren't present.
     The main use-case is the response columns which are missing during the
     first trial but which most code assumes exists.
-    
-    Currently returns None if no data available.
     """
+    if len(lines_split_by_trial) < 1:
+        return None
+    
     rec_l = []
-    for spline in lines_split_by_trial:
+    for spline in lines_split_by_trial[1:]:
         # Parse into time, cmd, argument with helper function
         parsed_lines = TrialSpeak.parse_lines_into_df(spline)
         
@@ -44,16 +56,17 @@ def make_trials_info_from_splines(lines_split_by_trial,
         
         # Append results
         rec_l.append(rec)
-    
-    if len(lines_split_by_trial) == 0:
-        # Or if we couldn't find parameters above?
-        return None
-    
+        
     # DataFrame
     trials_info = pandas.DataFrame.from_records(rec_l)
     
     # Define duration
-    trials_info['duration'] = trials_info['release_time'] - trials_info['start_time']
+    if 'release_time' in trials_info.columns and 'start_time' in trials_info.columns:
+        trials_info['duration'] = trials_info['release_time'] - trials_info['start_time']
+    else:
+        trials_info['release_time'] = pandas.Series([], dtype=np.float)
+        trials_info['start_time'] = pandas.Series([], dtype=np.float)
+        trials_info['duration'] = pandas.Series([], dtype=np.float)
     
     # Reorder
     ordered_cols = ['start_time', 'release_time', 'duration']

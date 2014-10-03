@@ -41,6 +41,9 @@ def split_by_trial(lines):
 
     Returns: splines, a list of list of lines, each beginning with
     TRIAL START (which is when the current trial params are determined).
+    
+    Note that this means that the first entry (if it exists) will always be 
+    setup info, not trial info.
     """
     if len(lines) == 0:
         return [[]]
