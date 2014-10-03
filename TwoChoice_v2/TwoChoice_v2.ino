@@ -175,6 +175,7 @@ void loop()
   
   // misc
   int status = 1;
+  String write_string;
   
   //// User protocol variables
   uint16_t touched = 0;
@@ -220,8 +221,12 @@ void loop()
       Serial.println((String) time + " TRL_START");
       for(int i=0; i < N_TRIAL_PARAMS; i++)
       {
-        Serial.println((String) time + " TRLP " + (String) param_abbrevs[i] + 
-          " " + (String) param_values[i]);
+        write_string = (String) time + " TRLP " + (String) param_abbrevs[i] + 
+          " " + (String) param_values[i];
+        Serial.println(write_string);
+        
+        //write_string += "\n";
+        //buffered_write(write_string);
       }
     
       // Set up trial_results to defaults

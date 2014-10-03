@@ -18,4 +18,7 @@ int handle_chat(String received_chat,
 //// General chat stuff
 String receive_chat();
 
+
+int buffered_write(String s);
+int drain_output_buffer();
 #endif

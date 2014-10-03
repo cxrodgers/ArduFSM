@@ -19,6 +19,65 @@ String receive_line = "";
 unsigned long speak_at = 1000;
 unsigned long interval = 1000;
 
+// Output ring buffer
+// Errors if this is more than 200
+// And even if it is only 200 it starts acting weird
+#define SZ_OUTPUT_BUFFER 200
+#define OUTPUT_BUFFER_CHUNK 50
+char output_buffer[SZ_OUTPUT_BUFFER];
+int output_buffer_r = 0;
+int output_buffer_w = 0;
+
+
+int buffered_write(String s)
+{
+  // put string into buffer
+  for(int ichar=0; ichar<s.length(); ichar++)
+  {
+    // Write each character into the buffer
+    output_buffer[output_buffer_w] = s[ichar];
+    
+    // Increment write pointer  
+    //~ Serial.println((String) output_buffer_w);
+    output_buffer_w++;
+    if (output_buffer_w >= SZ_OUTPUT_BUFFER)
+    {
+      output_buffer_w = 0;
+    }
+    
+    // Error check
+    if (output_buffer_w == output_buffer_r)
+    {
+      // r should always be lagging w immediately after a write.
+      Serial.println("ERROR OUTPUT BUFFER OVERRUN");
+    }
+  }
+}
+
+int drain_output_buffer()
+{
+  // Write out at most OUTPUT_BUFFER_CHUNK characters
+  // Ideally, we would also break this loop if the Serial.print buffer is full
+  for(int ichar=0; ichar<OUTPUT_BUFFER_CHUNK; ichar++)
+  {
+    // Stop if there is no more to read
+    if (output_buffer_r == output_buffer_w)
+    {
+      break;
+    }
+    
+    // Read a character from buffer and print it
+    Serial.print(output_buffer[output_buffer_r]);
+    
+    // Increment read pointer
+    output_buffer_r++;
+    if (output_buffer_r >= SZ_OUTPUT_BUFFER)
+    {
+      output_buffer_r = 0;
+    }    
+  }
+}
+
 
 //// Functions for receiving chats
 String receive_chat()
@@ -102,6 +161,9 @@ int communications(unsigned long time)
     speak_at += interval;
   }
 
+  //// Drain the buffer
+  //drain_output_buffer();
+  
   //// Receive and deal with chat
   received_chat = receive_chat();
   if (received_chat.length() > 0)
