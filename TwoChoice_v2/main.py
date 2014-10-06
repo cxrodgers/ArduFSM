@@ -5,10 +5,12 @@ import TrialSpeak, TrialMatrix
 import numpy as np, pandas
 import my
 import time
+import curses
+import trial_setter_ui
 
 logfilename = 'out.log'
 chatter = ArduFSM.chat2.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1, serial_port='/dev/ttyACM1')
+    serial_timeout=.1, serial_port='/dev/ttyACM0')
 
 # The ones that are fixed at the beginning
 initial_params = {
@@ -96,17 +98,43 @@ def is_current_trial_incomplete(translated_trial_matrix):
     
     return translated_trial_matrix['choice'].isnull().irow(-1)
 
+
+## Initialize UI
+ui_params = initial_params.items()
+ui_scheduler = {
+    'name': 'forced alternation',
+    'params': [
+        ('FD', 'R'),
+        ('RPB', 1000),
+        ]
+    }
+
+ui = trial_setter_ui.UI(timeout=1000, chatter=chatter, logfilename=logfilename,
+    params=ui_params, scheduler=ui_scheduler)
+
+try:
+    ui.start()
+except:
+    ui.close()
+    print "error encountered when starting UI"
+    raise
+    
+
+
 ## Main loop
 initial_params_sent = False
 last_released_trial = -1
 try:
     while True:
+        ## Chat updates
         # Update chatter
-        chatter.update(echo_to_stdout=True)
+        chatter.update(echo_to_stdout=False)
         
         # Check log
         splines = TrialSpeak.load_splines_from_file(logfilename)
 
+
+        ## Initialization stuff
         # Behavior depends on how much data has been received
         if len(splines) == 0:
             # No data received, or possibly munged data received.
@@ -128,16 +156,17 @@ try:
                 # Mark as sent
                 initial_params_sent = True
 
+        ## Construct trial_matrix
         # Now we know that the Arduino has booted up and that the initial
         # params have been sent.
         # Construct trial_matrix
         trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
         current_trial = len(trial_matrix) - 1
         
-        
         # Translate
         translated_trial_matrix = TrialSpeak.translate_trial_matrix(trial_matrix)
-
+        
+        ## Trial releasing logic
         # Was the last released trial the current one or the next one?
         if last_released_trial < current_trial:
             raise "unreleased trials have occurred, somehow"
@@ -162,6 +191,11 @@ try:
         
         else:
             raise "too many trials have been released, somehow"
+        
+        
+        ## Update UI
+        ui.get_and_handle_keypress()
+        
 
 
 ## End cleanly upon keyboard interrupt signal
@@ -171,4 +205,8 @@ except:
     raise
 finally:
     chatter.close()
-    print "Closed."
+    ui.close()
+    print "chatter and UI closed"
+    
+
+
