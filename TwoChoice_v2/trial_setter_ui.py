@@ -2,22 +2,13 @@
 import curses
 import numpy as np
 import os.path, shutil
-
+import TrialSpeak
 
 HEADINGS = """
 Actions                |          Parameters         |        Scheduler
 ------------------------------------------------------------------------------
 """
 
-"""
-(L) reward L                  MRT      |         3       "forced alternation"
-(R) reward R                  RWIN     |       1000        FD     |    R
-(W) reward current                                         RPB    |    1
-(Q) save+quit
-
-(P) set parameter
-(S) set scheduler
-"""
 
 def clear_line(line_num, stdscr):
     stdscr.move(line_num, 0)
@@ -60,6 +51,21 @@ class UIActionTaker:
         
         # Quit
         raise QuitException("saved as %s" % new_filename)
+    
+    def set_param(self):
+        # Get name and value
+        param_name = self.ui.get_additional_input("Enter param name: ").strip().upper()
+        param_value = self.ui.get_additional_input("Enter param value: ").strip()
+        
+        # Send to device
+        cmd = TrialSpeak.command_set_parameter(param_name, param_value)
+        self.chatter.queued_write_to_device(cmd)
+        
+        # Update in ui params
+        uipd = dict(self.ui.params)
+        uipd[param_name] = int(param_value)
+        self.ui.update_data(params=uipd.items())
+        
 
 
 class UI:
@@ -108,6 +114,7 @@ class UI:
             ('R', 'reward R', self.ui_action_taker.ui_action_reward_r),
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
             ('Q', 'save + quit', self.ui_action_taker.ui_action_save),
+            ('P', 'set param', self.ui_action_taker.set_param),
             ]
     
     def start(self):
@@ -224,6 +231,7 @@ class UI:
     
     def draw_menu(self):
         """Writes the whole menu to the screen."""
+        self.stdscr.clear()
         self.write_banner()
         self.write_headings()
         self.write_actions()
