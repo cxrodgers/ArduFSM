@@ -109,30 +109,33 @@ ui_scheduler = {
         ]
     }
 
-ui = trial_setter_ui.UI(timeout=1000, chatter=chatter, logfilename=logfilename,
-    params=ui_params, scheduler=ui_scheduler)
+RUN_UI = True
+if RUN_UI:
+    ui = trial_setter_ui.UI(timeout=1000, chatter=chatter, logfilename=logfilename,
+        params=ui_params, scheduler=ui_scheduler)
 
-try:
-    ui.start()
-except:
-    ui.close()
-    print "error encountered when starting UI"
-    raise
+    try:
+        ui.start()
+    except:
+        ui.close()
+        print "error encountered when starting UI"
+        raise
     
 
 
 ## Main loop
 initial_params_sent = False
 last_released_trial = -1
+final_message = None
 try:
     while True:
         ## Chat updates
         # Update chatter
         chatter.update(echo_to_stdout=False)
         
-        # Check log
-        splines = TrialSpeak.load_splines_from_file(logfilename)
-
+        # Read lines and split by trial
+        logfile_lines = TrialSpeak.read_lines_from_file(logfilename)
+        splines = TrialSpeak.split_by_trial(logfile_lines)
 
         ## Initialization stuff
         # Behavior depends on how much data has been received
@@ -194,19 +197,27 @@ try:
         
         
         ## Update UI
-        ui.get_and_handle_keypress()
-        
+        if RUN_UI:
+            ui.update_data(logfile_lines=logfile_lines)
+            ui.get_and_handle_keypress()
+            
 
 
 ## End cleanly upon keyboard interrupt signal
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
+except trial_setter_ui.QuitException as qe:
+    final_message = qe.message
 except:
     raise
 finally:
     chatter.close()
-    ui.close()
+    if RUN_UI:
+        ui.close()
     print "chatter and UI closed"
+    
+    if final_message is not None:
+        print final_message
     
 
 
