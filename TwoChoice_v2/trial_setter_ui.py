@@ -276,11 +276,11 @@ class UI:
         start_row = self.element_row['scheduler_panel']
         col = self.element_col['scheduler_panel']
         
-        if 'name' in self.scheduler:
-            self.stdscr.addstr(start_row, col, self.scheduler['name'])
+        if hasattr(self.scheduler, 'name'):
+            self.stdscr.addstr(start_row, col, self.scheduler.name)
         
-        if 'params' in self.scheduler:
-            for nparam, (name, value) in enumerate(self.scheduler['params']):
+        if hasattr(self.scheduler, 'params'):
+            for nparam, (name, value) in enumerate(self.scheduler.params.items()):
                 s = '%s = %s' % (name, str(value))
                 self.stdscr.addstr(start_row + nparam + 1, col, s)
     
