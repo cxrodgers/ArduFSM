@@ -48,9 +48,10 @@ class UIActionTaker:
             new_filename = filename + '.' + mousename
             assert not os.path.exists(new_filename)
             shutil.copyfile(filename, new_filename)  
-        
-        # Quit
-        raise QuitException("saved as %s" % new_filename)
+            raise QuitException("saved as %s" % new_filename)            
+        else:
+            # Quit
+            raise QuitException("quitting without saving %s" % filename)
     
     def set_param(self):
         # Get name and value
