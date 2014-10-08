@@ -4,7 +4,7 @@ import my
 
 
 class ForcedAlternation:
-    def __init__(self, trial_types):
+    def __init__(self, trial_types, **kwargs):
         self.name = 'forced alternation'
         self.params = {
             'FD': 'X',
@@ -55,6 +55,48 @@ class ForcedAlternation:
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
             res['ITI'] = np.random.randint(10000)
+            
+        # Untranslate the rewside
+        # This should be done more consistently, eg, use real phrases above here
+        # and only untranslate at this point.
+        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        
+        return res
+
+    def choose_params_first_trial(self, trial_matrix):
+        """Called when params for first trial are needed"""
+        return self.generate_trial_params(trial_matrix)
+    
+    def choose_params(self, trial_matrix):
+        """Called when params for next trial are needed."""
+        return self.generate_trial_params(trial_matrix)
+
+
+
+class RandomStim:
+    def __init__(self, trial_types, **kwargs):
+        """Initialize a new RandomStim scheduler.
+        
+        Chooses randomly from rows in 'trial_types'.
+        """
+        self.name = 'random stim'
+        self.params = kwargs
+        self.trial_types = trial_types
+    
+    def generate_trial_params(self, trial_matrix):
+        """Given trial matrix so far, generate params for next trial.
+        
+        This object simply chooses randomly from all trial types, iid.
+        Returns in TrialSpeak. TODO: return straight from trial_types,
+        and let trial_setter2 handle the translation to TrialSpeak.
+        """
+        res = {}
+        
+
+        idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+        res['RWSD'] = self.trial_types['rewside'][idx]
+        res['STPPOS'] = self.trial_types['stppos'][idx]
+        res['SRVPOS'] = self.trial_types['srvpos'][idx]
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here

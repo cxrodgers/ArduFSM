@@ -3,6 +3,7 @@ import curses
 import numpy as np
 import os.path, shutil
 import TrialSpeak
+import Scheduler
 
 HEADINGS = """
 Actions                |          Parameters         |        Scheduler
@@ -19,7 +20,15 @@ class QuitException(Exception):
 
 ## Functions that are triggered by various user actions
 class UIActionTaker:
-    """Implements the actions that are parsed by the UI"""
+    """Implements the actions that are parsed by the UI.
+    
+    This object has a link to the ui itself, so it often effects these
+    actions by meddling with the variables inside ui, such as scheduler,
+    params, etc.
+    
+    The main purpose of separating it into its own object is to separate
+    the code for parsing user data and producing the result.
+    """
     def __init__(self, ui, chatter):
         self.ui = ui
         self.chatter = chatter
@@ -66,7 +75,25 @@ class UIActionTaker:
         uipd = dict(self.ui.params)
         uipd[param_name] = int(param_value)
         self.ui.update_data(params=uipd.items())
+    
+    def force_x(self, **kwargs):
+        """Set the ui.scheduler to be RandomStim
         
+        At the moment, this scheduler object is shared between trial setter
+        and ui objects.
+        """
+        self.ui.scheduler = Scheduler.RandomStim(
+            trial_types=self.ui.scheduler.trial_types,
+            **kwargs)
+        
+        return 'schedule changed'
+    
+    def force_alt(self, **kwargs):
+        self.ui.scheduler = Scheduler.ForcedAlternation(
+            trial_types=self.ui.scheduler.trial_types,
+            **kwargs)        
+        
+        return 'schedule changed'
 
 
 class UI:
@@ -82,10 +109,10 @@ class UI:
         # Create default positioning tables
         self.element_row = {
             'banner': 0,
-            'headings': 2,
-            'action_list': 5,
-            'param_list': 5,
-            'scheduler_panel': 5,
+            'headings': 1,
+            'action_list': 4,
+            'param_list': 4,
+            'scheduler_panel': 4,
             'info': 21,
             'user_input': 20,
             'addl_input_prompt': 20,
@@ -116,6 +143,8 @@ class UI:
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
             ('Q', 'save + quit', self.ui_action_taker.ui_action_save),
             ('P', 'set param', self.ui_action_taker.set_param),
+            ('X', 'force X', self.ui_action_taker.force_x),
+            ('A', 'force alt', self.ui_action_taker.force_alt),
             ]
     
     def start(self):
@@ -148,7 +177,13 @@ class UI:
         self.draw_menu()
     
     def get_and_handle_keypress(self):
-        """Take appropriate action for keypresss"""
+        """Take appropriate action for keypress
+        
+        Some actions (e.g., changing schedule) return a message 
+        (e.g., 'schedule changed') which will then be returned by this
+        function so that appropriate action can be taken upstream (e.g.,
+        updating the scheduler used by trial_setter).
+        """
         # clear user entry line
         clear_line(self.element_row['user_input'], self.stdscr)
         
@@ -176,7 +211,10 @@ class UI:
                 ui_action_rowidx = action_short_cut_l.index(c)
                 
                 # Call the function
-                self.ui_actions[ui_action_rowidx][2]()
+                res = self.ui_actions[ui_action_rowidx][2]()
+                
+                # Return any result
+                return res
             else:
                 self.print_info("Unknown shortcut: %s" % c)
 

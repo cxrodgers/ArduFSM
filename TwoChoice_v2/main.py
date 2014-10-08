@@ -34,7 +34,7 @@ initial_params = {
 
 ## Initialize the scheduler
 trial_types = pandas.read_pickle('trial_types_2stppos')
-scheduler = Scheduler.ForcedAlternation(trial_types=trial_types)
+scheduler = Scheduler.RandomStim(trial_types=trial_types)
 
 ## Trial setter
 ts_obj = trial_setter2.TrialSetter(chatter=chatter, initial_params=initial_params,
@@ -43,7 +43,7 @@ ts_obj = trial_setter2.TrialSetter(chatter=chatter, initial_params=initial_param
 ## Initialize UI
 ui_params = initial_params.items()
 RUN_UI = True
-ECHO_TO_STDOUT = True
+ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
     ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
         logfilename=logfilename,
@@ -76,7 +76,13 @@ try:
         ## Update UI
         if RUN_UI:
             ui.update_data(logfile_lines=logfile_lines)
-            ui.get_and_handle_keypress()
+            res = ui.get_and_handle_keypress()
+            
+            # Handle any change to scheduler (or params?)
+            # Probably, ui should have a hook to trial_setter, so that it
+            # can change ts_obj.scheduler directly.
+            if res == 'schedule changed':
+                ts_obj.scheduler = ui.scheduler
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
