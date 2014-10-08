@@ -209,15 +209,11 @@ int rotate(long n_steps)
     digitalWrite(ENABLE_STEPPER, HIGH);
   }
 
-  // pause?
-  //delay(100);
   
   // BLOCKING CALL //
   // Replace with more iterations of smaller steps
   stimStepper.step(n_steps);
-  
-  // pause?
-  //delay(100);
+
 
   // disable
   if (param_values[tpidx_2PSTP])
@@ -228,8 +224,7 @@ int rotate(long n_steps)
   {
     digitalWrite(ENABLE_STEPPER, LOW);
   }    
-  
-  //delay(100);
+
   
   return 0;
 }

@@ -306,11 +306,17 @@ void loop()
       break;
     
     case ERROR:
+      // Move servo back
+      linServo.write(param_values[tpidx_SRV_FAR]);        
+    
       Serial.println((String) time + " DBG wrong choice");
       next_state = INTER_TRIAL_INTERVAL;
       break;
       
     case INTER_TRIAL_INTERVAL:
+      // Move servo back
+      linServo.write(param_values[tpidx_SRV_FAR]);
+    
       // Announce trial_results
       state_inter_trial_interval.run(time);
       break;
