@@ -29,5 +29,5 @@ plotter.init_handles()
 plotter.update(filename)
 
 # update forever
-#~ plotter.update_till_interrupt(filename, interval=1)
+plotter.update_till_interrupt(filename, interval=1)
 

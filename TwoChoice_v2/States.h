@@ -29,6 +29,7 @@ into States.cpp.
 // * Should be latched, must be set at beginning ("RD_L")
 // * Should be latched, can use default here ("SRVFAR")
 // * Need to be set on every trial, else error ("STPPOS")
+// * Some, like STPSPD, are not being updated
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
 #define N_TRIAL_PARAMS 19
 #define tpidx_STPPOS 0

@@ -28,7 +28,7 @@ Here are the things that the user should have to change for each protocol:
 #include "States.h"
 
 
-#define FAKE_RESPONDER 1
+#define FAKE_RESPONDER 0
 
 extern String param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
@@ -123,7 +123,7 @@ void setup()
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
     
     // Initialize
-    stimStepper = Stepper(param_values[tpidx_STEP_SPEED], 
+    stimStepper = Stepper(200, 
       TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
   }
   else
@@ -135,7 +135,7 @@ void setup()
     pinMode(PIN_STEPPER4, OUTPUT);
     digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
     
-    stimStepper = Stepper(param_values[tpidx_STEP_SPEED], 
+    stimStepper = Stepper(200, 
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
 

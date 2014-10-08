@@ -1,4 +1,13 @@
-# Test script for SimpleTrialRelease
+# Main script to run to run TwoChoice_v2 behavior
+# Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
+# enough that the response is quick, but not so low that it takes up all the
+# CPU power.
+# Right now, it does this on each loop
+# * Update chatter (timeout)
+# * Update UI (timeout)
+# * do other things, like reading logfile and setting next trial
+# So, if the timeouts are too low, it spends a lot more time reading the
+# logfile and there is more overhead overall.
 import ArduFSM
 import ArduFSM.chat2
 import TrialSpeak, TrialMatrix
@@ -34,8 +43,9 @@ ts_obj = trial_setter2.TrialSetter(chatter=chatter, initial_params=initial_param
 ## Initialize UI
 ui_params = initial_params.items()
 RUN_UI = True
+ECHO_TO_STDOUT = True
 if RUN_UI:
-    ui = trial_setter_ui.UI(timeout=1000, chatter=chatter, 
+    ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
         logfilename=logfilename,
         params=ui_params, scheduler=scheduler)
 
@@ -53,9 +63,10 @@ try:
     while True:
         ## Chat updates
         # Update chatter
-        chatter.update(echo_to_stdout=False)
+        chatter.update(echo_to_stdout=ECHO_TO_STDOUT)
         
         # Read lines and split by trial
+        # Could we skip this step if chatter reports no new device lines?
         logfile_lines = TrialSpeak.read_lines_from_file(logfilename)
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
