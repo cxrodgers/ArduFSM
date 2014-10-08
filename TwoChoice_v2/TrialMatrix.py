@@ -29,7 +29,9 @@ def make_trials_info_from_splines(lines_split_by_trial,
             rows in the resulting DataFrame.
 
     If a DataFrame is returned, then the columns in always_insert are
-    always inserted, even if they weren't present.
+    always inserted, even if they weren't present. They will be inserted
+    with np.nan, so the dtype should be numerical, not stringy.
+    
     The main use-case is the response columns which are missing during the
     first trial but which most code assumes exists.
     """
@@ -78,47 +80,9 @@ def make_trials_info_from_splines(lines_split_by_trial,
     # Insert always_insert
     for col in always_insert:
         if col not in trials_info:
-            trials_info[col] = ''
+            trials_info[col] = np.nan
     
     # Name index
     trials_info.index.name = 'trial'
 
     return trials_info
-
-
-#~ def assign_outcome(trial_matrix):
-    #~ """Assigns an 'outcome' column based on 'rewside' and 'choice'.
-    
-    #~ This should not be necessary because it is handled on the arduino.
-    
-    #~ Silently does nothing if missing those columns.
-    #~ Returns a copy.
-    #~ I suppose this is protocol-specific since it assumes 2AC.
-    #~ """
-    #~ trial_matrix = trial_matrix.copy()
-    
-    #~ if 'outcome' not in trial_matrix:
-        #~ raise ValueError("outcome column missing")
-
-    #~ if 'choice' not in trial_matrix:
-        #~ raise ValueError("choice column missing")
-        #~ return trial_matrix
-
-    #~ if 'rewside' not in trial_matrix:
-        #~ raise ValueError("rewside column missing")
-        #~ return trial_matrix
-    
-    #~ # error by default
-    #~ trial_matrix['outcome'] = 'error'
-    
-    #~ # hit if choice == rewside
-    #~ trial_matrix['outcome'][
-        #~ trial_matrix['rewside'] == trial_matrix['choice']] = 'hit'
-    
-    #~ # spoil if choice == 'nogo'
-    #~ trial_matrix['outcome'][trial_matrix['choice'] == 'nogo'] = 'spoil'
-    
-    #~ # Set the last one to 'current'
-    #~ trial_matrix['choice'].ix[trial_matrix.index[-1]] = 'current'
-    
-    #~ return trial_matrix

@@ -71,7 +71,7 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        ts_obj.update(splines)
+        translated_trial_matrix = ts_obj.update(splines)
         
         ## Update UI
         if RUN_UI:

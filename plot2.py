@@ -210,7 +210,7 @@ class Plotter(object):
             # to the appropriate trial numbers and the ydata to the trial types
             line = self.graphics_handles['label2lines'][outcome]
             line.set_xdata(np.where(msk)[0])
-            line.set_ydata(trials_info['trial_type'][msk])
+            line.set_ydata(trials_info['trial_type'][msk].values)
 
         # plot vert bars where bad trials occurred
         msk = trials_info['bad']

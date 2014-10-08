@@ -105,13 +105,36 @@ def parse_lines_into_df(lines):
     return df
 
 
-def my_replace(ser, d):
-    """Some bug in pandas 0.12.0 replace function."""
+def my_replace(ser, d, nanval='nanval'):
+    """My version of pandas.Series.replace
+    
+    There is some bug in pandas 0.12.0 replace function. This is a
+    workaround.
+    
+    ser : Series
+    d   : dict. 
+    
+    First ser is converted to an object data-type, because this is only
+    intended to translate numeric data into strings.
+    
+    Then, for each key, value in d, all instances of key in ser are replaced
+    with value.
+    
+    Finally, because we can't directly compare with np.nan, all null rows
+    of ser are replaced with nanval.    
+    """
     # Need to convert to object incase new val has different type
     ser = ser.copy().astype(np.object)
     
+    # Replace each key, value
     for val, new_val in d.items():
         ser[ser == val] = new_val
+        if pandas.isnull(val):
+            raise ValueError("cannot compare to nan")
+    
+    # Replace nans
+    ser[ser.isnull()] = nanval
+    
     return ser
 
 
@@ -130,10 +153,12 @@ def translate_trial_matrix(trial_matrix):
     # How to deal with current trial here?
     if 'outcome' in trial_matrix:
         trial_matrix['outcome'] = my_replace(trial_matrix['outcome'], {
-            HIT: 'hit', ERROR: 'error', SPOIL: 'spoil'})
+            HIT: 'hit', ERROR: 'error', SPOIL: 'spoil'},
+            nanval='curr')
     if 'choice' in trial_matrix:
         trial_matrix['choice'] = my_replace(trial_matrix['choice'], {
-            LEFT: 'left', RIGHT: 'right', NOGO: 'nogo'})
+            LEFT: 'left', RIGHT: 'right', NOGO: 'nogo'},
+            nanval='curr')
     if 'rewside' in trial_matrix:
         trial_matrix['rewside'] = my_replace(trial_matrix['rewside'], {
             LEFT: 'left', RIGHT: 'right'})

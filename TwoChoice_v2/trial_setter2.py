@@ -21,7 +21,7 @@ def is_current_trial_incomplete(translated_trial_matrix):
     if 'choice' not in translated_trial_matrix.columns:
         raise ValueError("need translated matrix")
     
-    return translated_trial_matrix['choice'].isnull().irow(-1)
+    return translated_trial_matrix['choice'].irow(-1) == 'curr'
 
 
 def generate_trial_types():
@@ -126,3 +126,5 @@ class TrialSetter:
         
         else:
             raise "too many trials have been released, somehow"    
+        
+        return translated_trial_matrix
