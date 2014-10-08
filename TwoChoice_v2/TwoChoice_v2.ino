@@ -393,7 +393,7 @@ int take_action(String protocol_cmd, String argument1, String argument2)
 
 
 int safe_int_convert(String string_data, long &variable)
-{ /* Check that string_data can be converted to int before setting variable.
+{ /* Check that string_data can be converted to long before setting variable.
   
   Currently, variable cannot be set to 0 using this script. That is because
   toInt returns 0 upon error condition.
@@ -402,7 +402,7 @@ int safe_int_convert(String string_data, long &variable)
   
   Returns 1 if string data converts to 0 (ie, an error occurs).
   */
-  int conversion_var = string_data.toInt();
+  long conversion_var = string_data.toInt();
   if (conversion_var == 0)
   {
     return 1;

@@ -114,9 +114,8 @@ void StateResponseWindow::s_finish()
   {
     results_values[tridx_RESPONSE] = NOGO;
     results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    next_state = INTER_TRIAL_INTERVAL;
   }
-
-  next_state = INTER_TRIAL_INTERVAL;
 }
 
 void StateResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)

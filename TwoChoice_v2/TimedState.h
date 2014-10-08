@@ -49,7 +49,12 @@ class TimedState
     virtual void s_finish() {};
   
   public:
-    TimedState(unsigned long d) : duration(d) { };
+    TimedState(unsigned long d) : duration(d) { 
+      // This error check is pointless because d is cast
+      // Would be safer to keep d as a long, because that is what we mostly
+      // operate with. Then this error check would work.
+      if (d < 0) Serial.println("ERR duration <0"); 
+    };
     void run(unsigned long time);
     virtual void update() {};
 };
