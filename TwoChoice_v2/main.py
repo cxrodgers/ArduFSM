@@ -32,6 +32,35 @@ initial_params = {
     'RWIN': 10000,
     }
 
+YES = 2
+NO = 1
+
+# 
+# MD: this value must be defined on each rial (required_ET) or at the beginning (not required_ET)
+# rig-dependent: it will be loaded from rig-specific file, if available
+params_table = pandas.DataFrame.from_records([
+    ('STPPOS',  MD,     1, 1, 0, 0), # reqd on each trial
+    ('RWSD',    MD,      1, 1, 0, 0),
+    ('SRVPOS',  MD,      1, 1, 0, 0),
+    ('RDL',     MD,      0, 0, 1, 1), # latched, expected to change, rig-dependent
+    ('RDR',     MD,      0, 0, 1, 1),
+    ('ITI',     1000,   0, 0, 1, 0), # latched, expected to change
+    ('PSW',     1,      0, 0, 1, 0),
+    ('TOE',     NO,      0, 0, 1, 0),
+    ('MRT',     1,      0, 0, 1, 0),
+    ('STPSPD',  MD,   0, 0, 0, 1), # rig-dependent. changes are ignored
+    ('STPFR',   50,     0, 0, 0, 1),
+    ('2PSTP',   MD,   0, 0, 0, 1),
+    ('SRVST',   1000,   0, 0, 0, 1),
+    ('STPIP',   1,      0, 0, 0, 1),
+    ('SRVFAR',  1900,   0, 0, 0, 1), # rig-dependent, could in theory be changed, but not expected
+    ('SRVTT',   MD,       0, 0, 0, 1),
+    ('RWIN',    45000,  0, 0, 0, 0), # latched, could in theory be changed, but not expected
+    ('IRI',     1000,   0, 0, 0, 0),    
+    ],
+    names=('name', 'init_val', 'required_ET', 'reported_ET', 'ui_accessible', 'rig_dependent')
+    )
+
 ## Initialize the scheduler
 trial_types = pandas.read_pickle('trial_types_2stppos')
 scheduler = Scheduler.RandomStim(trial_types=trial_types)

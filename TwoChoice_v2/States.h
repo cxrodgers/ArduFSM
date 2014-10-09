@@ -30,27 +30,48 @@ into States.cpp.
 // * Should be latched, can use default here ("SRVFAR")
 // * Need to be set on every trial, else error ("STPPOS")
 // * Some, like STPSPD, are not being updated
+//
+// * Init-only: those, like STPSPD, that are only used at the very beginning
+// * Init-usually: those, like SRV_FAR, that could be varied later, but
+//   the use case is infrequent (or never) and possibly untested.
+// * Trial-required: those, like rewside, that must be specified on each trial 
+//   or error.
+// * Latched: those, like TO, that will often vary within a session
+//
+// Reported on each trial: trial-required, maybe latched
+// Reported initially only: init-only, probably init-usually
+// Reported on change only: latched, maybe init-usually
+//
+// Decision 1: Report latched on each trial or only on change?
+// Decision 2: Should init-usually be treated more like latched (see above),
+//             or more like init-only?
+//
+// The main things to add to this code are:
+// * Report TRLP only those that are marked "report-on-each-trial"
+// * Do not release trial until all "required-on-each-trial" are set
+// And we can argue about how these two categories map onto the categories above.
+//
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
 #define N_TRIAL_PARAMS 19
-#define tpidx_STPPOS 0
-#define tpidx_MRT 1
-#define tpidx_REWSIDE 2
-#define tpidx_SRVPOS 3
-#define tpidx_ITI 4
-#define tpidx_2PSTP 5
-#define tpidx_SRV_FAR 6
-#define tpidx_SRV_TRAVEL_TIME 7
-#define tpidx_RESP_WIN_DUR 8
-#define tpidx_INTER_REWARD_INTERVAL 9
-#define tpidx_REWARD_DUR_L 10
-#define tpidx_REWARD_DUR_R 11
-#define tpidx_SERVO_SETUP_T 12
-#define tpidx_PRE_SERVO_WAIT 13
-#define tpidx_TERMINATE_ON_ERR 14
-#define tpidx_ERROR_TIMEOUT 15
-#define tpidx_STEP_SPEED 16
-#define tpidx_STEP_FIRST_ROTATION 17
-#define tpidx_STEP_INITIAL_POS 18
+#define tpidx_STPPOS 0 // reqd
+#define tpidx_MRT 1 // latch
+#define tpidx_REWSIDE 2 // reqd
+#define tpidx_SRVPOS 3 //reqd
+#define tpidx_ITI 4 // init-usually
+#define tpidx_2PSTP 5 // init-only
+#define tpidx_SRV_FAR 6 // init-usually
+#define tpidx_SRV_TRAVEL_TIME 7 // init-usually
+#define tpidx_RESP_WIN_DUR 8 // init-usually
+#define tpidx_INTER_REWARD_INTERVAL 9 // init-usually
+#define tpidx_REWARD_DUR_L 10 // init-usually
+#define tpidx_REWARD_DUR_R 11 // init-usually
+#define tpidx_SERVO_SETUP_T 12 // init-only
+#define tpidx_PRE_SERVO_WAIT 13 // init-usually
+#define tpidx_TERMINATE_ON_ERR 14 // latched
+#define tpidx_ERROR_TIMEOUT 15 // latched
+#define tpidx_STEP_SPEED 16 // init-only
+#define tpidx_STEP_FIRST_ROTATION 17 // init-usually
+#define tpidx_STEP_INITIAL_POS 18 // init-only
 
 
   
