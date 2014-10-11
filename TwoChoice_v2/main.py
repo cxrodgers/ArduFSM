@@ -61,29 +61,30 @@ use YES and NO. It is undetermined whether negative values should be allowed.
 We currently define MD as 0, since this is not an allowable value to send.
 """
 params_table = pandas.DataFrame([
-    ('STPPOS',  MD,       1, 1, 0, 0, 0), # reqd on each trial
+    ('STPPOS',  MD,       1, 1, 0, 0, 0),
     ('RWSD',    MD,       1, 1, 0, 0, 0),
     ('SRVPOS',  MD,       1, 1, 0, 0, 0),
-    ('RD_L',     MD,       0, 0, 1, 1, 1), # latched, expected to change, rig-dependent
-    ('RD_R',     MD,       0, 0, 1, 1, 1),
-    ('ITI',     1000,     0, 0, 1, 0, 1), # latched, expected to change
+    ('RD_L',    MD,      0, 0, 1, 1, 1),
+    ('RD_R',    MD,      0, 0, 1, 1, 1),
+    ('ITI',     1000,     0, 0, 1, 0, 1),
     ('PSW',     1,        0, 0, 1, 0, 0),
     ('TOE',     NO,       0, 0, 1, 0, 1),
     ('MRT',     1,        0, 0, 1, 0, 1),
-    ('STPSPD',  MD,       0, 0, 0, 1, 0), # rig-dependent. changes are ignored
+    ('STPSPD',  MD,       0, 0, 0, 1, 0),
     ('STPFR',   50,       0, 0, 0, 1, 0),
     ('2PSTP',   MD,       0, 0, 0, 1, 1),
     ('SRVST',   1000,     0, 0, 0, 1, 0),
     ('STPIP',   1,        0, 0, 0, 1, 1),
-    ('SRVFAR',  1900,     0, 0, 0, 1, 1), # rig-dependent, could in theory be changed, but not expected
+    ('SRVFAR',  1900,     0, 0, 0, 1, 1),
     ('SRVTT',   MD,       0, 0, 0, 1, 1),
-    ('RWIN',    45000,    0, 0, 0, 0, 1), # latched, could in theory be changed, but not expected
-    ('IRI',     1000,     0, 0, 0, 0, 0),    
+    ('RWIN',    45000,    0, 0, 0, 0, 1),
+    ('IRI',     500,      0, 0, 0, 0, 0),    
     ],
     columns=('name', 'init_val', 'required_ET', 'reported_ET', 
         'ui-accessible', 'rig-dependent', 'send_on_init'),
     ).set_index('name')
-bool_list = ['required_ET', 'reported_ET', 'ui-accessible', 'rig-dependent', 'send_on_init']
+bool_list = ['required_ET', 'reported_ET', 'ui-accessible', 
+    'rig-dependent', 'send_on_init']
 params_table[bool_list] = params_table[bool_list].astype(np.bool)
 
 # Assign the rig-specific by hand for now

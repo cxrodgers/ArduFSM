@@ -27,7 +27,7 @@ String param_abbrevs[N_TRIAL_PARAMS] = {
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
-  40, 40, 2000, 1, 1,
+  40, 40, 1000, 1, 1,
   2000, 20, 50, 50,
   };
 
