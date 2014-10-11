@@ -31,6 +31,18 @@ long param_values[N_TRIAL_PARAMS] = {
   2000, 20, 50, 50,
   };
 
+// Whether to report on each trial  
+// Currently, manually match this up with Python-side
+// Later, maybe make this settable by Python, and default to all True
+// Similarly, find out which are required on each trial, and error if they're
+// not set. Currently all that are required_ET are also reported_ET.
+bool param_report_ET[N_TRIAL_PARAMS] = {
+  1, 0, 1, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0,
+};
+  
 String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
 long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};

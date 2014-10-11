@@ -32,6 +32,7 @@ Here are the things that the user should have to change for each protocol:
 
 extern String param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
+extern bool param_report_ET[N_TRIAL_PARAMS];
 extern String results_abbrevs[N_TRIAL_RESULTS];
 extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
@@ -221,12 +222,15 @@ void loop()
       Serial.println((String) time + " TRL_START");
       for(int i=0; i < N_TRIAL_PARAMS; i++)
       {
-        write_string = (String) time + " TRLP " + (String) param_abbrevs[i] + 
-          " " + (String) param_values[i];
-        Serial.println(write_string);
-        
-        //write_string += "\n";
-        //buffered_write(write_string);
+        if (param_report_ET[i]) 
+        {
+          write_string = (String) time + " TRLP " + (String) param_abbrevs[i] + 
+            " " + (String) param_values[i];
+          Serial.println(write_string);
+      
+          //write_string += "\n";
+          //buffered_write(write_string);
+        }
       }
     
       // Set up trial_results to defaults
