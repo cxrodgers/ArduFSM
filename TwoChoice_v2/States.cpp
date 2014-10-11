@@ -187,8 +187,6 @@ void StateInterTrialInterval::s_finish()
   next_state = WAIT_TO_START_TRIAL;   
 }
 
-
-
 //// Non-class states
 int state_rotate_stepper1(STATE_TYPE& next_state)
 {
@@ -238,4 +236,22 @@ int rotate(long n_steps)
 
   
   return 0;
+}
+
+// The reward states use delay because they need to be millisecond-precise
+int state_reward_l(STATE_TYPE& next_state)
+{
+  digitalWrite(L_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_L]);
+  digitalWrite(L_REWARD_VALVE, LOW); 
+  next_state = INTER_TRIAL_INTERVAL;
+  return 0;  
+}
+int state_reward_r(STATE_TYPE& next_state)
+{
+  digitalWrite(R_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_R]);
+  digitalWrite(R_REWARD_VALVE, LOW); 
+  next_state = INTER_TRIAL_INTERVAL;
+  return 0;  
 }

@@ -200,6 +200,10 @@ void loop()
   }  
   
   //// Begin state-dependent operations
+  // Try to replace every case with a single function or object call
+  // Ultimately this could be a dispatch table.
+  // Also, eventually we'll probably want them to return next_state,
+  // but currently it's generally passed by reference.
   switch (current_state)
   {
     //// Wait till the trial is released. Same for all protocols.
@@ -301,12 +305,12 @@ void loop()
     
     case REWARD_L:
       Serial.println((String) time + " DBG open L");
-      next_state = INTER_TRIAL_INTERVAL;
+      state_reward_l(next_state);
       break;
     
     case REWARD_R:
       Serial.println((String) time + " DBG open R");
-      next_state = INTER_TRIAL_INTERVAL;
+      state_reward_r(next_state);
       break;
     
     case ERROR:

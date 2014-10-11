@@ -118,15 +118,19 @@ enum STATE_TYPE
   SERVO_WAIT
 };
 
-// Declare
+// Declare utility functions
 void rotate_motor(int rotation, unsigned int delay_ms=100);
+int rotate(long n_steps);
+
+// Declare non-class states
 int state_inter_rotation_pause(unsigned long time, long state_duration,
     STATE_TYPE& next_state);
 int state_rotate_stepper1(STATE_TYPE& next_state);
 int state_rotate_stepper2(STATE_TYPE& next_state);
 int state_wait_for_servo_move(unsigned long time, unsigned long timer,
     STATE_TYPE& next_state);
-int rotate(long n_steps);
+int state_reward_l(STATE_TYPE& next_state);
+int state_reward_r(STATE_TYPE& next_state);
   
 
 class StateResponseWindow : public TimedState {
