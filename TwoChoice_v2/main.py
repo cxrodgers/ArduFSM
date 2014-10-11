@@ -22,64 +22,100 @@ import trial_setter2
 ## Create Chatter
 logfilename = 'out.log'
 chatter = ArduFSM.chat2.Chatter(to_user=logfilename, baud_rate=115200, 
-    serial_timeout=.1, serial_port='/dev/ttyACM0')
+    serial_timeout=.1, serial_port='/dev/ttyACM1')
 
 ## Params
-# These should be loaded from the protocol file, and also rig-specific file
-# The ones that are fixed at the beginning
-initial_params = {
-    'MRT': 3,
-    'RWIN': 10000,
-    }
+YES = 3
+NO = 2
+MD = 0
 
-YES = 2
-NO = 1
+"""Params table
 
-# 
-# MD: this value must be defined on each rial (required_ET) or at the beginning (not required_ET)
-# rig-dependent: it will be loaded from rig-specific file, if available
-params_table = pandas.DataFrame.from_records([
-    ('STPPOS',  MD,     1, 1, 0, 0), # reqd on each trial
-    ('RWSD',    MD,      1, 1, 0, 0),
-    ('SRVPOS',  MD,      1, 1, 0, 0),
-    ('RDL',     MD,      0, 0, 1, 1), # latched, expected to change, rig-dependent
-    ('RDR',     MD,      0, 0, 1, 1),
-    ('ITI',     1000,   0, 0, 1, 0), # latched, expected to change
-    ('PSW',     1,      0, 0, 1, 0),
-    ('TOE',     NO,      0, 0, 1, 0),
-    ('MRT',     1,      0, 0, 1, 0),
-    ('STPSPD',  MD,   0, 0, 0, 1), # rig-dependent. changes are ignored
-    ('STPFR',   50,     0, 0, 0, 1),
-    ('2PSTP',   MD,   0, 0, 0, 1),
-    ('SRVST',   1000,   0, 0, 0, 1),
-    ('STPIP',   1,      0, 0, 0, 1),
-    ('SRVFAR',  1900,   0, 0, 0, 1), # rig-dependent, could in theory be changed, but not expected
-    ('SRVTT',   MD,       0, 0, 0, 1),
-    ('RWIN',    45000,  0, 0, 0, 0), # latched, could in theory be changed, but not expected
-    ('IRI',     1000,   0, 0, 0, 0),    
+These are all the parameters that the Arduino code uses.
+Columns:
+    name            The abbreviation used to set the param.
+    init_val        The value that the Python code uses by default, if it isn't
+                    set in any other way. If this is MD ("must-define"),
+                    then it must be set by something, either at the beginning
+                    of the session or on each trial.
+    required_ET     If True, then it is required to be set on each trial.
+    reported_ET     If True, then its value is reported by the Arduino on 
+                    each trial, using the TRLP command.
+    ui_accessible   If True, then the UI provides a mechanism for setting it.
+                    This is simply to make the UI less overwhelming, and
+                    because some params seem unlikely to ever change during
+                    a session.
+    rig_dependent   If True, then this parameter is expected to vary by rig.
+                    A rig-specific params file will be loaded and used to
+                    set this param. If it is not specified by that file,
+                    its init_val is used (unless it is MD).
+    send_on_init    If True, then this parameter is sent before the first
+                    trial begins. Any param that is not send_on_init and
+                    not required_ET will use Arduino defaults, which really
+                    only applies to params that we don't expect to ever change.
+
+Note that the value 0 may never be sent to the Arduino, due to limitations
+in the Arudino-side conversion of strings to int. To send boolean values,
+use YES and NO. It is undetermined whether negative values should be allowed.
+
+We currently define MD as 0, since this is not an allowable value to send.
+"""
+params_table = pandas.DataFrame([
+    ('STPPOS',  MD,       1, 1, 0, 0, 0), # reqd on each trial
+    ('RWSD',    MD,       1, 1, 0, 0, 0),
+    ('SRVPOS',  MD,       1, 1, 0, 0, 0),
+    ('RD_L',     MD,       0, 0, 1, 1, 1), # latched, expected to change, rig-dependent
+    ('RD_R',     MD,       0, 0, 1, 1, 1),
+    ('ITI',     1000,     0, 0, 1, 0, 1), # latched, expected to change
+    ('PSW',     1,        0, 0, 1, 0, 0),
+    ('TOE',     NO,       0, 0, 1, 0, 1),
+    ('MRT',     1,        0, 0, 1, 0, 1),
+    ('STPSPD',  MD,       0, 0, 0, 1, 0), # rig-dependent. changes are ignored
+    ('STPFR',   50,       0, 0, 0, 1, 0),
+    ('2PSTP',   MD,       0, 0, 0, 1, 1),
+    ('SRVST',   1000,     0, 0, 0, 1, 0),
+    ('STPIP',   1,        0, 0, 0, 1, 1),
+    ('SRVFAR',  1900,     0, 0, 0, 1, 1), # rig-dependent, could in theory be changed, but not expected
+    ('SRVTT',   MD,       0, 0, 0, 1, 1),
+    ('RWIN',    45000,    0, 0, 0, 0, 1), # latched, could in theory be changed, but not expected
+    ('IRI',     1000,     0, 0, 0, 0, 0),    
     ],
-    names=('name', 'init_val', 'required_ET', 'reported_ET', 'ui_accessible', 'rig_dependent')
-    )
+    columns=('name', 'init_val', 'required_ET', 'reported_ET', 
+        'ui-accessible', 'rig-dependent', 'send_on_init'),
+    ).set_index('name')
+bool_list = ['required_ET', 'reported_ET', 'ui-accessible', 'rig-dependent', 'send_on_init']
+params_table[bool_list] = params_table[bool_list].astype(np.bool)
+
+# Assign the rig-specific by hand for now
+params_table['init_val']['STPSPD'] = 20
+params_table['init_val']['2PSTP'] = NO
+params_table['init_val']['SRVTT'] = 4000
+params_table['init_val']['RD_L'] = 20
+params_table['init_val']['RD_R'] = 25
+
+# Column for current value
+params_table['current-value'] = params_table['init_val'].copy()
 
 ## Initialize the scheduler
 trial_types = pandas.read_pickle('trial_types_2stppos')
 scheduler = Scheduler.RandomStim(trial_types=trial_types)
 
 ## Trial setter
-ts_obj = trial_setter2.TrialSetter(chatter=chatter, initial_params=initial_params,
+ts_obj = trial_setter2.TrialSetter(chatter=chatter, 
+    params_table=params_table,
     scheduler=scheduler)
 
 ## Initialize UI
-ui_params = initial_params.items()
 RUN_UI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
     ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
         logfilename=logfilename,
-        params=ui_params, scheduler=scheduler)
+        ts_obj=ts_obj)
 
     try:
         ui.start()
+
     except:
         ui.close()
         print "error encountered when starting UI"
@@ -111,7 +147,8 @@ try:
             # Probably, ui should have a hook to trial_setter, so that it
             # can change ts_obj.scheduler directly.
             if res == 'schedule changed':
-                ts_obj.scheduler = ui.scheduler
+                pass
+                #~ ts_obj.scheduler = ui.scheduler
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"

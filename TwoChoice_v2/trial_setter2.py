@@ -37,10 +37,10 @@ def generate_trial_types():
 
 class TrialSetter:
     """Object to determine state of trial and call scheduler as necessary"""
-    def __init__(self, chatter, initial_params, scheduler):
+    def __init__(self, chatter, params_table, scheduler):
         self.initial_params_sent = False
         self.chatter = chatter
-        self.initial_params = initial_params
+        self.params_table = params_table
         self.scheduler = scheduler
         self.last_released_trial = -1
     
@@ -64,9 +64,11 @@ class TrialSetter:
             # Send initial params if they haven't already been sent
             if not self.initial_params_sent:
                 # Send each initial param
-                for param_name, param_val in self.initial_params.items():
-                    cmd = TrialSpeak.command_set_parameter(param_name, param_val)           
+                iparams = self.params_table[self.params_table['send_on_init']]
+                for param_name, param_val in iparams['init_val'].iterkv():
+                    cmd = TrialSpeak.command_set_parameter(param_name, param_val) 
                     self.chatter.queued_write_to_device(cmd)
+                    self.params_table['current-value'][param_name] = int(param_val)
                 
                 # Mark as sent
                 self.initial_params_sent = True  

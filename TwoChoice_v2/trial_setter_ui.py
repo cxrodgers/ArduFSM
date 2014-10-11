@@ -72,9 +72,8 @@ class UIActionTaker:
         self.chatter.queued_write_to_device(cmd)
         
         # Update in ui params
-        uipd = dict(self.ui.params)
-        uipd[param_name] = int(param_value)
-        self.ui.update_data(params=uipd.items())
+        self.ui.ts_obj.params_table['current-value'][param_name] = int(param_value)
+        self.ui.draw_menu()
     
     def force_x(self, **kwargs):
         """Set the ui.scheduler to be RandomStim
@@ -82,28 +81,30 @@ class UIActionTaker:
         At the moment, this scheduler object is shared between trial setter
         and ui objects.
         """
-        self.ui.scheduler = Scheduler.RandomStim(
-            trial_types=self.ui.scheduler.trial_types,
+        self.ui.ts_obj.scheduler = Scheduler.RandomStim(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
             **kwargs)
         
         return 'schedule changed'
     
     def force_alt(self, **kwargs):
-        self.ui.scheduler = Scheduler.ForcedAlternation(
-            trial_types=self.ui.scheduler.trial_types,
+        self.ui.ts_obj.scheduler = Scheduler.ForcedAlternation(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
             **kwargs)        
         
         return 'schedule changed'
 
 
 class UI:
-    def __init__(self, chatter, logfilename, params=None, scheduler=None, 
-        timeout=1000):
-        """Create new UI object"""
+    def __init__(self, chatter, logfilename, ts_obj, timeout=1000):
+        """Create new UI object.
+        
+        Actions are taken by directly modifying params and scheduler
+        within ts_obj.
+        """
         self.chatter = chatter
         self.logfilename = logfilename
-        self.params = params
-        self.scheduler = scheduler
+        self.ts_obj = ts_obj
         self.timeout = timeout
 
         # Create default positioning tables
@@ -166,12 +167,12 @@ class UI:
         curses.echo()
         curses.endwin()
         
-    def update_data(self, params=None, scheduler=None, logfile_lines=None):
+    def update_data(self, params_table=None, scheduler=None, logfile_lines=None):
         """Update info about params and scheduler and redraw menu"""
-        if params is not None:
-            self.params = params
+        if params_table is not None:
+            self.ts_obj.params_table = params_table
         if scheduler is not None:
-            self.scheduler = scheduler
+            self.ts_obj.scheduler = scheduler
         if logfile_lines is not None:
             self.logfile_lines = logfile_lines
         self.draw_menu()
@@ -300,13 +301,18 @@ class UI:
     
     def write_params(self):
         """Write out the current value of everything in self.params"""
-        if self.params is None:
+        if self.ts_obj.params_table is None:
             return
         
+        # Where to write
         start_row = self.element_row['param_list']
         col = self.element_col['param_list']
         
-        for nparam, (name, value) in enumerate(self.params):
+        # Only write those that are ui-accessible
+        uparams = self.ts_obj.params_table[
+            self.ts_obj.params_table['ui-accessible']]
+        
+        for nparam, (name, value) in enumerate(uparams['current-value'].iterkv()):
             s = '%s = %s' % (name, str(value))
             self.stdscr.addstr(start_row + nparam, col, s)
     
@@ -315,11 +321,11 @@ class UI:
         start_row = self.element_row['scheduler_panel']
         col = self.element_col['scheduler_panel']
         
-        if hasattr(self.scheduler, 'name'):
-            self.stdscr.addstr(start_row, col, self.scheduler.name)
+        if hasattr(self.ts_obj.scheduler, 'name'):
+            self.stdscr.addstr(start_row, col, self.ts_obj.scheduler.name)
         
-        if hasattr(self.scheduler, 'params'):
-            for nparam, (name, value) in enumerate(self.scheduler.params.items()):
+        if hasattr(self.ts_obj.scheduler, 'params'):
+            for nparam, (name, value) in enumerate(self.ts_obj.scheduler.params.items()):
                 s = '%s = %s' % (name, str(value))
                 self.stdscr.addstr(start_row + nparam + 1, col, s)
     

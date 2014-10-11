@@ -218,7 +218,7 @@ def command_set_parameter(param_name, param_value):
     without spaces, etc.
     """
     if int(param_value) == 0:
-        print "warning: cannot send zeros"
+        raise ValueError("cannot send zero")
     return 'SET %s %s' % (param_name, str(int(param_value)))
 
 def command_release_trial():
