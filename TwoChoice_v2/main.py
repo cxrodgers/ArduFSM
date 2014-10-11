@@ -39,8 +39,14 @@ Columns:
                     then it must be set by something, either at the beginning
                     of the session or on each trial.
     required_ET     If True, then it is required to be set on each trial.
+                    Currently this is ignored, though we should implement
+                    error checking for it on both sides.
     reported_ET     If True, then its value is reported by the Arduino on 
                     each trial, using the TRLP command.
+                    Currently this is hand-copied to the Arduino code.
+                    Eventually, we probably want to default to all params
+                    reported and no params required, and then set it from
+                    Python side.
     ui_accessible   If True, then the UI provides a mechanism for setting it.
                     This is simply to make the UI less overwhelming, and
                     because some params seem unlikely to ever change during
@@ -64,8 +70,8 @@ params_table = pandas.DataFrame([
     ('STPPOS',  MD,       1, 1, 0, 0, 0),
     ('RWSD',    MD,       1, 1, 0, 0, 0),
     ('SRVPOS',  MD,       1, 1, 0, 0, 0),
-    ('RD_L',    MD,      0, 0, 1, 1, 1),
-    ('RD_R',    MD,      0, 0, 1, 1, 1),
+    ('RD_L',    MD,       0, 0, 1, 1, 1),
+    ('RD_R',    MD,       0, 0, 1, 1, 1),
     ('ITI',     1000,     0, 0, 1, 0, 1),
     ('PSW',     1,        0, 0, 1, 0, 0),
     ('TOE',     NO,       0, 0, 1, 0, 1),
