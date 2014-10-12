@@ -258,7 +258,7 @@ void loop()
       // Could have it's own state, really
       rewards_this_trial = 0;
     
-      next_state = MOVE_SERVO;
+      next_state = ROTATE_STEPPER1;
       break;
     
     

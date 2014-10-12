@@ -15,6 +15,9 @@ Defines the following:
 #include "hwconstants.h"
 #include "Stepper.h"
 
+// include this one just to get __TRIAL_SPEAK_YES
+#include "chat.h"
+
 extern STATE_TYPE next_state;
 
 // These should go into some kind of Protocol.h or something
@@ -108,7 +111,7 @@ void StateResponseWindow::loop()
     next_state = REWARD_R;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
-  else if (param_values[tpidx_TERMINATE_ON_ERR] == 2)
+  else if (param_values[tpidx_TERMINATE_ON_ERR] == __TRIAL_SPEAK_NO)
   { // Error made, TOE is false
     // Decide how to deal with this non-TOE case
   }
@@ -163,7 +166,7 @@ void StateWaitForServoMove::update(Servo linServo)
 void StateWaitForServoMove::s_setup()
 {
   my_linServo.write(param_values[tpidx_SRVPOS]);
-  next_state = ROTATE_STEPPER1;   
+  //~ next_state = ROTATE_STEPPER1;   
 }
 
 void StateWaitForServoMove::s_finish()
@@ -202,14 +205,14 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   
   rotate(remaining_rotation);
   
-  next_state = WAIT_FOR_SERVO_MOVE;
+  next_state = MOVE_SERVO;
   return 0;    
 }
 
 int rotate(long n_steps)
 {
   // rotate_motor(param_values[tpidx_STEP_FIRST_ROTATION], 20);
-  if (param_values[tpidx_2PSTP])
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
   {
     digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
   }
@@ -225,7 +228,7 @@ int rotate(long n_steps)
 
 
   // disable
-  if (param_values[tpidx_2PSTP])
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
   {
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   }

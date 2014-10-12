@@ -8,8 +8,11 @@
 #include "Arduino.h"
 
 
-
 //// Trial speak stuff. Should probably be moved to its own file.
+#define __TRIAL_SPEAK_YES 3
+#define __TRIAL_SPEAK_NO 2
+#define __TRIAL_SPEAK_MUST_DEFINE 0
+
 int communications(unsigned long time);
 int handle_chat(String received_chat,
   bool &flag_start_trial, String &protocol_cmd, String &argument1,
