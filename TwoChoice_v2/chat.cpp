@@ -271,6 +271,31 @@ int handle_chat(String received_chat,
     }
   }
   
+  //// User-defined command
+  else if (strcmp(strs[0], "ACT") == 0)
+  {
+    protocol_cmd = (String) "ACT";
+    // Parse 1 or 2 arguments
+    if (n_strs == 2)
+    {
+      argument1 = (String) strs[1];
+      argument2 = (String) "";
+    }
+    else if (n_strs == 3)
+    {
+      argument1 = (String) strs[1];
+      argument2 = (String) strs[2];
+    }
+    else
+    {
+      // syntax error
+      return 3;
+    }
+    
+    // On return, user code will be executed
+    return 0;
+  }
+  
   //// Unimplemented command
   else
   {

@@ -12,11 +12,10 @@
 
 """
 TODO
-* Manual reward L and R trials
 * Mark forced trials.
-* Display current rewside in curses
 * Fix the timing before RWIN
 * Allow setting of touch/release thresholds
+* Keep track of manual rewards in reward count
 
 
 """

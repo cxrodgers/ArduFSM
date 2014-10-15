@@ -35,13 +35,13 @@ class UIActionTaker:
     
     def ui_action_reward_l(self):
         # these tokens should be in TrialSpeak
-        self.chatter.queued_write_to_device('REWARD L')
+        self.chatter.queued_write_to_device('ACT REWARD_L')
 
     def ui_action_reward_r(self):
-        self.chatter.queued_write_to_device('REWARD R')
+        self.chatter.queued_write_to_device('ACT REWARD_R')
 
     def ui_action_reward_current(self):
-        self.chatter.queued_write_to_device('REWARD')
+        self.chatter.queued_write_to_device('ACT REWARD')
 
     def ui_action_save(self):
         """Asks for mouse name and saves"""

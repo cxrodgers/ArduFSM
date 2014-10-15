@@ -350,10 +350,15 @@ void loop()
 int take_action(String protocol_cmd, String argument1, String argument2)
 { /* Protocol action.
   
-  Currently the only possible action is setting a parameter. In this case,
-  protocol_cmd must be "SET". argument1 is the variable name. argument2 is
-  the data.
-  
+  Currently two possible actions:
+    if protocol_cmd == 'SET':
+      argument1 is the variable name. argument2 is the data.
+    if protocol_cmd == 'ACT':
+      argument1 is converted into a function based on a dispatch table.
+        REWARD_L : reward the left valve
+        REWARD_R : reward the right valve
+        REWARD : reward the current valve
+
   This logic could be incorporated in TrialSpeak, but we would need to provide
   the abbreviation, full name, datatype, and optional handling logic for
   each possible variable. So it seems to make more sense here.
@@ -363,6 +368,7 @@ int take_action(String protocol_cmd, String argument1, String argument2)
   2 - unimplemented protocol_cmd
   4 - unknown variable on SET command
   5 - data conversion error
+  6 - unknown asynchronous action
   */
   int status;
   
@@ -393,7 +399,19 @@ int take_action(String protocol_cmd, String argument1, String argument2)
         return 5;
       }
     }
-  }    
+  }   
+  else if (protocol_cmd == "ACT")
+  {
+    // Dispatch
+    if (argument1 == "REWARD_L")
+      asynch_action_reward_l();    
+    else if (argument1 == "REWARD_R")
+      asynch_action_reward_r();
+    else if (argument1 == "REWARD")
+      asynch_action_reward();
+    else
+      return 6;
+  }      
   else
   {
     // unknown command
@@ -427,6 +445,27 @@ int safe_int_convert(String string_data, long &variable)
 }
 
 
-  
+void asynch_action_reward_l()
+{
+  digitalWrite(L_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_L]);
+  digitalWrite(L_REWARD_VALVE, LOW); 
+}
 
+void asynch_action_reward_r()
+{
+  digitalWrite(R_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_R]);
+  digitalWrite(R_REWARD_VALVE, LOW); 
+}
+
+void asynch_action_reward()
+{
+  if (param_values[tpidx_REWSIDE] == LEFT)
+    asynch_action_reward_l();
+  else if (param_values[tpidx_REWSIDE] == RIGHT)
+    asynch_action_reward_r();
+  else
+    Serial.println("ERR unknown rewside");
+}
 
