@@ -12,7 +12,6 @@
 
 """
 TODO
-* Force L and Force R schedules
 * Manual reward L and R trials
 * Mark forced trials.
 * Display current rewside in curses
@@ -94,7 +93,7 @@ params_table = pandas.DataFrame([
     ('STPFR',   50,       0, 0, 0, 1, 0),
     ('2PSTP',   MD,       0, 0, 0, 1, 1),
     ('SRVST',   1000,     0, 0, 0, 1, 0),
-    ('STPIP',   100,        0, 0, 0, 1, 1),
+    ('STPIP',   50,      0, 0, 0, 1, 1),
     ('SRVFAR',  1900,     0, 0, 0, 1, 1),
     ('SRVTT',   MD,       0, 0, 0, 1, 1),
     ('RWIN',    45000,    0, 0, 0, 0, 1),

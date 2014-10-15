@@ -140,7 +140,11 @@ void setup()
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
 
+  // Set the speed of the stepper
   stimStepper.setSpeed(param_values[tpidx_STEP_SPEED]);
+  
+  // initial position of the stepper
+  sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
   
   // linear servo setup
   linServo.write(param_values[tpidx_SRV_FAR]);

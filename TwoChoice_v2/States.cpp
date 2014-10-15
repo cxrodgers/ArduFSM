@@ -50,8 +50,8 @@ String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
 long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
-// This should be passed to the necessary function
-long sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];  
+// Global, persistent variable to remember where the stepper is
+long sticky_stepper_position = 0;
 
 
 //// State definitions
@@ -192,46 +192,68 @@ void StateInterTrialInterval::s_finish()
 
 //// Non-class states
 int state_rotate_stepper1(STATE_TYPE& next_state)
-{
+{ /* The first rotation is always the same */
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
   next_state = INTER_ROTATION_PAUSE;
   return 0;    
 }
 
 int state_rotate_stepper2(STATE_TYPE& next_state)
-{
-  int remaining_rotation = param_values[tpidx_STPPOS] - 
-    param_values[tpidx_STEP_FIRST_ROTATION] - sticky_stepper_position;
+{ /* The second rotation goes to the final position */
+  // Calculate how much more we need to rotate
+  long remaining_rotation = param_values[tpidx_STPPOS] - 
+    sticky_stepper_position;
   
+  // Take a shorter negative rotation, if available
+  // For instance, to go from 0 to 150, it's better to go -50
+  if (remaining_rotation > 100)
+    remaining_rotation -= 200;
+    
+  // Do it
   rotate(remaining_rotation);
   
   next_state = MOVE_SERVO;
   return 0;    
 }
+  
+
 
 int rotate(long n_steps)
-{
+{ /* Low-level rotation function 
+  
+  I think positive n_steps means CCW and negative n_steps means CW. It does
+  on L2, at least.
+  */
+
   // Enable the stepper according to the type of setup
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
     digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
   else
     digitalWrite(ENABLE_STEPPER, HIGH);
 
-  // Sometimes the stepper spins like crazy if this isn't set correctly
+  // Sometimes the stepper spins like crazy without a delay here
   delay(100);
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
   stimStepper.step(n_steps);
 
-  // Sometimes the stepper spins like crazy if this isn't set correctly
-  delay(100);
+  // This delay doesn't seem necessary
+  //delay(100);
   
   // disable
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   else
     digitalWrite(ENABLE_STEPPER, LOW);
+  
+  // update sticky_stepper_position
+  sticky_stepper_position = sticky_stepper_position + n_steps;
+  
+  // keep it in the range [0, 200)
+  sticky_stepper_position = (sticky_stepper_position + 200) % 200;
+  
+  Serial.println((String) "DBG rot " + n_steps + " to " + sticky_stepper_position);
   
   return 0;
 }
