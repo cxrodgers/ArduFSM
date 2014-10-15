@@ -81,6 +81,7 @@ class RandomStim:
         """
         self.name = 'random stim'
         self.params = kwargs
+        self.params['side'] = 'X'
         self.trial_types = trial_types
     
     def generate_trial_params(self, trial_matrix):
@@ -97,7 +98,10 @@ class RandomStim:
         res['RWSD'] = self.trial_types['rewside'][idx]
         res['STPPOS'] = self.trial_types['stppos'][idx]
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            
+        
+        # Save current side for display
+        self.params['side'] = res['RWSD']
+        
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
