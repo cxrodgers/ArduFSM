@@ -8,6 +8,20 @@
 # * do other things, like reading logfile and setting next trial
 # So, if the timeouts are too low, it spends a lot more time reading the
 # logfile and there is more overhead overall.
+
+
+"""
+TODO
+* Force L and Force R schedules
+* Manual reward L and R trials
+* Mark forced trials.
+* Display current rewside in curses
+* Fix the timing before RWIN
+* Allow setting of touch/release thresholds
+
+
+"""
+
 import ArduFSM
 import ArduFSM.chat2
 import TrialSpeak, TrialMatrix
