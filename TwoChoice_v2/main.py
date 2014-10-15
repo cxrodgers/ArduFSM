@@ -13,11 +13,10 @@
 """
 TODO
 * Mark forced trials.
+* Spawn trial_plot
 * Fix the timing before RWIN
 * Allow setting of touch/release thresholds
 * Keep track of manual rewards in reward count
-
-
 """
 
 import ArduFSM
