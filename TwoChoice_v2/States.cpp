@@ -211,32 +211,27 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
 
 int rotate(long n_steps)
 {
-  // rotate_motor(param_values[tpidx_STEP_FIRST_ROTATION], 20);
+  // Enable the stepper according to the type of setup
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-  {
     digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
-  }
   else
-  {
     digitalWrite(ENABLE_STEPPER, HIGH);
-  }
 
+  // Sometimes the stepper spins like crazy if this isn't set correctly
+  delay(100);
   
   // BLOCKING CALL //
-  // Replace with more iterations of smaller steps
+  // Replace this with more iterations of smaller steps
   stimStepper.step(n_steps);
 
-
+  // Sometimes the stepper spins like crazy if this isn't set correctly
+  delay(100);
+  
   // disable
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-  {
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
-  }
   else
-  {
     digitalWrite(ENABLE_STEPPER, LOW);
-  }    
-
   
   return 0;
 }
