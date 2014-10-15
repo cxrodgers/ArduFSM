@@ -88,11 +88,24 @@ class UIActionTaker:
         return 'schedule changed'
     
     def force_alt(self, **kwargs):
+        """Change to a forced alternation schedule"""
         self.ui.ts_obj.scheduler = Scheduler.ForcedAlternation(
             trial_types=self.ui.ts_obj.scheduler.trial_types,
             **kwargs)        
         
         return 'schedule changed'
+
+    def force_l(self, **kwargs):
+        """Change to a Forced L schedule"""
+        self.ui.ts_obj.scheduler = Scheduler.ForcedSide(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            side='left', **kwargs)
+        
+    def force_r(self, **kwargs):
+        """Change to a Forced R schedule"""
+        self.ui.ts_obj.scheduler = Scheduler.ForcedSide(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            side='right', **kwargs)        
 
 
 class UI:
@@ -114,6 +127,7 @@ class UI:
             'action_list': 4,
             'param_list': 4,
             'scheduler_panel': 4,
+            'schedule_list': 14,
             'info': 21,
             'user_input': 20,
             'addl_input_prompt': 20,
@@ -144,10 +158,17 @@ class UI:
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
             ('Q', 'save + quit', self.ui_action_taker.ui_action_save),
             ('P', 'set param', self.ui_action_taker.set_param),
-            ('X', 'force X', self.ui_action_taker.force_x),
-            ('A', 'force alt', self.ui_action_taker.force_alt),
+
             ]
-    
+        
+        # Dispatch table for schedulers
+        self.ui_schedulers = [
+            ('X', 'force X', self.ui_action_taker.force_x),
+            ('A', 'force alt', self.ui_action_taker.force_alt),   
+            ('F', 'force L', self.ui_action_taker.force_l),
+            ('G', 'force R', self.ui_action_taker.force_r),
+            ]
+            
     def start(self):
         self.stdscr = curses.initscr()
         #~ curses.noecho()
@@ -208,7 +229,9 @@ class UI:
             
             # Dispatch by shortcut
             action_short_cut_l = [l[0] for l in self.ui_actions]
+            scheduler_short_cut_l = [l[0] for l in self.ui_schedulers]
             if c in action_short_cut_l:
+                # UI action shorcuts
                 ui_action_rowidx = action_short_cut_l.index(c)
                 
                 # Call the function
@@ -216,6 +239,15 @@ class UI:
                 
                 # Return any result
                 return res
+            elif c in scheduler_short_cut_l:
+                # Choosing a new scheduler (or changing scheduler param?)
+                ui_action_rowidx = scheduler_short_cut_l.index(c)
+                
+                # Call the function
+                res = self.ui_schedulers[ui_action_rowidx][2]()
+                
+                # Return any result
+                return res                
             else:
                 self.print_info("Unknown shortcut: %s" % c)
 
@@ -328,6 +360,13 @@ class UI:
             for nparam, (name, value) in enumerate(self.ts_obj.scheduler.params.items()):
                 s = '%s = %s' % (name, str(value))
                 self.stdscr.addstr(start_row + nparam + 1, col, s)
+        
+        # write out other choices for scheduler
+        start_row = self.element_row['schedule_list']
+        col = self.element_col['scheduler_panel']
+        for nrow, (key, desc, func) in enumerate(self.ui_schedulers):
+            s = '(%s) %s' % (key, desc)
+            self.stdscr.addstr(start_row + nrow, col, s)      
     
     def write_logfile_lines(self):
         """Write out the most recent lines in the logfile"""
@@ -337,8 +376,8 @@ class UI:
         # Write backwards from the end
         for nline, line in enumerate(self.logfile_lines[-1:-nrows:-1]):
             row = start_row + nrows - nline - 1
-            self.clear_line(row)
-            self.safe_print(line.strip(), row, col=0)
+            #~ self.clear_line(row)
+            self.safe_print(line.strip(), row, col=0, max_width=40)
     
     
     
