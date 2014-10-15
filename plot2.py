@@ -44,7 +44,7 @@ class Plotter(object):
         """Create graphics handles"""
         # Plot 
         f, ax = plt.subplots(1, 1, figsize=(11, 4))
-        f.subplots_adjust(left=.35, right=.95, top=.75)
+        f.subplots_adjust(left=.45, right=.95, top=.75)
         
         # Make handles to each outcome
         label2lines = {}
