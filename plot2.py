@@ -97,6 +97,10 @@ class Plotter(object):
         # Put this part into TrialSpeak.py
         trials_info = TrialSpeak.translate_trial_matrix(trials_info)
         
+        # return if nothing to do
+        if len(trials_info) < 1:
+            return
+        
         # fake this for now
         trials_info['bad'] = False 
 

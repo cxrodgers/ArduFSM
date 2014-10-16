@@ -13,14 +13,15 @@
 """
 TODO
 * Mark forced trials.
-* Spawn trial_plot
 * Fix the timing before RWIN
 * Allow setting of touch/release thresholds
+* Allow setting param by cursor
 * Keep track of manual rewards in reward count
 """
 
 import ArduFSM
 import ArduFSM.chat2
+import ArduFSM.plot2
 import TrialSpeak, TrialMatrix
 import numpy as np, pandas
 import my
@@ -29,6 +30,7 @@ import curses
 import trial_setter_ui
 import Scheduler
 import trial_setter2
+import matplotlib.pyplot as plt
 
 ## Create Chatter
 logfilename = 'out.log'
@@ -85,13 +87,13 @@ params_table = pandas.DataFrame([
     ('RD_R',    MD,       0, 0, 1, 1, 1),
     ('ITI',     1000,     0, 0, 1, 0, 1),
     ('PSW',     1,        0, 0, 1, 0, 0),
-    ('TOE',     YES,       0, 0, 1, 0, 1),
+    ('TOE',     YES,      0, 0, 1, 0, 1),
     ('MRT',     1,        0, 0, 1, 0, 1),
     ('STPSPD',  MD,       0, 0, 0, 1, 0),
     ('STPFR',   50,       0, 0, 0, 1, 0),
     ('2PSTP',   MD,       0, 0, 0, 1, 1),
     ('SRVST',   1000,     0, 0, 0, 1, 0),
-    ('STPIP',   50,      0, 0, 0, 1, 1),
+    ('STPIP',   50,       0, 0, 0, 1, 1),
     ('SRVFAR',  1900,     0, 0, 0, 1, 1),
     ('SRVTT',   MD,       0, 0, 0, 1, 1),
     ('RWIN',    45000,    0, 0, 0, 0, 1),
@@ -125,6 +127,7 @@ ts_obj = trial_setter2.TrialSetter(chatter=chatter,
 
 ## Initialize UI
 RUN_UI = True
+RUN_GUI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
     ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
@@ -139,10 +142,15 @@ if RUN_UI:
         print "error encountered when starting UI"
         raise
 
-
 ## Main loop
 final_message = None
 try:
+    ## Initialize GUI
+    if RUN_GUI:
+        plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
+        plotter.init_handles()
+        last_updated_trial = 0
+    
     while True:
         ## Chat updates
         # Update chatter
@@ -159,14 +167,20 @@ try:
         ## Update UI
         if RUN_UI:
             ui.update_data(logfile_lines=logfile_lines)
-            res = ui.get_and_handle_keypress()
-            
-            # Handle any change to scheduler (or params?)
-            # Probably, ui should have a hook to trial_setter, so that it
-            # can change ts_obj.scheduler directly.
-            if res == 'schedule changed':
-                pass
-                #~ ts_obj.scheduler = ui.scheduler
+            ui.get_and_handle_keypress()
+        
+        ## Update GUI
+        # Put this in it's own try/except to catch plotting bugs
+        if RUN_GUI:
+            if last_updated_trial < len(translated_trial_matrix):
+                # update plot
+                plotter.update(logfilename)     
+                last_updated_trial = len(translated_trial_matrix)
+                
+                # don't understand why these need to be here
+                plt.show()
+                plt.draw()
+
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
@@ -179,9 +193,15 @@ except:
 
 finally:
     chatter.close()
+    print "chatter closed"
+    
     if RUN_UI:
         ui.close()
-    print "chatter and UI closed"
+        print "UI closed"
+    
+    if RUN_GUI:
+        plt.close(plotter.graphics_handles['f'])
+        print "GUI closed"
     
     if final_message is not None:
         print final_message
