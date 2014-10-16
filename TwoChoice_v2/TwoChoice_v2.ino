@@ -65,8 +65,7 @@ Servo linServo;
 
 // Stepper
 // TODO: do not assign now, because we might set it up as a 2-pin stepper later
-Stepper stimStepper = Stepper(200, PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
-
+Stepper stimStepper = Stepper(200, TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
 
 //// Setup function
 void setup()
