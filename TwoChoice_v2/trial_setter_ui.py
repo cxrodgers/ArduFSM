@@ -42,6 +42,9 @@ class UIActionTaker:
 
     def ui_action_reward_current(self):
         self.chatter.queued_write_to_device('ACT REWARD')
+    
+    def ui_action_threshold(self):
+        self.chatter.queued_write_to_device('ACT THRESH')
 
     def ui_action_save(self):
         """Asks for mouse name and saves"""
@@ -158,7 +161,7 @@ class UI:
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
             ('Q', 'save + quit', self.ui_action_taker.ui_action_save),
             ('P', 'set param', self.ui_action_taker.set_param),
-
+            ('T', 'touch thresh', self.ui_action_taker.ui_action_threshold),
             ]
         
         # Dispatch table for schedulers

@@ -26,12 +26,14 @@ String param_abbrevs[N_TRIAL_PARAMS] = {
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
+  "TOUT", "RELT",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
   2000, 20, 50, 50, 0,
+  6, 3,
   };
 
 // Whether to report on each trial  
@@ -44,6 +46,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
+  0, 0,
 };
   
 String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};

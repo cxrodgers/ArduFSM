@@ -51,7 +51,7 @@ uint16_t pollTouchInputs()
   return touched;
 }  
 
-void mpr121_setup(int irq_line)
+void mpr121_setup(int irq_line, int TOU_THRESH, int REL_THRESH)
 {
   // Save the pin for interrupts so that check_interrupts can use it
   IRQ_LINE = irq_line;

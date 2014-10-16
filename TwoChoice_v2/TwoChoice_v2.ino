@@ -83,7 +83,6 @@ void setup()
   pinMode(TOUCH_IRQ, INPUT);
   digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
   Wire.begin();
-  mpr121_setup(TOUCH_IRQ);
   
   // output pins
   pinMode(L_REWARD_VALVE, OUTPUT);
@@ -138,6 +137,10 @@ void setup()
     stimStepper = Stepper(200, 
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
+  
+  // thresholds for MPR121
+  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+    param_values[tpidx_REL_THRESH]);
 
   // Set the speed of the stepper
   stimStepper.setSpeed(param_values[tpidx_STEP_SPEED]);
@@ -408,6 +411,8 @@ int take_action(String protocol_cmd, String argument1, String argument2)
       asynch_action_reward_r();
     else if (argument1 == "REWARD")
       asynch_action_reward();
+    else if (argument1 == "THRESH")
+      asynch_action_set_thresh();
     else
       return 6;
   }      
@@ -466,5 +471,11 @@ void asynch_action_reward()
     asynch_action_reward_r();
   else
     Serial.println("ERR unknown rewside");
+}
+
+void asynch_action_set_thresh()
+{
+  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+    param_values[tpidx_REL_THRESH]);
 }
 

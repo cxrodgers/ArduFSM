@@ -57,12 +57,12 @@
 
 // Global Constants
 // CR: I like 0x15 and 0x10
-#define TOU_THRESH	0x15
-#define	REL_THRESH	0x10
+//#define TOU_THRESH	0x15
+//#define	REL_THRESH	0x10
 
 
 uint16_t pollTouchInputs(void);
-void mpr121_setup(int irq_line);
+void mpr121_setup(int irq_line, int TOU_THRESH, int REL_THRESH);
 boolean checkInterrupt(void);
 void set_register(int address, unsigned char r, unsigned char v);
 int get_touched_channel(uint16_t touched, unsigned int i);

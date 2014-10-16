@@ -52,7 +52,7 @@ into States.cpp.
 // And we can argue about how these two categories map onto the categories above.
 //
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 20
+#define N_TRIAL_PARAMS 22
 #define tpidx_STPPOS 0 // reqd
 #define tpidx_MRT 1 // latch
 #define tpidx_REWSIDE 2 // reqd
@@ -73,7 +73,8 @@ into States.cpp.
 #define tpidx_STEP_FIRST_ROTATION 17 // init-usually
 #define tpidx_STEP_INITIAL_POS 18 // init-only
 #define tpidx_IS_RANDOM 19 // reqd
-
+#define tpidx_TOU_THRESH 20 // init-only
+#define tpidx_REL_THRESH 21 // init-only
   
 
 

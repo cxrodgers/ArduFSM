@@ -12,9 +12,12 @@
 
 """
 TODO
-* Figure out why it spins like crazy on every first trial.
+* figure out why hitting P during init causes UI crash
+* figure out why licking too quickly causes srvpos and rewside to not match up
 * Fix the timing before RWIN
-* Allow setting of touch/release thresholds
+* Init stim stepper only after 2p config is known
+* Allow echoing arbitrary strings
+* Fix display bug in getting param
 * Allow setting param by cursor
 * Keep track of manual rewards in reward count
 """
@@ -101,6 +104,8 @@ params_table = pandas.DataFrame([
     ('SRVTT',   MD,       0, 0, 0, 1, 1),
     ('RWIN',    45000,    0, 0, 0, 0, 1),
     ('IRI',     500,      0, 0, 0, 0, 0),    
+    ('TOUT',    6,        0, 0, 1, 1, 1),
+    ('RELT',    6,        0, 0, 1, 1, 1),
     ],
     columns=('name', 'init_val', 'required_ET', 'reported_ET', 
         'ui-accessible', 'rig-dependent', 'send_on_init'),
