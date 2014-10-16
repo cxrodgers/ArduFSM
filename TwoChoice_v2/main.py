@@ -12,7 +12,7 @@
 
 """
 TODO
-* Mark forced trials.
+* Figure out why it spins like crazy on every first trial.
 * Fix the timing before RWIN
 * Allow setting of touch/release thresholds
 * Allow setting param by cursor
@@ -54,6 +54,8 @@ Columns:
     required_ET     If True, then it is required to be set on each trial.
                     Currently this is ignored, though we should implement
                     error checking for it on both sides.
+                    init_val should probably be ignored for required_ET,
+                    unless we want to interpret it as some sort of default?
     reported_ET     If True, then its value is reported by the Arduino on 
                     each trial, using the TRLP command.
                     Currently this is hand-copied to the Arduino code.
@@ -83,6 +85,7 @@ params_table = pandas.DataFrame([
     ('STPPOS',  MD,       1, 1, 0, 0, 0),
     ('RWSD',    MD,       1, 1, 0, 0, 0),
     ('SRVPOS',  MD,       1, 1, 0, 0, 0),
+    ('ISRND',   NO,       1, 1, 0, 0, 0),
     ('RD_L',    MD,       0, 0, 1, 1, 1),
     ('RD_R',    MD,       0, 0, 1, 1, 1),
     ('ITI',     1000,     0, 0, 1, 0, 1),

@@ -2,6 +2,8 @@
 import numpy as np
 import my
 
+YES = 3 # get this from TrialSpeak
+NO = 2
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -23,6 +25,7 @@ class ForcedAlternation:
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
             res['ITI'] = np.random.randint(10000)
+            res['ISRND'] = NO
         
         else:    
             # Not the first trial
@@ -98,6 +101,7 @@ class RandomStim:
         res['RWSD'] = self.trial_types['rewside'][idx]
         res['STPPOS'] = self.trial_types['stppos'][idx]
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
+        res['ISRND'] = YES
         
         # Save current side for display
         self.params['side'] = res['RWSD']
@@ -151,6 +155,7 @@ class ForcedSide:
         res['RWSD'] = self.trial_types['rewside'][idx]
         res['STPPOS'] = self.trial_types['stppos'][idx]
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
+        res['ISRND'] = NO
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here

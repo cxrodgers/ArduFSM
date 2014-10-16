@@ -107,7 +107,6 @@ class TrialSetter:
             if current_trial == -1:
                 # first trial has not even been released yet, nor begun
                 params = self.scheduler.choose_params_first_trial(translated_trial_matrix)
-                params['RWIN'] = 45000
                 send_params_and_release(params, self.chatter)
                 self.last_released_trial = current_trial + 1
                 
@@ -118,7 +117,6 @@ class TrialSetter:
             else:
                 # Current trial has been completed. Next trial needs to be released.
                 params = self.scheduler.choose_params(translated_trial_matrix)
-                params['RWIN'] = 45000
                 send_params_and_release(params, self.chatter)
                 self.last_released_trial = current_trial + 1          
         

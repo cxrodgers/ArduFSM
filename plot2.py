@@ -11,6 +11,8 @@ import TrialSpeak, TrialMatrix
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
+YES = 3 # get this from TrialSpeak
+NO = 2
 
 def format_perf_string(nhit, ntot):
     """Helper function for turning hits and totals into a fraction."""
@@ -101,8 +103,10 @@ class Plotter(object):
         if len(trials_info) < 1:
             return
         
-        # fake this for now
-        trials_info['bad'] = False 
+        # define the "bad" trials
+        # these are marked differently and discounted from certain ANOVAs
+        # maybe include user delivery trials too?
+        trials_info['bad'] = trials_info['isrnd'] == NO 
 
 
         ## Define trial types, the ordering on the plot
