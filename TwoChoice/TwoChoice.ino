@@ -6,7 +6,7 @@
 
 
 bool USE_LEVER = 0;
-bool TWO_PIN_STEPPER = 1; //For Rig 3 this should be set to 1
+bool TWO_PIN_STEPPER = 0; //For Rig 3 this should be set to 1
 
 // At most one of the following lines should be uncommented
 //#define SIX_STIM 1
@@ -26,6 +26,7 @@ struct PINS_TYPE
   static const unsigned int LINEAR_SERVO = 4; // to control servo
   static const unsigned int REWARD_VALVE = 7; // to operate valve
   static const unsigned int SPEAKER = 5; // PWM speaker
+  static const unsigned int OPTO = 3;
   
   // Digital inputs (???)
   static const unsigned int TOUCH_IRQ = 2; // to receive touch interrupts
@@ -176,21 +177,25 @@ void setup()
   Serial.println("Running setup.");
 
   // MPR121 touch sensor setup
-  pinMode(PINS.TOUCH_IRQ, INPUT);
+  pinMode(PINS.TOUCH_IRQ, INPUT); // pin 2
   digitalWrite(PINS.TOUCH_IRQ, HIGH); //enable pullup resistor
   Wire.begin();
   mpr121_setup(PINS.TOUCH_IRQ);
   
   
   // output pins
-  pinMode(5, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);
+  pinMode(PINS.OPTO, OUTPUT); // 3
+  pinMode(PINS.SPEAKER, OUTPUT); // 4
+  pinMode(PINS.LINEAR_SERVO, OUTPUT); // 5
+  pinMode(6, OUTPUT); // reward L??
+  pinMode(7, OUTPUT); // reward R??
+  pinMode(8, OUTPUT); // 4pin stepper pin1
+  pinMode(9, OUTPUT); // 4pin stepper pin2
+  pinMode(10, OUTPUT); // 4pin stepper pin3
+  pinMode(11, OUTPUT); // 4pin stepper pin4, 2pin enable stepper
+  pinMode(12, OUTPUT); // 4pin enable stepper, 2pin stepper pin 1
+  pinMode(PINS.TWOPIN_STEPPER_2, OUTPUT); // 13
+
 
   if (TWO_PIN_STEPPER)
   {
