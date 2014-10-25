@@ -113,6 +113,20 @@ class Chatter:
         self.queued_writes = []
 
     def update(self, echo_to_stdout=True):
+        """Called repeatedly to deal with inputs and outputs
+        
+        * Reads any user text on the pipe and writes to device
+        * Reads any lines from the devices and writes to output file
+        * Optionally echos to stdout
+        * Checks whether the last sent command was acknowledged
+        * If it was acknoweledged, then sends top of queued_writes
+        
+        Right now there is a bug in which the Arduino can write text so quickly
+        that this function will get stuck at reading from devices. Need some
+        kind of maximum read size check for this. Alternatively, insert delays
+        in the Arduino loop function.
+        """
+        
         # Read any new text from the user and send to device
         self.new_user_text = read_from_user(self.pipein)
         write_to_device(self.ser, self.new_user_text)
