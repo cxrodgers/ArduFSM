@@ -75,6 +75,7 @@ struct TRIAL_PARAMS_TYPE
   String choice = "nogo";
   int servo_position = SERVO_POSITIONS.NEAR;
   int stim_number = 0;
+  int opto = 0;
 } current_trial_params;
 
 // Session params -- combine this with trial variables
@@ -155,6 +156,18 @@ unsigned int error_flag = 0; // hack for error timeout
 // max rewards
 unsigned int rewards_this_trial = 0;
 unsigned int max_rewards_per_trial = 2;
+
+// opto junk
+// on random opto trials (see current trial params):
+// light turns on and opto timer is set OPTO_PRE_RWIN_START_MS ms before RWIN
+// light turns off after OPTO_MAX_TIME_MS and timer set to zero
+// so at any given time, the time_opto_start == 0 tells you the light is off
+unsigned long time_opto_start = 0; // timer for max opto duration
+#define OPTO_PRE_RWIN_START_MS 750
+#define OPTO_MAX_TIME_MS 2000
+#define OPTO_PCT_PROB 50
+
+
 
 // touched monitor
 uint16_t sticky_touched = 0;
@@ -307,6 +320,9 @@ void loop()
       if (current_trial_params.servo_position < SERVO_POSITIONS.NEAR)
         current_trial_params.servo_position = SERVO_POSITIONS.NEAR;
 
+      // whether to opto
+      current_trial_params.opto = (random(100) < OPTO_PCT_PROB);
+      
       // Trial start
       Serial.println((String) "TRIAL START " + time);
       Serial.println((String) "TRIAL SIDE " + 
@@ -315,6 +331,7 @@ void loop()
         current_trial_params.servo_position);
       Serial.println((String) "TRIAL STIM_NUMBER " + 
         current_trial_params.stim_number);
+      Serial.println((String) "TRIAL OPTO " + current_trial_params.opto);
       
       // keep track of how many rewards
       rewards_this_trial = 0;
@@ -353,6 +370,16 @@ void loop()
       linServo.write(current_trial_params.servo_position);
 
       
+      // start opto
+      if ((current_trial_params.opto != 0) && (time_opto_start == 0)) {
+          if (time >= timer - OPTO_PRE_RWIN_START_MS)
+          {
+            digitalWrite(PINS.OPTO, HIGH);
+            Serial.println((String) time + " EVENT OPTO_ON");
+            time_opto_start = time;
+          }
+      }
+    
       // check time
       if (time >= timer)
       {
@@ -390,7 +417,17 @@ void loop()
       if (received_chat.length() > 0)
       {
         received_chat.trim();
-      }      
+      }  
+
+      // Stop opto
+      if (current_trial_params.opto != 0) {      
+          if ((time - time_opto_start > OPTO_MAX_TIME_MS) && (time_opto_start != 0))
+          {
+            digitalWrite(PINS.OPTO, LOW);
+            Serial.println((String) time + " EVENT OPTO_OFF");
+            time_opto_start = 0;
+          }
+      }
 
       // What we do depends on which side is rewarded
       switch (current_trial_params.rewarded_side)
@@ -493,6 +530,14 @@ void loop()
     
       // count rewards
       rewards_this_trial++;
+    
+      // stop opto
+      if ((current_trial_params.opto != 0) && (time_opto_start != 0)) {    
+          digitalWrite(PINS.OPTO, LOW);
+          Serial.println((String) time + " EVENT OPTO_OFF");
+          time_opto_start = 0;
+      }
+    
       break;
 
     case REWARD_R:
@@ -510,6 +555,14 @@ void loop()
     
       // count rewards
       rewards_this_trial++;
+    
+      // stop opto
+      if ((current_trial_params.opto != 0) && (time_opto_start != 0)) {    
+          digitalWrite(PINS.OPTO, LOW);
+          Serial.println((String) time + " EVENT OPTO_OFF");
+          time_opto_start = 0;
+      }
+    
       break;
     
     case REWARD_TIMER_L:
@@ -554,6 +607,13 @@ void loop()
     
       // Hack, we increase the ITI on errors
       error_flag = 1;
+    
+      // stop opto
+      if ((current_trial_params.opto != 0) && (time_opto_start != 0)) {    
+          digitalWrite(PINS.OPTO, LOW);
+          Serial.println((String) time + " EVENT OPTO_OFF");
+          time_opto_start = 0;
+      }
     
       next_state = PRE_SERVO_WAIT;
       break;
