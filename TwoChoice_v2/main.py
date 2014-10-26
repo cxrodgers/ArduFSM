@@ -12,12 +12,10 @@
 
 """
 TODO
-* figure out why hitting P during init causes UI crash
-* figure out why licking too quickly causes srvpos and rewside to not match up
-* Fix the timing before RWIN
+* Fix display bug in getting param
+* do not crash when non-numeric entry to set param
 * Init stim stepper only after 2p config is known
 * Allow echoing arbitrary strings
-* Fix display bug in getting param
 * Allow setting param by cursor
 * Keep track of manual rewards in reward count
 """
@@ -117,7 +115,7 @@ params_table[bool_list] = params_table[bool_list].astype(np.bool)
 # Assign the rig-specific by hand for now
 params_table['init_val']['STPSPD'] = 20
 params_table['init_val']['2PSTP'] = NO
-params_table['init_val']['SRVTT'] = 4000
+params_table['init_val']['SRVTT'] = 2000
 params_table['init_val']['RD_L'] = 20
 params_table['init_val']['RD_R'] = 25
 
