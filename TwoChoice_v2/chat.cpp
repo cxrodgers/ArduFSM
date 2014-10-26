@@ -8,79 +8,21 @@
 
 
 extern bool flag_start_trial;
-extern int take_action(String protocol_cmd, String argument1, String argument2);
+extern int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 //// Globals for receiving chats
 // These need to persist across calls to receive_chat
-String receive_buffer = "";
-String receive_line = "";
+char receive_buffer[__CHAT_H_RECEIVE_BUFFER_SZ] = "";
+char receive_line[__CHAT_H_RECEIVE_BUFFER_SZ] = "";
 
 // Debugging announcements
 unsigned long speak_at = 1000;
 unsigned long interval = 1000;
 
-// Output ring buffer
-// Errors if this is more than 200
-// And even if it is only 200 it starts acting weird
-#define SZ_OUTPUT_BUFFER 200
-#define OUTPUT_BUFFER_CHUNK 50
-char output_buffer[SZ_OUTPUT_BUFFER];
-int output_buffer_r = 0;
-int output_buffer_w = 0;
-
-
-int buffered_write(String s)
-{
-  // put string into buffer
-  for(int ichar=0; ichar<s.length(); ichar++)
-  {
-    // Write each character into the buffer
-    output_buffer[output_buffer_w] = s[ichar];
-    
-    // Increment write pointer  
-    //~ Serial.println((String) output_buffer_w);
-    output_buffer_w++;
-    if (output_buffer_w >= SZ_OUTPUT_BUFFER)
-    {
-      output_buffer_w = 0;
-    }
-    
-    // Error check
-    if (output_buffer_w == output_buffer_r)
-    {
-      // r should always be lagging w immediately after a write.
-      Serial.println("ERROR OUTPUT BUFFER OVERRUN");
-    }
-  }
-}
-
-int drain_output_buffer()
-{
-  // Write out at most OUTPUT_BUFFER_CHUNK characters
-  // Ideally, we would also break this loop if the Serial.print buffer is full
-  for(int ichar=0; ichar<OUTPUT_BUFFER_CHUNK; ichar++)
-  {
-    // Stop if there is no more to read
-    if (output_buffer_r == output_buffer_w)
-    {
-      break;
-    }
-    
-    // Read a character from buffer and print it
-    Serial.print(output_buffer[output_buffer_r]);
-    
-    // Increment read pointer
-    output_buffer_r++;
-    if (output_buffer_r >= SZ_OUTPUT_BUFFER)
-    {
-      output_buffer_r = 0;
-    }    
-  }
-}
 
 
 //// Functions for receiving chats
-String receive_chat()
+char* receive_chat()
 { /* Basic function to receive chats.
   
   Checks Serial.available
@@ -91,44 +33,52 @@ String receive_chat()
   // If characters available, add to buffer
   int n_chars = Serial.available();
   char got = 'X';
-  String return_value = "";
+  char return_value[__CHAT_H_RECEIVE_BUFFER_SZ] = "";
   
   for(int ichar = 0; ichar < n_chars; ichar++)
   {
+    // get a character
     got = Serial.read();
-
+    
+    // error if overfow
+    if (strlen(receive_buffer) >= __CHAT_H_RECEIVE_BUFFER_SZ - 1) {
+      if (got != '\n') {
+        Serial.println("ERR truncating buf overflow");
+        got = '\n';
+        
+        // Should also empty the buffer or the next line will be garbage
+      }
+    }
+    
+    // add the character and a \0
+    // latter is not necessary if we fill with \0 after every line
+    receive_buffer[strlen(receive_buffer)] = got;
+    receive_buffer[strlen(receive_buffer) + 1] = '\0';    
+    
+    // Check if this is end of line
     if (got == '\n')
     {
-      // Add the newline
-      receive_buffer += got;
-      
       // Put buffer in line
+      strncpy(receive_line, receive_buffer, __CHAT_H_RECEIVE_BUFFER_SZ);
+    
       // Start buffer over
-      receive_line = receive_buffer;
-      receive_buffer = "";
+      // Are we sure this fills with \0?
+      strncpy(receive_buffer, "", __CHAT_H_RECEIVE_BUFFER_SZ);
       break;
-    }
-    else
-    {
-      receive_buffer += got;
     }
   }
   
   // If a line available, echo it
-  if (receive_line.length() > 0)
+  if (strlen(receive_line) > 0)
   {
-    Serial.print((String) millis() + " ACK ");
-    
-    // Strip the newline
-    receive_line.trim();
-
-    // Now print
-    Serial.print(receive_line);
-    Serial.println("");   
+    // Print the ACK
+    Serial.print(millis());
+    Serial.print(" ACK ");
+    Serial.print(receive_line); // still ends with \n
     
     // Store in return value and reset line to empty
-    return_value = receive_line;
-    receive_line = "";
+    strncpy(return_value, receive_line, __CHAT_H_RECEIVE_BUFFER_SZ);
+    strncpy(receive_line, "", __CHAT_H_RECEIVE_BUFFER_SZ);
   }
   
   return return_value;
@@ -146,10 +96,10 @@ int communications(unsigned long time)
     Receives any chat and handles it, including calling take_action.
   */
   // comm variables
-  String received_chat;
-  String protocol_cmd = (String) "";
-  String argument1 = (String) "";
-  String argument2 = (String) "";
+  char* received_chat;
+  char protocol_cmd[__CHAT_H_MAX_TOKEN_LEN] = "";
+  char argument1[__CHAT_H_MAX_TOKEN_LEN] = "";
+  char argument2[__CHAT_H_MAX_TOKEN_LEN] = "";
   int status = 1;
   
   
@@ -157,16 +107,15 @@ int communications(unsigned long time)
   // Announce the time
   if (time >= speak_at)
   {
-    Serial.println((String) time + " DBG");
+    Serial.print(time);
+    Serial.println(" DBG");
     speak_at += interval;
   }
 
-  //// Drain the buffer
-  //drain_output_buffer();
   
   //// Receive and deal with chat
   received_chat = receive_chat();
-  if (received_chat.length() > 0)
+  if (strlen(received_chat) > 0)
   {
     // Attempt to parse
     status = handle_chat(received_chat, flag_start_trial,
@@ -174,9 +123,12 @@ int communications(unsigned long time)
     if (status != 0)
     {
       // Parse/syntax error
-      Serial.println((String) time + " DBG RC_ERR " + (String) status);
+      Serial.print(time);
+      Serial.print(" DBG RC_ERR ");
+      Serial.println(status);
     }
-    else if (protocol_cmd.length() > 0)
+    //else if (protocol_cmd.length() > 0)
+    else if (strlen(protocol_cmd) > 0)
     {
       // Protocol action required
       status = take_action(protocol_cmd, argument1, argument2);
@@ -184,7 +136,9 @@ int communications(unsigned long time)
       if (status != 0)
       {
         // Parse/syntax error
-        Serial.println((String) time + " DBG TA_ERR " + (String) status);
+        Serial.print(time);
+        Serial.print(" DBG TA_ERR ");
+        Serial.println(status);
       }
     }
   }
@@ -192,9 +146,9 @@ int communications(unsigned long time)
   return 0;
 }
 
-int handle_chat(String received_chat, 
-  bool &flag_start_trial, String &protocol_cmd, String &argument1,
-  String &argument2)
+int handle_chat(char* received_chat, 
+  bool &flag_start_trial, char *protocol_cmd, char *argument1,
+  char *argument2)
 { /* Parses a received line and takes appropriate action.
   
   Currently the only command this can parse is RELEASE_TRL. Other general
@@ -210,28 +164,39 @@ int handle_chat(String received_chat,
   1 - command contained no tokens or was empty
   2 - unimplemented command (first word)
   3 - syntax error: number of words did not match command
+  4 - too many tokens
   */
   char *pch;
-  char cmd_carr[received_chat.length() + 1];
-  char *strs[3];
+  char *strs[__CHAT_H_MAX_TOKENS];
   int n_strs = 0;
-  String s;
 
   // Return if nothing. Typically the calling code already protects this.
-  if (received_chat.length() <= 1)
+  if (strlen(received_chat) <= 1)
   {
     return 1;
   }      
   
-  // Parsing into space-separated tokens
-  received_chat.toCharArray(cmd_carr, received_chat.length() + 1);
-  pch = strtok(cmd_carr, " ");
+  //// Parsing into space-separated tokens
+  // split by spaces
+  pch = strtok(received_chat, " \r\n");
   while (pch != NULL)
   {
+    // Error if too many tokens received
+    if (n_strs >= __CHAT_H_MAX_TOKENS) {
+      return 4;
+    }
+
+    // Skip zero-length token, ie, between \r and \n
+    if (strlen(pch) == 0) {
+      continue;
+    }
+    
+    // Otherwise store the token char array and continue
     strs[n_strs] = pch;
     n_strs++;
-    pch = strtok(NULL, " ");
+    pch = strtok(NULL, " \r\n");
   }
+
   
   // Return if nothing. Typically the calling code has already trimmed and
   // checked for empty, so this shouldn't happen.
@@ -239,26 +204,28 @@ int handle_chat(String received_chat,
   {
     return 1;
   }
+
   
   //// Parse according to TrialSpeak convention.
   // First switch on first word, then on number of strings, then potentially
   // on subsequent words.
   //// Setting a variable
-  if (strcmp(strs[0], "SET") == 0)
+  if (strncmp(strs[0], "SET\0", 4) == 0)
   {
     if (n_strs != 3)
     {
       // syntax error
       return 3;
     }
-    protocol_cmd = (String) "SET";
-    argument1 = (String) strs[1];
-    argument2 = (String) strs[2];
+    strcpy(protocol_cmd, "SET");
+    strncpy(argument1, strs[1], __CHAT_H_MAX_TOKEN_LEN);
+    strncpy(argument2, strs[2], __CHAT_H_MAX_TOKEN_LEN);
+
     return 0;
   }  
   
   //// Releasing a trial
-  else if (strcmp(strs[0], "RELEASE_TRL") == 0)
+  else if (strncmp(strs[0], "RELEASE_TRL\0", 12) == 0)
   {
     if (n_strs != 1)
     {
@@ -272,19 +239,21 @@ int handle_chat(String received_chat,
   }
   
   //// User-defined command
-  else if (strcmp(strs[0], "ACT") == 0)
+  else if (strncmp(strs[0], "ACT\0", 4) == 0)
   {
-    protocol_cmd = (String) "ACT";
+    //protocol_cmd = (String) "ACT";
+    strcpy(protocol_cmd, "ACT");
+    
     // Parse 1 or 2 arguments
     if (n_strs == 2)
     {
-      argument1 = (String) strs[1];
-      argument2 = (String) "";
+      strncpy(argument1, strs[1], __CHAT_H_MAX_TOKEN_LEN);
+      strcpy(argument2, "");
     }
     else if (n_strs == 3)
     {
-      argument1 = (String) strs[1];
-      argument2 = (String) strs[2];
+      strncpy(argument1, strs[1], __CHAT_H_MAX_TOKEN_LEN);
+      strncpy(argument2, strs[2], __CHAT_H_MAX_TOKEN_LEN);
     }
     else
     {

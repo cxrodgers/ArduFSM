@@ -7,6 +7,10 @@
 
 #include "Arduino.h"
 
+// Chat defines
+#define __CHAT_H_MAX_TOKENS 3
+#define __CHAT_H_MAX_TOKEN_LEN 15
+#define __CHAT_H_RECEIVE_BUFFER_SZ 100
 
 //// Trial speak stuff. Should probably be moved to its own file.
 #define __TRIAL_SPEAK_YES 3
@@ -14,14 +18,12 @@
 #define __TRIAL_SPEAK_MUST_DEFINE 0
 
 int communications(unsigned long time);
-int handle_chat(String received_chat,
-  bool &flag_start_trial, String &protocol_cmd, String &argument1,
-  String &argument2);
+int handle_chat(char* received_chat,
+  bool &flag_start_trial, char *protocol_cmd, char *argument1,
+  char *argument2);
 
 //// General chat stuff
-String receive_chat();
+char* receive_chat();
 
 
-int buffered_write(String s);
-int drain_output_buffer();
 #endif

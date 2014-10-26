@@ -30,10 +30,10 @@ Here are the things that the user should have to change for each protocol:
 
 #define FAKE_RESPONDER 0
 
-extern String param_abbrevs[N_TRIAL_PARAMS];
+extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern bool param_report_ET[N_TRIAL_PARAMS];
-extern String results_abbrevs[N_TRIAL_RESULTS];
+extern char* results_abbrevs[N_TRIAL_RESULTS];
 extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
 
@@ -44,7 +44,7 @@ bool flag_start_trial = 0;
 
 
 //// Declarations
-int take_action(String protocol_cmd, String argument1, String argument2);
+int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 
 //// User-defined variables, etc, go here
@@ -74,7 +74,8 @@ void setup()
   int status = 1;
   
   Serial.begin(115200);
-  Serial.println((String) time + " DBG begin setup");
+  Serial.print(time);
+  Serial.println(" DBG begin setup");
 
   //// Begin user protocol code
   //// Put this in a user_setup1() function?
@@ -182,7 +183,6 @@ void loop()
   
   // misc
   int status = 1;
-  String write_string;
   
   //// User protocol variables
   uint16_t touched = 0;
@@ -201,7 +201,9 @@ void loop()
   // announce sticky
   if (touched != sticky_touched)
   {
-    Serial.println((String) time + " TCH " + touched);
+    Serial.print(time);
+    Serial.print(" TCH ");
+    Serial.println(touched);
     sticky_touched = touched;
   }  
   
@@ -218,7 +220,8 @@ void loop()
       if (flag_start_trial)
       {
         // Announce that we have ended the trial and reset the flag
-        Serial.println((String) time + " TRL_RELEASED");
+        Serial.print(time);
+        Serial.println(" TRL_RELEASED");
         flag_start_trial = 0;
         
         // Proceed to next trial
@@ -229,17 +232,18 @@ void loop()
     //// TRIAL_START. Same for all protocols.
     case TRIAL_START:
       // Set up the trial based on received trial parameters
-      Serial.println((String) time + " TRL_START");
+      Serial.print(time);
+      Serial.println(" TRL_START");
       for(int i=0; i < N_TRIAL_PARAMS; i++)
       {
         if (param_report_ET[i]) 
         {
-          write_string = (String) time + " TRLP " + (String) param_abbrevs[i] + 
-            " " + (String) param_values[i];
-          Serial.println(write_string);
-      
-          //write_string += "\n";
-          //buffered_write(write_string);
+          // Buffered write would be nice here
+          Serial.print(time);
+          Serial.print(" TRLP ");
+          Serial.print(param_abbrevs[i]);
+          Serial.print(" ");
+          Serial.println(param_values[i]);
         }
       }
     
@@ -310,20 +314,17 @@ void loop()
       break;
     
     case REWARD_L:
-      Serial.println((String) time + " DBG open L");
       state_reward_l(next_state);
       break;
     
     case REWARD_R:
-      Serial.println((String) time + " DBG open R");
       state_reward_r(next_state);
       break;
     
     case ERROR:
       // Move servo back
       linServo.write(param_values[tpidx_SRV_FAR]);        
-    
-      Serial.println((String) time + " DBG wrong choice");
+      
       next_state = INTER_TRIAL_INTERVAL;
       break;
       
@@ -340,7 +341,10 @@ void loop()
   //// Update the state variable
   if (next_state != current_state)
   {
-    Serial.println((String) time + " ST_CHG " + current_state + " " + next_state);
+    Serial.print("ST_CHG ");
+    Serial.print(current_state);
+    Serial.print(" ");
+    Serial.println(next_state);
   }
   current_state = next_state;
   
@@ -349,7 +353,7 @@ void loop()
 
 
 //// Take protocol action based on user command (ie, setting variable)
-int take_action(String protocol_cmd, String argument1, String argument2)
+int take_action(char *protocol_cmd, char *argument1, char *argument2)
 { /* Protocol action.
   
   Currently two possible actions:
@@ -374,13 +378,20 @@ int take_action(String protocol_cmd, String argument1, String argument2)
   */
   int status;
   
-  if (protocol_cmd == "SET")
+  //~ Serial.print("DBG take_action ");
+  //~ Serial.print(protocol_cmd);
+  //~ Serial.print("-");
+  //~ Serial.print(argument1);
+  //~ Serial.print("-");
+  //~ Serial.println(argument2);
+  
+  if (strncmp(protocol_cmd, "SET\0", 4) == 0)
   {
     // Find index into param_abbrevs
     int idx = -1;
     for (int i=0; i < N_TRIAL_PARAMS; i++)
     {
-      if (param_abbrevs[i] == argument1)
+      if (strcmp(param_abbrevs[i], argument1) == 0)
       {
         idx = i;
         break;
@@ -390,29 +401,42 @@ int take_action(String protocol_cmd, String argument1, String argument2)
     // Error if not found, otherwise set
     if (idx == -1)
     {
+      Serial.print("ERR param not found ");
+      Serial.println(argument1);
       return 4;
     }
     else
     {
       // Convert to int
       status = safe_int_convert(argument2, param_values[idx]);
+
+      // Debug
+      //~ Serial.print("DBG setting var ");
+      //~ Serial.print(idx);
+      //~ Serial.print(" to ");
+      //~ Serial.println(argument2);
+
+      // Error report
       if (status != 0)
       {
+        Serial.println("ERR can't set var");
         return 5;
       }
     }
   }   
-  else if (protocol_cmd == "ACT")
+
+  else if (strncmp(protocol_cmd, "ACT\0", 4) == 0)
   {
     // Dispatch
-    if (argument1 == "REWARD_L")
-      asynch_action_reward_l();    
-    else if (argument1 == "REWARD_R")
+    if (strncmp(argument1, "REWARD_L\0", 9) == 0) {
+      asynch_action_reward_l();
+    } else if (strncmp(argument1, "REWARD_R\0", 9) == 0) {
       asynch_action_reward_r();
-    else if (argument1 == "REWARD")
+    } else if (strncmp(argument1, "REWARD\0", 7) == 0) {
       asynch_action_reward();
-    else if (argument1 == "THRESH")
+    } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
       asynch_action_set_thresh();
+    } 
     else
       return 6;
   }      
@@ -421,31 +445,42 @@ int take_action(String protocol_cmd, String argument1, String argument2)
     // unknown command
     return 2;
   }
-  
   return 0;
 }
 
 
-int safe_int_convert(String string_data, long &variable)
+int safe_int_convert(char *string_data, long &variable)
 { /* Check that string_data can be converted to long before setting variable.
   
-  Currently, variable cannot be set to 0 using this script. That is because
-  toInt returns 0 upon error condition.
-  
-  Not sure how to handle the case when variable is some other kind of int?
-  
-  Returns 1 if string data converts to 0 (ie, an error occurs).
+  Returns 1 if string data could not be converted to %d.
   */
-  long conversion_var = string_data.toInt();
-  if (conversion_var == 0)
-  {
+  long conversion_var = 0;
+  int status;
+  
+  // Parse into %d
+  // Returns number of arguments successfully parsed
+  status = sscanf(string_data, "%d", &conversion_var);
+  
+  //~ Serial.print("DBG SIC ");
+  //~ Serial.print(string_data);
+  //~ Serial.print("-");
+  //~ Serial.print(conversion_var);
+  //~ Serial.print("-");
+  //~ Serial.print(status);
+  //~ Serial.println(".");
+  
+  if (status == 1) {
+    // Good, we converted one variable
+    variable = conversion_var;
+    return 0;
+  }
+  else {
+    // Something went wrong, probably no variables converted
+    Serial.print("ERR SIC cannot parse -");
+    Serial.print(string_data);
+    Serial.println("-");
     return 1;
   }
-  else 
-  {
-    variable = conversion_var;
-  }  
-  return 0;
 }
 
 

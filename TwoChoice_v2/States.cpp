@@ -21,19 +21,19 @@ Defines the following:
 extern STATE_TYPE next_state;
 
 // These should go into some kind of Protocol.h or something
-String param_abbrevs[N_TRIAL_PARAMS] = {
+char* param_abbrevs[N_TRIAL_PARAMS] = {
   "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT",
+  "TOUT", "RELT"
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
   2000, 20, 50, 50, 0,
-  6, 3,
+  6, 3
   };
 
 // Whether to report on each trial  
@@ -46,10 +46,10 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
-  0, 0,
+  0, 0
 };
   
-String results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
+char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
 long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
@@ -183,8 +183,11 @@ void StateInterTrialInterval::s_setup()
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
   {
-    Serial.println((String) time_of_last_call + " TRLR " + (String) results_abbrevs[i] + 
-      " " + (String) results_values[i]);
+    Serial.print(time_of_last_call);
+    Serial.print(" TRLR ");
+    Serial.print(results_abbrevs[i]);
+    Serial.print(" ");
+    Serial.println(results_values[i]);
   }
 }
 
@@ -256,7 +259,6 @@ int rotate(long n_steps)
   // keep it in the range [0, 200)
   sticky_stepper_position = (sticky_stepper_position + 200) % 200;
   
-  Serial.println((String) "DBG rot " + n_steps + " to " + sticky_stepper_position);
   
   return 0;
 }
