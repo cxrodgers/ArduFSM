@@ -100,8 +100,6 @@ int communications(unsigned long time)
   char protocol_cmd[__CHAT_H_MAX_TOKEN_LEN] = "";
   char argument1[__CHAT_H_MAX_TOKEN_LEN] = "";
   char argument2[__CHAT_H_MAX_TOKEN_LEN] = "";
-
-  
   int status = 1;
   
   
@@ -114,19 +112,14 @@ int communications(unsigned long time)
     speak_at += interval;
   }
 
-  //// Drain the buffer
-  //drain_output_buffer();
   
   //// Receive and deal with chat
-  //Serial.println("DBG a1");
   received_chat = receive_chat();
-  //Serial.println("DBG a1");
   if (strlen(received_chat) > 0)
   {
     // Attempt to parse
     status = handle_chat(received_chat, flag_start_trial,
         protocol_cmd, argument1, argument2);
-    //Serial.println("DBG 2");
     if (status != 0)
     {
       // Parse/syntax error
