@@ -174,6 +174,12 @@ class UI:
             
     def start(self):
         self.stdscr = curses.initscr()
+
+        # annoying because getmaxyx is stuck after resize
+        #~ maxy, maxx = self.stdscr.getmaxyx()
+        #~ if maxy < 24 or maxx < 80:
+            #~ raise ValueError("Terminal window is too small. Resize to 80x24 and restart python.")
+        
         #~ curses.noecho()
         curses.cbreak()
         self.stdscr.keypad(1)
