@@ -24,7 +24,6 @@ class ForcedAlternation:
             res['RWSD'] = self.trial_types['rewside'][idx]
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            res['ITI'] = np.random.randint(10000)
             res['ISRND'] = NO
         
         else:    
@@ -57,7 +56,6 @@ class ForcedAlternation:
             
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            res['ITI'] = np.random.randint(10000)
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
