@@ -166,7 +166,9 @@ void loop()
   // get the current time as early as possible in this function
   unsigned long time = millis();
 
-  // statics
+  // statics 
+  // these are just "declared" here, they can be modified at the beginning
+  // of each trial
   static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
   static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
   static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
@@ -175,7 +177,8 @@ void loop()
     param_values[tpidx_SRV_TRAVEL_TIME]);
   static StateInterTrialInterval state_inter_trial_interval(
     param_values[tpidx_ITI]);
-
+  static StateErrorTimeout state_error_timeout(
+    param_values[tpidx_ERROR_TIMEOUT], linServo);
     
   // The next state, by default the same as the current state
   next_state = current_state;
@@ -264,6 +267,13 @@ void loop()
         param_values[tpidx_SRV_TRAVEL_TIME]);
       state_inter_trial_interval = StateInterTrialInterval(
         param_values[tpidx_ITI]);
+      state_error_timeout = StateErrorTimeout(
+        param_values[tpidx_ERROR_TIMEOUT], linServo);
+      
+      // debugging timeout setting
+      Serial.print("DBG set now ");
+      Serial.println(param_values[tpidx_ERROR_TIMEOUT]);
+      
       
       // Could have it's own state, really
       rewards_this_trial = 0;
@@ -322,12 +332,9 @@ void loop()
       break;
     
     case ERROR:
-      // Move servo back
-      linServo.write(param_values[tpidx_SRV_FAR]);        
-      
-      next_state = INTER_TRIAL_INTERVAL;
+      state_error_timeout.run(time);
       break;
-      
+
     case INTER_TRIAL_INTERVAL:
       // Move servo back
       linServo.write(param_values[tpidx_SRV_FAR]);
@@ -460,7 +467,7 @@ int safe_int_convert(char *string_data, long &variable)
   // Parse into %d
   // Returns number of arguments successfully parsed
   status = sscanf(string_data, "%d", &conversion_var);
-  
+    
   //~ Serial.print("DBG SIC ");
   //~ Serial.print(string_data);
   //~ Serial.print("-");

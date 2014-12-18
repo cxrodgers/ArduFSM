@@ -39,6 +39,8 @@ above, and the user just filles in the run_once(), run_many_times(), etc
 
 class TimedState
 {
+  // TODO: add a setter function for updating its duration, eg, when
+  // the corresponding param is changed.
   protected:
     unsigned long time_of_last_call = 0;
     unsigned long timer = 0;
@@ -56,6 +58,7 @@ class TimedState
       if (d < 0) Serial.println("ERR duration <0"); 
     };
     void run(unsigned long time);
+    void set_duration(unsigned long new_duration);
     virtual void update() {};
 };
 

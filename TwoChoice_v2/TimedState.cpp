@@ -40,3 +40,8 @@ void TimedState::run(unsigned long time)
   }
 };
 
+
+void TimedState::set_duration(unsigned long new_duration)
+{ /* Update the duration of the state, for instance after param change */
+  duration = new_duration;
+}

@@ -32,7 +32,7 @@ long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
-  2000, 20, 50, 50, 0,
+  6000, 20, 50, 50, 0,
   6, 3
   };
 
@@ -156,6 +156,18 @@ void StateFakeResponseWindow::set_licking_variables(bool &licking_l, bool &licki
 void StateInterRotationPause::s_finish()
 {
   next_state = ROTATE_STEPPER2;
+}
+
+
+//// StateErrorTimeout
+void StateErrorTimeout::s_finish()
+{
+  next_state = INTER_TRIAL_INTERVAL;
+}
+
+void StateErrorTimeout::s_setup()
+{
+  my_linServo.write(param_values[tpidx_SRV_FAR]);
 }
 
 
