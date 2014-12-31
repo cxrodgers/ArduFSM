@@ -32,4 +32,9 @@
 // Servo
 #define LINEAR_SERVO 4
 
+
+
+//// Misc
+#define __HWCONSTANTS_H_NUMSTEPS
+
 #endif

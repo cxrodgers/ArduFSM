@@ -64,8 +64,8 @@ extern long sticky_stepper_position;
 Servo linServo;
 
 // Stepper
-// TODO: do not assign now, because we might set it up as a 2-pin stepper later
-Stepper stimStepper = Stepper(200, TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+// We won't assign till we know if it's 2pin or 4pin
+Stepper *stimStepper = 0;
 
 //// Setup function
 void setup()
@@ -113,7 +113,7 @@ void setup()
   // user_setup2() function?
   
   // Set up the stepper according to two-pin or four-pin mode
-  if (param_values[tpidx_2PSTP] == 1)
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
   { // Two-pin mode
     pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
     pinMode(TWOPIN_STEPPER_1, OUTPUT);
@@ -123,7 +123,7 @@ void setup()
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
     
     // Initialize
-    stimStepper = Stepper(200, 
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
   }
   else
@@ -135,7 +135,7 @@ void setup()
     pinMode(PIN_STEPPER4, OUTPUT);
     digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
     
-    stimStepper = Stepper(200, 
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
   
@@ -144,7 +144,7 @@ void setup()
     param_values[tpidx_REL_THRESH]);
 
   // Set the speed of the stepper
-  stimStepper.setSpeed(param_values[tpidx_STEP_SPEED]);
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
   
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
