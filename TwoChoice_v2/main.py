@@ -10,15 +10,9 @@
 # logfile and there is more overhead overall.
 
 
-"""
-TODO
-* Fix display bug in getting param
-* do not crash when non-numeric entry to set param
-* Init stim stepper only after 2p config is known
-* Allow echoing arbitrary strings
-* Allow setting param by cursor
-* Keep track of manual rewards in reward count
-"""
+import sys
+if '/home/chris/dev/ArduFSM/TwoChoice_v2/' not in sys.path:
+    sys.path.append('/home/chris/dev/ArduFSM/TwoChoice_v2/')
 
 import ArduFSM
 import ArduFSM.chat2
@@ -33,10 +27,14 @@ import Scheduler
 import trial_setter2
 import matplotlib.pyplot as plt
 
+
+
 ## Create Chatter
 logfilename = 'out.log'
+logfilename = None # autodate?
 chatter = ArduFSM.chat2.Chatter(to_user=logfilename, baud_rate=115200, 
     serial_timeout=.1, serial_port='/dev/ttyACM1')
+logfilename = chatter.ofi.name
 
 ## Params
 YES = 3
@@ -89,8 +87,9 @@ params_table = pandas.DataFrame([
     ('ISRND',   NO,       1, 1, 0, 0, 0),
     ('RD_L',    MD,       0, 0, 1, 1, 1),
     ('RD_R',    MD,       0, 0, 1, 1, 1),
-    ('ITI',     1000,     0, 0, 1, 0, 1),
+    ('ITI',     50,       0, 0, 1, 0, 1),
     ('PSW',     1,        0, 0, 1, 0, 0),
+    ('TO',      6000,     0, 0, 1, 0, 1),       
     ('TOE',     YES,      0, 0, 1, 0, 1),
     ('MRT',     1,        0, 0, 1, 0, 1),
     ('STPSPD',  MD,       0, 0, 0, 1, 0),
@@ -123,7 +122,8 @@ params_table['init_val']['RD_R'] = 25
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Initialize the scheduler
-trial_types = pandas.read_pickle('trial_types_2stppos')
+#trial_types = pandas.read_pickle('trial_types_2stppos')
+trial_types = pandas.read_csv('trial_types_3srvpos')
 scheduler = Scheduler.RandomStim(trial_types=trial_types)
 
 ## Trial setter
