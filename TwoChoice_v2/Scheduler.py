@@ -17,6 +17,7 @@ class ForcedAlternation:
     def generate_trial_params(self, trial_matrix):
         """Given trial matrix so far, generate params for next"""
         res = {}
+        res['ISRND'] = NO
         
         if len(trial_matrix) == 0:
             # First trial, so pick at random from trial_types
@@ -24,7 +25,6 @@ class ForcedAlternation:
             res['RWSD'] = self.trial_types['rewside'][idx]
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            res['ISRND'] = NO
         
         else:    
             # Not the first trial
@@ -56,7 +56,8 @@ class ForcedAlternation:
             
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            
+
+        
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
