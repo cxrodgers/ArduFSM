@@ -35,6 +35,6 @@
 
 
 //// Misc
-#define __HWCONSTANTS_H_NUMSTEPS
+#define __HWCONSTANTS_H_NUMSTEPS 200
 
 #endif
