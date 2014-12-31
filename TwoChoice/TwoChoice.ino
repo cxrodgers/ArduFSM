@@ -163,8 +163,8 @@ unsigned int max_rewards_per_trial = 2;
 // light turns off after OPTO_MAX_TIME_MS and timer set to zero
 // so at any given time, the time_opto_start == 0 tells you the light is off
 unsigned long time_opto_start = 0; // timer for max opto duration
-#define OPTO_PRE_RWIN_START_MS 750
-#define OPTO_MAX_TIME_MS 2000
+#define OPTO_PRE_RWIN_START_MS 2000
+#define OPTO_MAX_TIME_MS 3000
 #define OPTO_PCT_PROB 50
 
 
