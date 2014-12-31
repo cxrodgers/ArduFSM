@@ -62,12 +62,14 @@ class Chatter:
     Call `main_loop` to iterate over `update` calls until CTRL+C is received.
     """
     def __init__(self, serial_port='/dev/ttyACM0', from_user='TO_DEV', 
-        to_user=None, serial_timeout=0.01, baud_rate=9600):
+        to_user=None, to_user_dir=None, serial_timeout=0.01, baud_rate=9600):
         """Initialize a new Chatter.
         
         `serial_port` : where the device is located
         `from_user` : name of pipe to use to collect user's input
         `to_user` : name of file to print information from the device
+            If None, autonames with the datetime
+            If `to_user_dir` is not None, puts in that directory
         """
         ## Set up TO_DEV
         # Read from this pipe whenever something writes to it, and send
@@ -84,6 +86,9 @@ class Chatter:
         if to_user is None:
             to_user = 'ardulines.' + \
                 datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            if to_user_dir is not None:
+                to_user = os.path.join(
+                    os.path.realpath(to_user_dir), to_user)
         self.ofi = file(to_user, 'w')
 
         ## Set up device
