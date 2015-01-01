@@ -86,3 +86,98 @@ def make_trials_info_from_splines(lines_split_by_trial,
     trials_info.index.name = 'trial'
 
     return trials_info
+    
+
+def numericate_trial_matrix(translated_trial_matrix):
+    """Replaces strings with ints to allow anova
+    
+    * Insert prevchoice column by shifting choice
+    * Dump trials unless choice is left or right, prevchoice is left or right,
+      and outcome is hit or error. This drops spoiled and current trials.
+    * Replace left with -1 and right with +1 in choice, prevchoice, and rewside
+      and intify those columns.
+    
+    Return the result.
+    """
+    # Copy and add a prevchoice
+    df = translated_trial_matrix.copy()
+    df['prevchoice'] = df['choice'].shift(1)
+    
+    # Drop where choice, prevchoice are not equal to left or right
+    df = my.pick_rows(df, 
+        choice=['left', 'right'], prevchoice=['left', 'right'],
+        rewside=['left', 'right'],
+        outcome=['hit', 'error'])
+    
+    # Replace and intify
+    df['choice'] = df['choice'].replace(
+        {'left': -1, 'right': 1}).astype(np.int)
+    df['prevchoice'] = df['prevchoice'].replace(
+        {'left': -1, 'right': 1}).astype(np.int)
+    df['rewside'] = df['rewside'].replace(
+        {'left': -1, 'right': 1}).astype(np.int)    
+    
+    return df
+
+
+## ANOVA stuff
+def _run_anova(numericated_trial_matrix):
+    """Helper function that runs anova without parsing stats.
+    
+    Returns None if LinAlgError or ValueError.
+    """
+    numericated_trial_matrix = numericated_trial_matrix.copy()
+
+    # ANOVA choice ~ rewside * prevchoice (or possibly +)
+    try:
+        aov_res = my.stats.anova(numericated_trial_matrix, 'choice ~ rewside + prevchoice')
+    except (np.linalg.LinAlgError, ValueError, TypeError):
+        aov_res = None
+    
+    return aov_res
+
+def pval_to_star(pval):
+    if pval < .001:
+        return '***'
+    elif pval < .01:
+        return '**'
+    elif pval < .05:
+        return '*'
+    else:
+        return ''
+    
+def anova_text_summarize(aov_res, variable='prevchoice', pos_word='Stay', 
+    neg_word='Switch'):
+    """Turn anova results into human-readable summary."""
+    s = pos_word if aov_res['fit']['fit_' + variable] > 0 else neg_word
+    s += ' %0.2f' % aov_res['ess']['ess_' + variable]
+    s += pval_to_star(aov_res['pvals']['p_' + variable])
+    return s
+
+def run_anova(numericated_trial_matrix):
+    """Run anova on trials info and return stats"""
+    # Return variable
+    ss = ''
+    
+    # Do nothing if insufficient data
+    if len(numericated_trial_matrix) < 3:
+        ss = 'insufficient data'
+    
+    else:
+        # Try to run the anova
+        aov_res = _run_anova(numericated_trial_matrix)
+        
+        # Test for anova error, like LinAlgError or ValueError
+        if aov_res is None:
+            ss = 'anova error'
+
+        else:
+            # Summarize stay, side, and correct biases
+            ss += anova_text_summarize(aov_res, variable='prevchoice', 
+                pos_word='Stay', neg_word='Switch') + '; '
+            ss += anova_text_summarize(aov_res, variable='Intercept', 
+                pos_word='Right', neg_word='Left') + '; '
+            ss += anova_text_summarize(aov_res, variable='rewside', 
+                pos_word='Correct', neg_word='Incorrect')
+
+    return ss
