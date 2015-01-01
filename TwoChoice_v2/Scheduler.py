@@ -1,10 +1,7 @@
 """Module for logic to choose params for next trial"""
 import numpy as np
 import my
-
-YES = 3 # get this from TrialSpeak
-NO = 2
-
+from TrialSpeak import YES, NO
 
 
 class ForcedAlternation:
@@ -196,6 +193,7 @@ class SessionStarter(ForcedAlternation):
         closest_right = rights.srvpos.argmin()
         
         # Because we maintain the indices, plotter will work correctly
+        # Not quite right, we don't currently use indices, but this is a TODO
         self.trial_types = self.trial_types.ix[[closest_left, closest_right]]
 
 class Auto:

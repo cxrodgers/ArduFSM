@@ -8,11 +8,10 @@ import my
 import scipy.stats
 import trials_info_tools # replace this with specifics
 import TrialSpeak, TrialMatrix
+from TrialSpeak import YES, NO
 
 o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
-YES = 3 # get this from TrialSpeak
-NO = 2
 
 def format_perf_string(nhit, ntot):
     """Helper function for turning hits and totals into a fraction."""
