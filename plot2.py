@@ -234,8 +234,8 @@ class Plotter(object):
         ax.set_yticklabels(ytick_labels, size='small')
         
         # The ylimits go BACKWARDS so that trial types are from top to bottom
-        ymax = trials_info['trial_type'].max()
-        ymin = trials_info['trial_type'].min()
+        ymax = np.max(ax.get_yticks())
+        ymin = np.min(ax.get_yticks())
         ax.set_ylim((ymax + .5, ymin -.5))
         
         # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
@@ -248,8 +248,8 @@ class Plotter(object):
         
         ## plot division between L and R
         line = self.graphics_handles['label2lines']['divis']
-        #~ line.set_xdata(ax.get_xlim())
-        #~ line.set_ydata([self.servo_throw - .5] * 2)
+        line.set_xdata(ax.get_xlim())
+        line.set_ydata([np.mean(ax.get_yticks())] * 2)
         
         ## PLOTTING finalize
         plt.show()
