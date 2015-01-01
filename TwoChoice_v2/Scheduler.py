@@ -5,6 +5,8 @@ import my
 YES = 3 # get this from TrialSpeak
 NO = 2
 
+
+
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
         self.name = 'forced alternation'
@@ -170,3 +172,36 @@ class ForcedSide:
     def choose_params(self, trial_matrix):
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
+
+class SessionStarter(ForcedAlternation):
+    """Scheduler for beginning session with forced alt and closest pos
+    
+    TODO: instead of changing scheduler with meta-scheduler, just have this
+    one contain the logic for both FA and random, and switch itself
+    """
+    def __init__(self, trial_types, **kwargs):
+        self.name = 'session starter'
+        self.params = {
+            'FD': 'X',
+            'RPB': 1,
+            }
+        self.trial_types = trial_types
+
+        # For simplicity, slice trial_types
+        # Later, might want to reimplement the choosing rule instead
+        lefts = my.pick_rows(self.trial_types, rewside='left')
+        closest_left = lefts.srvpos.argmin()
+        
+        rights = my.pick_rows(self.trial_types, rewside='right')
+        closest_right = rights.srvpos.argmin()
+        
+        # Because we maintain the indices, plotter will work correctly
+        self.trial_types = self.trial_types.ix[[closest_left, closest_right]]
+
+class Auto:
+    """Class for automatic training.
+    
+    Always begins with SessionStarter, then goes random.
+    Switches to forced alt automatically based on biases.
+    """
+    pass
