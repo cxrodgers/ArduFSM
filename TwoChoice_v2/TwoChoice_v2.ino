@@ -269,12 +269,7 @@ void loop()
         param_values[tpidx_ITI]);
       state_error_timeout = StateErrorTimeout(
         param_values[tpidx_ERROR_TIMEOUT], linServo);
-      
-      // debugging timeout setting
-      Serial.print("DBG set now ");
-      Serial.println(param_values[tpidx_ERROR_TIMEOUT]);
-      
-      
+    
       // Could have it's own state, really
       rewards_this_trial = 0;
     
@@ -324,10 +319,14 @@ void loop()
       break;
     
     case REWARD_L:
+      Serial.print(time);
+      Serial.println(" EV R_L");
       state_reward_l(next_state);
       break;
     
     case REWARD_R:
+      Serial.print(time);
+      Serial.println(" EV R_R");      
       state_reward_r(next_state);
       break;
     
@@ -348,7 +347,8 @@ void loop()
   //// Update the state variable
   if (next_state != current_state)
   {
-    Serial.print("ST_CHG ");
+    Serial.print(time);
+    Serial.print(" ST_CHG ");
     Serial.print(current_state);
     Serial.print(" ");
     Serial.println(next_state);
@@ -493,6 +493,9 @@ int safe_int_convert(char *string_data, long &variable)
 
 void asynch_action_reward_l()
 {
+  unsigned long time = millis();
+  Serial.print(time);
+  Serial.println(" EV AAR_L");
   digitalWrite(L_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_L]);
   digitalWrite(L_REWARD_VALVE, LOW); 
@@ -500,6 +503,9 @@ void asynch_action_reward_l()
 
 void asynch_action_reward_r()
 {
+  unsigned long time = millis();
+  Serial.print(time);
+  Serial.println(" EV AAR_R");
   digitalWrite(R_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_R]);
   digitalWrite(R_REWARD_VALVE, LOW); 
@@ -517,6 +523,9 @@ void asynch_action_reward()
 
 void asynch_action_set_thresh()
 {
+  unsigned long time = millis();
+  Serial.print(time);
+  Serial.println(" EV AAST");
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
 }
