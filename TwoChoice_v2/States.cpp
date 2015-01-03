@@ -210,7 +210,13 @@ void StateInterTrialInterval::s_finish()
 
 //// Non-class states
 int state_rotate_stepper1(STATE_TYPE& next_state)
-{ /* The first rotation is always the same */
+{ /* Start rotating the stepper motor.
+    
+  The first rotation is always the same amount.
+  The second rotation later achieves the final position.
+  The house light is also turned off now.
+  */
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
   next_state = INTER_ROTATION_PAUSE;
   return 0;    

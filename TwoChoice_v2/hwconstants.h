@@ -25,6 +25,8 @@
 #define R_REWARD_VALVE 7
 #define TOUCH_IRQ 2
 
+// light
+#define __HWCONSTANTS_H_HOUSE_LIGHT 5
 
 
 //// ANALOG

@@ -88,6 +88,10 @@ void setup()
   // output pins
   pinMode(L_REWARD_VALVE, OUTPUT);
   pinMode(R_REWARD_VALVE, OUTPUT);
+  pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
+  
+  // initialize the house light to ON
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   
   // random number seed
   randomSeed(analogRead(3));
@@ -331,10 +335,16 @@ void loop()
       break;
     
     case ERROR:
+      // turn the light on
+      digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+      
       state_error_timeout.run(time);
       break;
 
     case INTER_TRIAL_INTERVAL:
+      // turn the light on
+      digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+      
       // Move servo back
       linServo.write(param_values[tpidx_SRV_FAR]);
     
