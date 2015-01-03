@@ -23,8 +23,33 @@ def format_perf_string(nhit, ntot):
     res = '%d/%d=%0.2f' % (nhit, ntot, perf)
     return res
 
+def count_rewards(splines):
+    """Counts the rewards delivered in each trial
+    
+    Returns : dict with the keys 'left auto', 'right auto', 'left manual',
+        and 'right manual'. The values are arrays of the same length as
+        splines containing the number of each event on each trial.
+    """
+    # Get the rewards by each trial in splines
+    evname2token = {
+        'left auto' : 'EV R_L',
+        'right auto' : 'EV R_R',
+        'left manual' : 'EV AAR_L',
+        'right manual' : 'EV AAR_R',
+        }
+    evname2list = dict([(evname, []) for evname in evname2token])
 
-
+    # Iterate over trials
+    for nspline, spline in enumerate(splines):        
+        # Iterate over events
+        for evname, token in evname2token.items():
+            # Count events of this type in this trial
+            n_events = np.sum([s.strip().endswith(token) for s in spline])
+            evname2list[evname].append(n_events)
+    
+    # Arrayify
+    res = dict([(evname, np.asarray(l)) for evname, l in evname2list.items()])
+    return res
 
 
 class Plotter(object):
@@ -191,27 +216,18 @@ class Plotter(object):
         plt.show()
         plt.draw()    
 
-    def count_rewards(self, splines):
-        ## count rewards
-        # Get the rewards by each trial in splines
-        n_rewards_l = []
-        for nspline, spline in enumerate(splines):
-            n_rewards = np.sum(map(lambda s: 'EVENT REWARD' in s, spline))
-            n_rewards_l.append(n_rewards)
-        n_rewards_a = np.asarray(n_rewards_l)
-
-        return n_rewards_a
-
     def form_string_rewards(self, splines, translated_trial_matrix):
         """Form a string with the number of rewards on each side"""
-        n_rewards_a = self.count_rewards(splines)
-        l_rewards = np.sum(n_rewards_a[
-            (translated_trial_matrix['rewside'] == 'left').values])
-        r_rewards = np.sum(n_rewards_a[
-            (translated_trial_matrix['rewside'] == 'right').values])        
+        # Count rewards
+        d = count_rewards(splines)
 
-        # turn the rewards into a title string
-        s = '%d rewards L; %d rewards R' % (l_rewards, r_rewards)
+        # Stringify
+        s = 'Rewards (auto/total): L=%d/%d R=%d/%d' % (
+            d['left auto'].sum(), 
+            d['left auto'].sum() + d['left manual'].sum(),
+            d['right auto'].sum(), 
+            d['right auto'].sum() + d['right manual'].sum(),
+            )
         
         return s
 

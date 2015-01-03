@@ -113,7 +113,7 @@ def get_rig_specific(rigname):
             'RD_L': 35,
             'RD_R': 30,
             }
-            
+    
     elif rigname == 'L3':
         return {
             'STPSPD': 20,
@@ -122,7 +122,7 @@ def get_rig_specific(rigname):
             'RD_L': 35,
             'RD_R': 30,
             }  
-            
+    
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
 
