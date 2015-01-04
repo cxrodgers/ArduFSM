@@ -33,6 +33,9 @@ class UIActionTaker:
         self.ui = ui
         self.chatter = chatter
     
+    def ui_action_house_light_on(self):
+        self.chatter.queued_write_to_device('ACT HLON')
+    
     def ui_action_reward_l(self):
         # these tokens should be in TrialSpeak
         self.chatter.queued_write_to_device('ACT REWARD_L')
@@ -156,6 +159,7 @@ class UI:
         # Pressing the key in the first position triggers a call to the
         # function in the last position
         self.ui_actions = [
+            ('H', 'house light', self.ui_action_taker.ui_action_house_light_on),
             ('L', 'reward L', self.ui_action_taker.ui_action_reward_l),
             ('R', 'reward R', self.ui_action_taker.ui_action_reward_r),
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    

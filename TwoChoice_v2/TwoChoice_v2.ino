@@ -453,6 +453,8 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
       asynch_action_reward();
     } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
       asynch_action_set_thresh();
+    } else if (strncmp(argument1, "HLON\0", 5) == 0) {
+      asynch_action_light_on();
     } 
     else
       return 6;
@@ -540,3 +542,10 @@ void asynch_action_set_thresh()
     param_values[tpidx_REL_THRESH]);
 }
 
+void asynch_action_light_on()
+{
+  unsigned long time = millis();
+  Serial.print(time);
+  Serial.println(" EV HLON");
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+}
