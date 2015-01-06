@@ -70,10 +70,17 @@ if RUN_UI:
     try:
         ui.start()
 
+    except curses.error as err:
+        raise Exception(
+            "UI error. Most likely the window is, or was, too small.\n"
+            "Quit Python, type resizewin to set window to 80x23, and restart.")
+
     except:
-        ui.close()
         print "error encountered when starting UI"
         raise
+    
+    finally:
+        ui.close()
 
 ## Main loop
 final_message = None
@@ -103,7 +110,7 @@ try:
         # meta_scheduler(trial_matrix) that returns the new scheduler
         # Actually, probably makes the most sense to have each meta-scheduler
         # just be a scheduler called "auto" or something.
-        if len(translated_trial_matrix) > 5:
+        if len(translated_trial_matrix) > 5 and ts_obj.scheduler.name == 'session starter':
             new_scheduler = Scheduler.RandomStim(trial_types=trial_types)
             ts_obj.scheduler = new_scheduler
         
@@ -111,7 +118,7 @@ try:
         if RUN_UI:
             ui.update_data(logfile_lines=logfile_lines)
             ui.get_and_handle_keypress()
-        
+
         ## Update GUI
         # Put this in it's own try/except to catch plotting bugs
         if RUN_GUI:
@@ -130,6 +137,11 @@ except KeyboardInterrupt:
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
+
+except curses.error as err:
+    raise Exception(
+        "UI error. Most likely the window is, or was, too small.\n"
+        "Quit Python, type resizewin to set window to 80x23, and restart.")
 
 except:
     raise
