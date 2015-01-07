@@ -73,8 +73,17 @@ class UIActionTaker:
         param_name = self.ui.get_additional_input("Enter param name: ").strip().upper()
         param_value = self.ui.get_additional_input("Enter param value: ").strip()
         
+        # simple error check for empty param
+        # what if it is a non-int string?
+        if len(param_value) == 0 or len(param_name) == 0:
+            return
+        
         # Send to device
-        cmd = TrialSpeak.command_set_parameter(param_name, param_value)
+        try:
+            cmd = TrialSpeak.command_set_parameter(param_name, param_value)
+        except ValueError:
+            # cannot convert to int
+            return
         self.chatter.queued_write_to_device(cmd)
         
         # Update in ui params
