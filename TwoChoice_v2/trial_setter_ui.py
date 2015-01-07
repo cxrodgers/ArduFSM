@@ -87,7 +87,15 @@ class UIActionTaker:
         self.chatter.queued_write_to_device(cmd)
         
         # Update in ui params
-        self.ui.ts_obj.params_table['current-value'][param_name] = int(param_value)
+        #self.ui.ts_obj.params_table['current-value'][param_name] = int(param_value)
+        
+        # avoid chained assignment
+        if param_name in self.ui.ts_obj.params_table.index:
+            self.ui.ts_obj.params_table.loc[
+                param_name, 'current-value'] = int(param_value)
+        else:
+            print "warning: no param named", param_name        
+        
         self.ui.draw_menu()
     
     def force_x(self, **kwargs):
