@@ -18,8 +18,9 @@ import curses
 import matplotlib.pyplot as plt
 
 # Ardu imports
-if '/home/chris/dev/ArduFSM/TwoChoice_v2/' not in sys.path:
-    sys.path.append('/home/chris/dev/ArduFSM/TwoChoice_v2/')
+tcv2_path = os.path.expanduser('~/dev/ArduFSM/TwoChoice_v2')
+if tcv2_path not in sys.path:
+    sys.path.append(tcv2_path)
 import ArduFSM
 import ArduFSM.chat2
 import ArduFSM.plot2
@@ -110,8 +111,8 @@ try:
         # meta_scheduler(trial_matrix) that returns the new scheduler
         # Actually, probably makes the most sense to have each meta-scheduler
         # just be a scheduler called "auto" or something.
-        if len(translated_trial_matrix) > 5 and ts_obj.scheduler.name == 'session starter':
-            new_scheduler = Scheduler.RandomStim(trial_types=trial_types)
+        if len(translated_trial_matrix) > 8 and ts_obj.scheduler.name == 'session starter':
+            new_scheduler = Scheduler.ForcedAlternation(trial_types=trial_types)
             ts_obj.scheduler = new_scheduler
         
         ## Update UI
