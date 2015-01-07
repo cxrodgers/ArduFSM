@@ -20,7 +20,10 @@ class ForcedAlternation:
         
         if len(trial_matrix) == 0:
             # First trial, so pick at random from trial_types
-            idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            if hasattr(self, 'picked_trial_types'):
+                idx = self.trial_types.index[np.random.randint(0, len(self.picked_trial_types))]
+            else:
+                idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
             res['RWSD'] = self.trial_types['rewside'][idx]
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
@@ -47,10 +50,18 @@ class ForcedAlternation:
             # Update the stored force dir
             self.params['FD'] = res['RWSD']
             
+            # ugly hack to get Session Starter working
+            if hasattr(self, 'picked_trial_types'):
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.picked_trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0                
+            else:
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0
             
-            # Use the forced side to choose from trial_types
-            sub_trial_types = my.pick_rows(self.trial_types, rewside=res['RWSD'])
-            assert len(sub_trial_types) > 0
             idx = sub_trial_types.index[np.random.randint(0, len(sub_trial_types))]
             
             res['STPPOS'] = self.trial_types['stppos'][idx]
@@ -83,7 +94,7 @@ class RandomStim:
         self.name = 'random stim'
         self.params = kwargs
         self.params['side'] = 'X'
-        self.trial_types = trial_types
+        self.trial_types = trial_types.copy()
     
     def generate_trial_params(self, trial_matrix):
         """Given trial matrix so far, generate params for next trial.
@@ -194,7 +205,8 @@ class SessionStarter(ForcedAlternation):
         
         # Because we maintain the indices, plotter will work correctly
         # Not quite right, we don't currently use indices, but this is a TODO
-        self.trial_types = self.trial_types.ix[[closest_left, closest_right]]
+        self.picked_trial_types = self.trial_types.ix[
+            [closest_left, closest_right]].copy()
 
 class Auto:
     """Class for automatic training.
