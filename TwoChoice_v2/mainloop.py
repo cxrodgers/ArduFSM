@@ -136,10 +136,10 @@ def assign_rig_specific_params(rigname, params_table):
             raise ValueError("cannot find param named %s" % param_name)
     return params_table
 
-def get_trial_types(name, directory='/home/chris/dev/ArduFSM/stim_sets'):
+def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
     """Loads and returns the trial types file"""
     
-    filename = os.path.join(directory, name)
+    filename = os.path.join(os.path.expanduser(directory), name)
     try:
         trial_types = pandas.read_csv(filename)
     except IOError:
