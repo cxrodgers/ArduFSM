@@ -58,7 +58,7 @@ void StateResponseWindow::loop()
   // get the licking state 
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
-  
+    
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -105,6 +105,9 @@ void StateResponseWindow::loop()
   { // Error made. Set outcome if not set already
     if (results_values[tridx_OUTCOME] == 0) {
         results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+        
+        // Hack to get MRT to work for now
+        results_values[tridx_OUTCOME] = OUTCOME_HIT;
     }
   }
 }
@@ -147,6 +150,12 @@ void StateInterTrialInterval::s_finish()
 }
 
 
+//// Post-reward state
+void StatePostRewardPause::s_finish()
+{
+  next_state = RESPONSE_WINDOW;
+}
+
 //// Non-class states
 // The reward states use delay because they need to be millisecond-precise
 int state_reward_l(STATE_TYPE& next_state)
@@ -154,7 +163,7 @@ int state_reward_l(STATE_TYPE& next_state)
   digitalWrite(L_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_L]);
   digitalWrite(L_REWARD_VALVE, LOW); 
-  next_state = RESPONSE_WINDOW;
+  next_state = POST_REWARD_PAUSE;
   return 0;  
 }
 int state_reward_r(STATE_TYPE& next_state)
@@ -162,6 +171,6 @@ int state_reward_r(STATE_TYPE& next_state)
   digitalWrite(R_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_R]);
   digitalWrite(R_REWARD_VALVE, LOW); 
-  next_state = RESPONSE_WINDOW;
+  next_state = POST_REWARD_PAUSE;
   return 0;  
 }

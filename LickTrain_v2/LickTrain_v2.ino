@@ -5,7 +5,7 @@ Reward licks on one side for a fixed number of rewards, then switch.
 #include "chat.h"
 #include "hwconstants.h"
 #include "mpr121.h"
-#include <Wire.h> # also for mpr121
+#include <Wire.h> // also for mpr121
 #include "TimedState.h"
 #include "States.h"
 
@@ -106,6 +106,8 @@ void loop()
   static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
   static StateInterTrialInterval state_inter_trial_interval(
     param_values[tpidx_INTER_REWARD_INTERVAL]);
+  static StatePostRewardPause state_post_reward_pause(
+        param_values[tpidx_INTER_REWARD_INTERVAL]);
 
   // The next state, by default the same as the current state
   next_state = current_state;    
@@ -209,6 +211,10 @@ void loop()
       Serial.print(time);
       Serial.println(" EV R_R");      
       state_reward_r(next_state);
+      break;
+    
+    case POST_REWARD_PAUSE:
+      state_post_reward_pause.run(time);
       break;
 
     case INTER_TRIAL_INTERVAL:

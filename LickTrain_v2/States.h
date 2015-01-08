@@ -63,6 +63,7 @@ enum STATE_TYPE
   RESPONSE_WINDOW,
   REWARD_L,
   REWARD_R,
+  POST_REWARD_PAUSE,
   INTER_TRIAL_INTERVAL,
 };
 
@@ -98,6 +99,14 @@ class StateInterTrialInterval : public TimedState {
   
   public:
     StateInterTrialInterval(unsigned long d) : TimedState(d) { };
+};
+
+class StatePostRewardPause : public TimedState {
+  protected:
+    void s_finish();
+  
+  public:
+    StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
 
 #endif

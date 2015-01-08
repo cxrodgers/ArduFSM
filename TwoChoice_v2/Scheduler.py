@@ -1,7 +1,7 @@
 """Module for logic to choose params for next trial"""
 import numpy as np
 import my
-from TrialSpeak import YES, NO
+from TrialSpeak import YES, NO, HIT
 
 
 class ForcedAlternation:
@@ -115,7 +115,7 @@ class ForcedAlternationLickTrain:
             else:
                 # Get last trial
                 last_trial = trial_matrix.irow(-1)
-                if last_trial['choice'] == last_trial['rewside']:
+                if last_trial['outcome'] == 'hit':
                     res['RWSD'] = {'left': 'right', 'right':'left'}[last_trial['rewside']]
                 else:
                     res['RWSD'] = last_trial['rewside']
