@@ -21,7 +21,7 @@ Here are the things that the user should have to change for each protocol:
 #include "chat.h"
 #include "hwconstants.h"
 #include "mpr121.h"
-#include <Wire.h> # also for mpr121
+#include <Wire.h> // also for mpr121
 #include <Servo.h>
 #include <Stepper.h>
 #include "TimedState.h"
