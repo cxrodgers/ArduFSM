@@ -49,7 +49,6 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 //// User-defined variables, etc, go here
 /// these should all be staticked into loop()
-unsigned int rewards_this_trial = 0;
 STATE_TYPE next_state; 
 
 // touched monitor
@@ -274,9 +273,6 @@ void loop()
       state_error_timeout = StateErrorTimeout(
         param_values[tpidx_ERROR_TIMEOUT], linServo);
     
-      // Could have it's own state, really
-      rewards_this_trial = 0;
-    
       next_state = ROTATE_STEPPER1;
       break;
     
@@ -312,12 +308,12 @@ void loop()
     case RESPONSE_WINDOW:
       if (FAKE_RESPONDER)
       {
-        sfrw.update(touched, rewards_this_trial);
+        sfrw.update(touched);
         sfrw.run(time);
       } 
       else 
       {
-        srw.update(touched, rewards_this_trial);
+        srw.update(touched);
         srw.run(time);
       }
       break;
@@ -351,12 +347,15 @@ void loop()
       // Announce trial_results
       state_inter_trial_interval.run(time);
       break;
+    
+    // need an else here
   }
   
   
   //// Update the state variable
   if (next_state != current_state)
   {
+      
     Serial.print(time);
     Serial.print(" ST_CHG ");
     Serial.print(current_state);
