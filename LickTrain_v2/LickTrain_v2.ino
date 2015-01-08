@@ -189,16 +189,13 @@ void loop()
       srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
       state_inter_trial_interval = StateInterTrialInterval(
         param_values[tpidx_INTER_REWARD_INTERVAL]);      
-    
-      // Could have it's own state, really
-      rewards_this_trial = 0;
       
       next_state = RESPONSE_WINDOW;
     
       break;
   
     case RESPONSE_WINDOW:
-      srw.update(touched, rewards_this_trial);
+      srw.update(touched);
       srw.run(time);
       break;
     

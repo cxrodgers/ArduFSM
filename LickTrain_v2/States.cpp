@@ -44,10 +44,9 @@ long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
 //// StateResponseWindow
-void StateResponseWindow::update(uint16_t touched, unsigned int rewards_this_trial)
+void StateResponseWindow::update(uint16_t touched)
 {
  my_touched = touched;
- my_rewards_this_trial = rewards_this_trial;
 }
 
 void StateResponseWindow::loop()
@@ -89,6 +88,7 @@ void StateResponseWindow::loop()
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
   { // Hit on left
     next_state = REWARD_L;
+    my_rewards_this_trial++;
     if (results_values[tridx_OUTCOME] == 0) {
       results_values[tridx_OUTCOME] = OUTCOME_HIT;
     }
@@ -96,6 +96,7 @@ void StateResponseWindow::loop()
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
   { // Hit on right
     next_state = REWARD_R;
+    my_rewards_this_trial++;
     if (results_values[tridx_OUTCOME] == 0) {
       results_values[tridx_OUTCOME] = OUTCOME_HIT;
     }
@@ -153,7 +154,7 @@ int state_reward_l(STATE_TYPE& next_state)
   digitalWrite(L_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_L]);
   digitalWrite(L_REWARD_VALVE, LOW); 
-  next_state = INTER_TRIAL_INTERVAL;
+  next_state = RESPONSE_WINDOW;
   return 0;  
 }
 int state_reward_r(STATE_TYPE& next_state)
@@ -161,6 +162,6 @@ int state_reward_r(STATE_TYPE& next_state)
   digitalWrite(R_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_R]);
   digitalWrite(R_REWARD_VALVE, LOW); 
-  next_state = INTER_TRIAL_INTERVAL;
+  next_state = RESPONSE_WINDOW;
   return 0;  
 }

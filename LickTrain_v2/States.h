@@ -87,7 +87,7 @@ class StateResponseWindow : public TimedState {
     virtual void set_licking_variables(bool &, bool &);
   
   public:
-    void update(uint16_t touched, unsigned int rewards_this_trial);
+    void update(uint16_t touched);
     StateResponseWindow(unsigned long d) : TimedState(d) { };
 };
 
