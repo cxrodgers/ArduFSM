@@ -115,7 +115,8 @@ enum STATE_TYPE
   INTER_TRIAL_INTERVAL,
   ERROR,
   PRE_SERVO_WAIT,
-  SERVO_WAIT
+  SERVO_WAIT,
+  POST_REWARD_PAUSE,
 };
 
 // Declare utility functions
@@ -203,6 +204,14 @@ class StateInterTrialInterval : public TimedState {
   
   public:
     StateInterTrialInterval(unsigned long d) : TimedState(d) { };
+};
+
+class StatePostRewardPause : public TimedState {
+  protected:
+    void s_finish();
+  
+  public:
+    StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
 
 #endif

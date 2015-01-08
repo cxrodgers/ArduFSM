@@ -182,7 +182,9 @@ void loop()
     param_values[tpidx_ITI]);
   static StateErrorTimeout state_error_timeout(
     param_values[tpidx_ERROR_TIMEOUT], linServo);
-    
+  static StatePostRewardPause state_post_reward_pause(
+        param_values[tpidx_INTER_REWARD_INTERVAL]);
+
   // The next state, by default the same as the current state
   next_state = current_state;
     
@@ -329,6 +331,10 @@ void loop()
       Serial.println(" EV R_R");      
       state_reward_r(next_state);
       break;
+    
+    case POST_REWARD_PAUSE:
+      state_post_reward_pause.run(time);
+      break;    
     
     case ERROR:
       // turn the light on
@@ -477,7 +483,7 @@ int safe_int_convert(char *string_data, long &variable)
   
   // Parse into %d
   // Returns number of arguments successfully parsed
-  status = sscanf(string_data, "%d", &conversion_var);
+  status = sscanf(string_data, "%ld", &conversion_var);
     
   //~ Serial.print("DBG SIC ");
   //~ Serial.print(string_data);
