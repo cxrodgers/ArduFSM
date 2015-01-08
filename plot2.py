@@ -134,7 +134,10 @@ class Plotter(object):
         # define the "bad" trials
         # these are marked differently and discounted from certain ANOVAs
         # maybe include user delivery trials too?
-        translated_trial_matrix['bad'] = translated_trial_matrix['isrnd'] == NO 
+        if 'isrnd' in translated_trial_matrix:
+            translated_trial_matrix['bad'] = translated_trial_matrix['isrnd'] == NO 
+        else:
+            translated_trial_matrix['bad'] = False
 
         ## Define trial types, the ordering on the plot
         # Make any updates to trial type parameters (child-class-dependent)
@@ -205,7 +208,7 @@ class Plotter(object):
             len(translated_trial_matrix)))    
         
         # title set above
-        ax.set_title(title_string, size='medium')
+        ax.set_title(title_string, size='small')
         
         ## plot division between L and R
         line = self.graphics_handles['label2lines']['divis']
