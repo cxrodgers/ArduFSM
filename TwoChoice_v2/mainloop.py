@@ -159,20 +159,20 @@ def get_rig_specific_licktrain(rigname):
     """
     if rigname == 'L1':
         return {
-            'RD_L': 130,
+            'RD_L': 65,
             'RD_R': 50,
             }
     
     elif rigname == 'L2':
         return {
-            'RD_L': 70,
+            'RD_L': 30,
             'RD_R': 20,
             }
     
     elif rigname == 'L3':
         return {
-            'RD_L': 60,
-            'RD_R': 60,
+            'RD_L': 35,
+            'RD_R': 30,
             }  
     
     else:
