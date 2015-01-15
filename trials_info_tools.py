@@ -219,6 +219,23 @@ def identify_stim_numbers(splines):
 
     return np.asarray(res)    
 
+def identify_opto_trials(splines):
+    res = []
+    for spline in splines:
+        # Find the matching line(s)
+        line_l = filter(lambda line: line.startswith('TRIAL OPTO'), spline)
+        
+        # Deal with missing/extra data
+        if len(line_l) == 0:
+            res.append(-1)
+        elif len(line_l) == 1:
+            res.append(int(line_l[0].split()[-1]))
+        else:
+            print "error: multiple opto types per trial"
+            res.append(int(line_l[0].split()[-1]))
+
+    return np.asarray(res)    
+
 def identify_trial_times(splines):
     """Return time of each TRIAL START in splines"""
     res_l = []
@@ -238,6 +255,34 @@ def identify_servo_retract_times(splines):
         # Find the state change line
         match_lines = filter(
             lambda line: 'STATE CHANGE 15 11' in line, spline)
+        
+        # There should be 1 hit, except in rare cases
+        if len(match_lines) == 1:
+            # Append result and nspline as index
+            res_l.append(int(match_lines[0].split()[0]))
+            idx_l.append(nspline)
+        elif len(match_lines) == 0:
+            # no state change found
+            # this is only okay on the most recent ("current") trial
+            if nspline != len(splines) - 1:
+                print "error: cannot find state change in non-last trial"
+        else:
+            # should never find multiple instances
+            raise ValueError("multiple state changes per spline")
+
+    return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
+
+def identify_rwin_open_times(splines):
+    """Return time that rwin opened, hard-coded as 3 4 
+    
+    Returns: Series of times in s, indexed by the entry in splines
+    """
+    res_l = []
+    idx_l = []
+    for nspline, spline in enumerate(splines):
+        # Find the state change line
+        match_lines = filter(
+            lambda line: 'STATE CHANGE 3 4' in line, spline)
         
         # There should be 1 hit, except in rare cases
         if len(match_lines) == 1:
