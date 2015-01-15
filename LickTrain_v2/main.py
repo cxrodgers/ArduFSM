@@ -1,13 +1,4 @@
-# Main script to run to run TwoChoice_v2 behavior
-# Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
-# enough that the response is quick, but not so low that it takes up all the
-# CPU power.
-# Right now, it does this on each loop
-# * Update chatter (timeout)
-# * Update UI (timeout)
-# * do other things, like reading logfile and setting next trial
-# So, if the timeouts are too low, it spends a lot more time reading the
-# logfile and there is more overhead overall.
+# Main script to run to run LickTrain_v2 behavior
 
 import sys
 import os
@@ -37,19 +28,19 @@ rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
 
 ## Get params
-params_table = mainloop.get_params_table()
-params_table = mainloop.assign_rig_specific_params(rigname, params_table)
+params_table = mainloop.get_params_table_licktrain()
+params_table = mainloop.assign_rig_specific_params_licktrain(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
-trial_types = mainloop.get_trial_types('trial_types_3srvpos')
+trial_types = mainloop.get_trial_types('trial_types_licktrain')
 
 ## Initialize the scheduler
-scheduler = Scheduler.SessionStarter(trial_types=trial_types)
+scheduler = Scheduler.ForcedAlternationLickTrain(trial_types=trial_types)
 
 ## Create Chatter
 logfilename = 'out.log'
-logfilename = None # autodate
+#logfilename = None # autodate
 chatter = ArduFSM.chat2.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
@@ -105,24 +96,14 @@ try:
         # Run the trial setting logic
         translated_trial_matrix = ts_obj.update(splines)
         
-        ## Meta-scheduler
-        # Not sure how to handle this yet. Probably should be an object
-        # ts_obj.meta_scheduler that can change ts_obj.scheduler, or a method
-        # meta_scheduler(trial_matrix) that returns the new scheduler
-        # Actually, probably makes the most sense to have each meta-scheduler
-        # just be a scheduler called "auto" or something.
-        if len(translated_trial_matrix) > 8 and ts_obj.scheduler.name == 'session starter':
-            new_scheduler = Scheduler.ForcedAlternation(trial_types=trial_types)
-            ts_obj.scheduler = new_scheduler
-        
         ## Update UI
         if RUN_UI:
             ui.update_data(logfile_lines=logfile_lines)
-            ui.get_and_handle_keypress()
+            ui.get_and_handle_keypress()            
 
         ## Update GUI
         # Put this in it's own try/except to catch plotting bugs
-        if RUN_GUI:
+        if RUN_GUI:            
             if last_updated_trial < len(translated_trial_matrix):
                 # update plot
                 plotter.update(logfilename)     
@@ -156,8 +137,9 @@ finally:
         print "UI closed"
     
     if RUN_GUI:
-        plt.close(plotter.graphics_handles['f'])
-        print "GUI closed"
+        pass
+        #~ plt.close(plotter.graphics_handles['f'])
+        #~ print "GUI closed"
     
     if final_message is not None:
         print final_message

@@ -1,9 +1,8 @@
 """Module for logic to choose params for next trial"""
 import numpy as np
 import my
+from TrialSpeak import YES, NO, HIT
 
-YES = 3 # get this from TrialSpeak
-NO = 2
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -17,15 +16,17 @@ class ForcedAlternation:
     def generate_trial_params(self, trial_matrix):
         """Given trial matrix so far, generate params for next"""
         res = {}
+        res['ISRND'] = NO
         
         if len(trial_matrix) == 0:
             # First trial, so pick at random from trial_types
-            idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            if hasattr(self, 'picked_trial_types'):
+                idx = self.trial_types.index[np.random.randint(0, len(self.picked_trial_types))]
+            else:
+                idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
             res['RWSD'] = self.trial_types['rewside'][idx]
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            res['ITI'] = np.random.randint(10000)
-            res['ISRND'] = NO
         
         else:    
             # Not the first trial
@@ -49,16 +50,24 @@ class ForcedAlternation:
             # Update the stored force dir
             self.params['FD'] = res['RWSD']
             
+            # ugly hack to get Session Starter working
+            if hasattr(self, 'picked_trial_types'):
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.picked_trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0                
+            else:
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0
             
-            # Use the forced side to choose from trial_types
-            sub_trial_types = my.pick_rows(self.trial_types, rewside=res['RWSD'])
-            assert len(sub_trial_types) > 0
             idx = sub_trial_types.index[np.random.randint(0, len(sub_trial_types))]
             
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
-            res['ITI'] = np.random.randint(10000)
-            
+
+        
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
@@ -75,6 +84,68 @@ class ForcedAlternation:
         return self.generate_trial_params(trial_matrix)
 
 
+class ForcedAlternationLickTrain:
+    def __init__(self, trial_types, **kwargs):
+        self.name = 'forced alternation lick train'
+        self.params = {
+            'FD': 'X',
+            'RPB': 1,
+            }
+        self.trial_types = trial_types
+    
+    def generate_trial_params(self, trial_matrix):
+        """Given trial matrix so far, generate params for next"""
+        res = {}
+        
+        if len(trial_matrix) == 0:
+            idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            res['RWSD'] = self.trial_types['rewside'][idx]
+        
+        else:    
+            # Not the first trial
+            # First check that the last trial hasn't been released
+            assert trial_matrix['release_time'].isnull().irow(-1)
+            
+            # But that it has been responded
+            assert not trial_matrix['choice'].isnull().irow(-1)
+            
+            # Set side to left by default, and otherwise forced alt
+            if len(trial_matrix) < 2:
+                res['RWSD'] = 'left'
+            else:
+                # Get last trial
+                last_trial = trial_matrix.irow(-1)
+                if last_trial['outcome'] == 'hit':
+                    res['RWSD'] = {'left': 'right', 'right':'left'}[last_trial['rewside']]
+                else:
+                    res['RWSD'] = last_trial['rewside']
+            
+            # Update the stored force dir
+            self.params['FD'] = res['RWSD']
+
+            # Choose from trials from the forced side
+            sub_trial_types = my.pick_rows(self.trial_types, 
+                rewside=res['RWSD'])
+            assert len(sub_trial_types) > 0
+            
+            idx = sub_trial_types.index[np.random.randint(0, len(sub_trial_types))]
+
+        
+        # Untranslate the rewside
+        # This should be done more consistently, eg, use real phrases above here
+        # and only untranslate at this point.
+        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        
+        return res
+
+    def choose_params_first_trial(self, trial_matrix):
+        """Called when params for first trial are needed"""
+        return self.generate_trial_params(trial_matrix)
+    
+    def choose_params(self, trial_matrix):
+        """Called when params for next trial are needed."""
+        return self.generate_trial_params(trial_matrix)
+
 
 class RandomStim:
     def __init__(self, trial_types, **kwargs):
@@ -85,7 +156,7 @@ class RandomStim:
         self.name = 'random stim'
         self.params = kwargs
         self.params['side'] = 'X'
-        self.trial_types = trial_types
+        self.trial_types = trial_types.copy()
     
     def generate_trial_params(self, trial_matrix):
         """Given trial matrix so far, generate params for next trial.
@@ -171,3 +242,38 @@ class ForcedSide:
     def choose_params(self, trial_matrix):
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
+
+class SessionStarter(ForcedAlternation):
+    """Scheduler for beginning session with forced alt and closest pos
+    
+    TODO: instead of changing scheduler with meta-scheduler, just have this
+    one contain the logic for both FA and random, and switch itself
+    """
+    def __init__(self, trial_types, **kwargs):
+        self.name = 'session starter'
+        self.params = {
+            'FD': 'X',
+            'RPB': 1,
+            }
+        self.trial_types = trial_types
+
+        # For simplicity, slice trial_types
+        # Later, might want to reimplement the choosing rule instead
+        lefts = my.pick_rows(self.trial_types, rewside='left')
+        closest_left = lefts.srvpos.argmin()
+        
+        rights = my.pick_rows(self.trial_types, rewside='right')
+        closest_right = rights.srvpos.argmin()
+        
+        # Because we maintain the indices, plotter will work correctly
+        # Not quite right, we don't currently use indices, but this is a TODO
+        self.picked_trial_types = self.trial_types.ix[
+            [closest_left, closest_right]].copy()
+
+class Auto:
+    """Class for automatic training.
+    
+    Always begins with SessionStarter, then goes random.
+    Switches to forced alt automatically based on biases.
+    """
+    pass

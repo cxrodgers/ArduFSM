@@ -75,7 +75,6 @@ into States.cpp.
 #define tpidx_IS_RANDOM 19 // reqd
 #define tpidx_TOU_THRESH 20 // init-only
 #define tpidx_REL_THRESH 21 // init-only
-  
 
 
 //// Global trial results structure. Can be set by user-defined states. 
@@ -116,7 +115,8 @@ enum STATE_TYPE
   INTER_TRIAL_INTERVAL,
   ERROR,
   PRE_SERVO_WAIT,
-  SERVO_WAIT
+  SERVO_WAIT,
+  POST_REWARD_PAUSE,
 };
 
 // Declare utility functions
@@ -134,6 +134,13 @@ int state_reward_l(STATE_TYPE& next_state);
 int state_reward_r(STATE_TYPE& next_state);
   
 
+//// Declare states that are objects
+// Presently these all derive from TimedState
+// Ensure that they have a public constructor, and optionally, a public
+// "update" function that allows resetting of their parameters.
+//
+// Under protected, declare their protected variables, and declare any of
+// s_setup, loop(), and s_finish() that you are going to define.
 class StateResponseWindow : public TimedState {
   protected:
     uint16_t my_touched = 0;
@@ -143,7 +150,7 @@ class StateResponseWindow : public TimedState {
     virtual void set_licking_variables(bool &, bool &);
   
   public:
-    void update(uint16_t touched, unsigned int rewards_this_trial);
+    void update(uint16_t touched);
     StateResponseWindow(unsigned long d) : TimedState(d) { };
 };
 
@@ -166,6 +173,19 @@ class StateInterRotationPause : public TimedState {
     StateInterRotationPause(unsigned long d) : TimedState(d) { };
 };
 
+class StateErrorTimeout : public TimedState {
+  protected:
+    Servo my_linServo;
+  
+    void s_setup();
+    void s_finish();
+  
+  public:
+    StateErrorTimeout(unsigned long d, Servo linServo) : TimedState(d) {
+      my_linServo = linServo;
+    };
+};
+
 class StateWaitForServoMove : public TimedState {
   protected:
     Servo my_linServo;
@@ -184,6 +204,14 @@ class StateInterTrialInterval : public TimedState {
   
   public:
     StateInterTrialInterval(unsigned long d) : TimedState(d) { };
+};
+
+class StatePostRewardPause : public TimedState {
+  protected:
+    void s_finish();
+  
+  public:
+    StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
 
 #endif

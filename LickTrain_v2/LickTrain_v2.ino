@@ -1,29 +1,11 @@
-/* Simple protocol to test the setting of trial-by-trial settings.
+/* Lick train protocol
 
-Waits to receive a rewarded side, and maybe some other stuff.
-Randomly generates a response.
-
-TODO
-----
-* Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
-  as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
-* Some standard way to create waiting states.
-* move definitions of trial_params to header file, so can be auto-generated
-* diagnostics: which state it is in on each call (or subset of calls)
-
-Here are the things that the user should have to change for each protocol:
-* Enum of states
-* User-defined states in switch statement
-* param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
-
-
+Reward licks on one side for a fixed number of rewards, then switch.
 */
 #include "chat.h"
 #include "hwconstants.h"
 #include "mpr121.h"
 #include <Wire.h> // also for mpr121
-#include <Servo.h>
-#include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
 
@@ -49,22 +31,12 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 //// User-defined variables, etc, go here
 /// these should all be staticked into loop()
+unsigned int rewards_this_trial = 0;
 STATE_TYPE next_state; 
 
 // touched monitor
 uint16_t sticky_touched = 0;
 
-// initial position of stim arm .. user must ensure this is correct
-extern long sticky_stepper_position;
-
-
-/// not sure how to static these since they are needed by both loop and setup
-// Servo
-Servo linServo;
-
-// Stepper
-// We won't assign till we know if it's 2pin or 4pin
-Stepper *stimStepper = 0;
 
 //// Setup function
 void setup()
@@ -89,15 +61,11 @@ void setup()
   pinMode(R_REWARD_VALVE, OUTPUT);
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
   
-  // initialize the house light to ON
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  // initialize the house light to OFF
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
   
   // random number seed
   randomSeed(analogRead(3));
-
-  // attach servo
-  linServo.attach(LINEAR_SERVO);
-
   
   //// Run communications until we've received all setup info
   // Later make this a new flag. For now wait for first trial release.
@@ -111,50 +79,12 @@ void setup()
     }
   }
   
-  
   //// Now finalize the setup using the received initial parameters
   // user_setup2() function?
-  
-  // Set up the stepper according to two-pin or four-pin mode
-  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-  { // Two-pin mode
-    pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
-    pinMode(TWOPIN_STEPPER_1, OUTPUT);
-    pinMode(TWOPIN_STEPPER_2, OUTPUT);
-    
-    // Make sure it's off    
-    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
-    
-    // Initialize
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-      TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
-  }
-  else
-  { // Four-pin mode
-    pinMode(ENABLE_STEPPER, OUTPUT);
-    pinMode(PIN_STEPPER1, OUTPUT);
-    pinMode(PIN_STEPPER2, OUTPUT);
-    pinMode(PIN_STEPPER3, OUTPUT);
-    pinMode(PIN_STEPPER4, OUTPUT);
-    digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
-    
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-      PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
-  }
   
   // thresholds for MPR121
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
-
-  // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
-  
-  // initial position of the stepper
-  sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
-  
-  // linear servo setup
-  linServo.write(param_values[tpidx_SRV_FAR]);
-  delay(param_values[tpidx_SERVO_SETUP_T]);
 }
 
 
@@ -174,20 +104,13 @@ void loop()
   // of each trial
   static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
   static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
-  static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
-  static StateInterRotationPause state_interrotation_pause(50);
-  static StateWaitForServoMove state_wait_for_servo_move(
-    param_values[tpidx_SRV_TRAVEL_TIME]);
   static StateInterTrialInterval state_inter_trial_interval(
-    param_values[tpidx_ITI]);
-  static StateErrorTimeout state_error_timeout(
-    param_values[tpidx_ERROR_TIMEOUT], linServo);
+    param_values[tpidx_INTER_REWARD_INTERVAL]);
   static StatePostRewardPause state_post_reward_pause(
         param_values[tpidx_INTER_REWARD_INTERVAL]);
 
   // The next state, by default the same as the current state
-  next_state = current_state;
-    
+  next_state = current_state;    
   
   // misc
   int status = 1;
@@ -198,7 +121,6 @@ void loop()
   
   //// Run communications
   status = communications(time);
-  
   
   //// User protocol code
   // could put other user-specified every_loop() stuff here
@@ -263,61 +185,20 @@ void loop()
       
       
       //// User-defined code goes here
+      // make this in state_first_state()?
       // declare the states. Here we're both updating the parameters
       // in case they've changed, and resetting all timers.
       srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
-      sfrw = StateFakeResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
-      state_interrotation_pause = StateInterRotationPause(50);
-      state_wait_for_servo_move = StateWaitForServoMove(
-        param_values[tpidx_SRV_TRAVEL_TIME]);
       state_inter_trial_interval = StateInterTrialInterval(
-        param_values[tpidx_ITI]);
-      state_error_timeout = StateErrorTimeout(
-        param_values[tpidx_ERROR_TIMEOUT], linServo);
+        param_values[tpidx_INTER_REWARD_INTERVAL]);      
+      
+      next_state = RESPONSE_WINDOW;
     
-      next_state = ROTATE_STEPPER1;
       break;
-    
-    
-    case MOVE_SERVO:
-      // Start the servo moving and its timer
-      // Should immediately go to ROTATE_STEPPER1, while th etimer is running.
-      // After rotating, we'll wait for the timer to be completed.
-      // This object is really more of a timer than a state.
-      // OTOH, could argue that MOVE_SERVO and WAIT_FOR_SERVO_MOVE are 
-      // the same state, and this distinction is just between the s_setup
-      // and the rest of it.
-      state_wait_for_servo_move.update(linServo);
-      state_wait_for_servo_move.run(time);
-      break;
-    
-    case ROTATE_STEPPER1:
-      state_rotate_stepper1(next_state);
-      break;
-    
-    case INTER_ROTATION_PAUSE:
-      state_interrotation_pause.run(time);
-      break;
-    
-    case ROTATE_STEPPER2:
-      state_rotate_stepper2(next_state);
-      break;
-
-    case WAIT_FOR_SERVO_MOVE:
-      state_wait_for_servo_move.run(time);
-      break;
-    
+  
     case RESPONSE_WINDOW:
-      if (FAKE_RESPONDER)
-      {
-        sfrw.update(touched);
-        sfrw.run(time);
-      } 
-      else 
-      {
-        srw.update(touched);
-        srw.run(time);
-      }
+      srw.update(touched);
+      srw.run(time);
       break;
     
     case REWARD_L:
@@ -334,34 +215,18 @@ void loop()
     
     case POST_REWARD_PAUSE:
       state_post_reward_pause.run(time);
-      break;    
-    
-    case ERROR:
-      // turn the light on
-      digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-      
-      state_error_timeout.run(time);
       break;
 
     case INTER_TRIAL_INTERVAL:
-      // turn the light on
-      digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-      
-      // Move servo back
-      linServo.write(param_values[tpidx_SRV_FAR]);
-    
       // Announce trial_results
       state_inter_trial_interval.run(time);
       break;
-    
-    // need an else here
   }
   
   
   //// Update the state variable
   if (next_state != current_state)
   {
-      
     Serial.print(time);
     Serial.print(" ST_CHG ");
     Serial.print(current_state);
@@ -432,7 +297,7 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
       // Convert to int
       status = safe_int_convert(argument2, param_values[idx]);
 
-      // Debug
+      //~ // Debug
       //~ Serial.print("DBG setting var ");
       //~ Serial.print(idx);
       //~ Serial.print(" to ");
@@ -483,7 +348,7 @@ int safe_int_convert(char *string_data, long &variable)
   
   // Parse into %d
   // Returns number of arguments successfully parsed
-  status = sscanf(string_data, "%ld", &conversion_var);
+  status = sscanf(string_data, "%d", &conversion_var);
     
   //~ Serial.print("DBG SIC ");
   //~ Serial.print(string_data);

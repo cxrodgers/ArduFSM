@@ -112,7 +112,6 @@ int communications(unsigned long time)
     speak_at += interval;
   }
 
-  
   //// Receive and deal with chat
   received_chat = receive_chat();
   if (strlen(received_chat) > 0)

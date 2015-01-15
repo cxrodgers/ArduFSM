@@ -62,12 +62,14 @@ class Chatter:
     Call `main_loop` to iterate over `update` calls until CTRL+C is received.
     """
     def __init__(self, serial_port='/dev/ttyACM0', from_user='TO_DEV', 
-        to_user=None, serial_timeout=0.01, baud_rate=9600):
+        to_user=None, to_user_dir=None, serial_timeout=0.01, baud_rate=9600):
         """Initialize a new Chatter.
         
         `serial_port` : where the device is located
         `from_user` : name of pipe to use to collect user's input
         `to_user` : name of file to print information from the device
+            If None, autonames with the datetime
+            If `to_user_dir` is not None, puts in that directory
         """
         ## Set up TO_DEV
         # Read from this pipe whenever something writes to it, and send
@@ -84,6 +86,9 @@ class Chatter:
         if to_user is None:
             to_user = 'ardulines.' + \
                 datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            if to_user_dir is not None:
+                to_user = os.path.join(
+                    os.path.realpath(to_user_dir), to_user)
         self.ofi = file(to_user, 'w')
 
         ## Set up device
@@ -113,6 +118,20 @@ class Chatter:
         self.queued_writes = []
 
     def update(self, echo_to_stdout=True):
+        """Called repeatedly to deal with inputs and outputs
+        
+        * Reads any user text on the pipe and writes to device
+        * Reads any lines from the devices and writes to output file
+        * Optionally echos to stdout
+        * Checks whether the last sent command was acknowledged
+        * If it was acknoweledged, then sends top of queued_writes
+        
+        Right now there is a bug in which the Arduino can write text so quickly
+        that this function will get stuck at reading from devices. Need some
+        kind of maximum read size check for this. Alternatively, insert delays
+        in the Arduino loop function.
+        """
+        
         # Read any new text from the user and send to device
         self.new_user_text = read_from_user(self.pipein)
         write_to_device(self.ser, self.new_user_text)

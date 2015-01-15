@@ -33,6 +33,9 @@ class UIActionTaker:
         self.ui = ui
         self.chatter = chatter
     
+    def ui_action_house_light_on(self):
+        self.chatter.queued_write_to_device('ACT HLON')
+    
     def ui_action_reward_l(self):
         # these tokens should be in TrialSpeak
         self.chatter.queued_write_to_device('ACT REWARD_L')
@@ -70,12 +73,29 @@ class UIActionTaker:
         param_name = self.ui.get_additional_input("Enter param name: ").strip().upper()
         param_value = self.ui.get_additional_input("Enter param value: ").strip()
         
+        # simple error check for empty param
+        # what if it is a non-int string?
+        if len(param_value) == 0 or len(param_name) == 0:
+            return
+        
         # Send to device
-        cmd = TrialSpeak.command_set_parameter(param_name, param_value)
+        try:
+            cmd = TrialSpeak.command_set_parameter(param_name, param_value)
+        except ValueError:
+            # cannot convert to int
+            return
         self.chatter.queued_write_to_device(cmd)
         
         # Update in ui params
-        self.ui.ts_obj.params_table['current-value'][param_name] = int(param_value)
+        #self.ui.ts_obj.params_table['current-value'][param_name] = int(param_value)
+        
+        # avoid chained assignment
+        if param_name in self.ui.ts_obj.params_table.index:
+            self.ui.ts_obj.params_table.loc[
+                param_name, 'current-value'] = int(param_value)
+        else:
+            print "warning: no param named", param_name        
+        
         self.ui.draw_menu()
     
     def force_x(self, **kwargs):
@@ -156,6 +176,7 @@ class UI:
         # Pressing the key in the first position triggers a call to the
         # function in the last position
         self.ui_actions = [
+            ('H', 'house light', self.ui_action_taker.ui_action_house_light_on),
             ('L', 'reward L', self.ui_action_taker.ui_action_reward_l),
             ('R', 'reward R', self.ui_action_taker.ui_action_reward_r),
             ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
@@ -174,6 +195,12 @@ class UI:
             
     def start(self):
         self.stdscr = curses.initscr()
+
+        # annoying because getmaxyx is stuck after resize
+        #~ maxy, maxx = self.stdscr.getmaxyx()
+        #~ if maxy < 24 or maxx < 80:
+            #~ raise ValueError("Terminal window is too small. Resize to 80x24 and restart python.")
+        
         #~ curses.noecho()
         curses.cbreak()
         self.stdscr.keypad(1)

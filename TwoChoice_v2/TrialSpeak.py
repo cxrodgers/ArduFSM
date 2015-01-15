@@ -24,6 +24,10 @@ HIT = 1
 ERROR = 2
 SPOIL = 3
 
+# for boolean parameters
+YES = 3
+NO = 2
+MD = 0 # "must-define"
 
 ## Reading functions
 def load_splines_from_file(filename):
