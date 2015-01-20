@@ -7,7 +7,37 @@ by TrialSpeak.
 import TrialSpeak
 import pandas, my, numpy as np
 
-
+def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
+    """Read data from file and make trial matrix.
+    
+    Wrapper around:
+    TrialSpeak.read_lines_from_file
+    TrialSpeak.split_by_trial
+    make_trials_info_from_splines
+    TrialSpeak.translate_trial_matrix
+    numericate_trial_matrix
+    
+    
+    This could probably be turned into an object with methods like
+    .numericated, .translated, etc
+    """
+    # Read
+    logfile_lines = TrialSpeak.read_lines_from_file(log_filename)
+    
+    # Spline
+    lines_split_by_trial = TrialSpeak.split_by_trial(logfile_lines)
+    
+    # Make matrix
+    trial_matrix = make_trials_info_from_splines(lines_split_by_trial)
+    
+    # Translate and/or numericate
+    if translate:
+        trial_matrix = TrialSpeak.translate_trial_matrix(trial_matrix)
+        if numericate:
+            trial_matrix = numericate_trial_matrix(trial_matrix)
+    
+    return trial_matrix
+    
 
 def make_trials_info_from_splines(lines_split_by_trial, 
     always_insert=('resp', 'outc')):
@@ -133,6 +163,12 @@ def _run_anova(numericated_trial_matrix):
         aov_res = my.stats.anova(numericated_trial_matrix, 'choice ~ rewside + prevchoice')
     except (np.linalg.LinAlgError, ValueError, TypeError):
         aov_res = None
+    except NameError:
+        # NameError occurs if the keywords do not exist in the matrix        
+        s = "trial matrix must contain choice, rewside, and prevchoice. " \
+            "Instead, contains: " + ', '.join(list(
+                numericated_trial_matrix.columns))
+        raise NameError(s)
     
     return aov_res
 
