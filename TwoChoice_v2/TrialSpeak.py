@@ -108,6 +108,39 @@ def parse_lines_into_df(lines):
     df['time'] = df['time'].astype(np.int)
     return df
 
+def parse_lines_into_df_split_by_trial(lines, verbose=False):
+    """Like parse_lines_into_df but split by trial
+    
+    We drop everything before the first TRL_START token.
+    If there is no TRL_START token, return None.
+    """
+    # Parse
+    df = parse_lines_into_df(lines)
+    
+    # Debug
+    n_lost_lines = len(lines) - len(df)
+    if verbose and n_lost_lines != 0:
+        print "warning: lost %d lines" % n_lost_lines
+    
+    # Split by trial
+    trl_start_idxs = my.pick_rows(df, command=start_trial_token).index
+    
+    # Return [empty df] if nothing
+    if len(trl_start_idxs) == 0:
+        return None
+    
+    # Split df
+    # In each case, we include the first line but exclude the last
+    res = []
+    for nidx in range(len(trl_start_idxs) - 1):
+        # Slice out, including first but excluding last
+        slc = df.ix[trl_start_idxs[nidx]:trl_start_idxs[nidx + 1] - 1]
+        res.append(slc)
+    
+    # Append anything left at the end (current trial, generally)
+    res.append(df.ix[trl_start_idxs[-1]:])
+
+    return res
 
 def my_replace(ser, d, nanval='nanval'):
     """My version of pandas.Series.replace
@@ -166,6 +199,9 @@ def translate_trial_matrix(trial_matrix):
     if 'rewside' in trial_matrix:
         trial_matrix['rewside'] = my_replace(trial_matrix['rewside'], {
             LEFT: 'left', RIGHT: 'right'})
+    if 'isrnd' in trial_matrix:
+        assert trial_matrix['isrnd'].isin([YES, NO]).all()
+        trial_matrix['isrnd'] = (trial_matrix['isrnd'] == YES)
 
     return trial_matrix
     
@@ -213,6 +249,104 @@ def check_if_trial_released(trial):
             return True
     return False
 
+
+def has_lick(s):
+    return 'EVENT TOUCHED 1' in s or 'EVENT TOUCHED 2' in s
+
+def has_lick_num(s, num):
+    return 'EVENT TOUCHED %d' % num in s
+
+def get_lick_times(spline, num):
+    res = []
+    masked_splines = [line for line in spline if has_lick_num(line, num)]
+    for line in masked_splines:
+        res.append(int(line.split()[0]) / 1000.)
+    return np.array(res)
+
+def identify_state_change_time_old(splines, state0, state1):
+    """Return time that state changed from state0 to state1
+    
+    for servo starting moving: 1 2
+    for resp win open: 3 4
+    
+    Returns: Series of times in s, indexed by the entry in splines
+    """
+    res_l = []
+    idx_l = []
+    for nspline, spline in enumerate(splines):
+        # Find the state change line
+        match_lines = filter(
+            lambda line: 'ST_CHG %d %d' % (state0, state1) in line, spline)
+        
+        # There should be 1 hit, except in rare cases
+        if len(match_lines) == 1:
+            # Append result and nspline as index
+            res_l.append(int(match_lines[0].split()[0]))
+            idx_l.append(nspline)
+        elif len(match_lines) == 0:
+            # no state change found
+            # this is only okay on the most recent ("current") trial
+            if nspline != len(splines) - 1:
+                print "error: cannot find state change in non-last trial"
+        else:
+            # should never find multiple instances
+            raise ValueError("multiple state changes per spline")
+
+    return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
+
+def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
+    show_warnings=True):
+    """Return time that state changed from state0 to state1
+    
+    parsed_df_by_trial : result of parse_lines_into_df_split_by_trial
+        (May be more efficient to rewrite this to operate on the whole thing?)
+    state0 and state1 : any argument that pick_rows can work on, so
+        13 works or [13, 14] works
+    
+    If multiple hits per trial found:
+        returns first one
+    
+    If no hits per trial found:
+        return nan
+    """
+    multi_warn_flag = False
+    res = []
+    
+    # Iterate over trials
+    for df in parsed_df_by_trial:
+        # Get st_chg commands
+        st_chg_rows = my.pick_rows(df, command='ST_CHG')
+        
+        # Split the argument string and intify
+        split_arg = pandas.DataFrame(
+            st_chg_rows['argument'].str.split().tolist(),
+            dtype=np.int, columns=['state0', 'state1'],
+            index=st_chg_rows.index)
+        
+        # Match to state0, state1
+        picked = my.pick(split_arg, state0=state0, state1=state1)
+        
+        # Split on number of hits per trial
+        if len(picked) == 0:
+            res.append(np.nan)
+        elif len(picked) == 1:
+            res.append(df['time'][picked[0]])
+        else:
+            res.append(df['time'][picked[0]])
+            multi_warn_flag = True
+    
+    if show_warnings and multi_warn_flag:
+        print "warning: multiple target state changes found on some trial"
+    
+    return np.array(res, dtype=np.float)
+
+def identify_servo_retract_times(parsed_df_by_trial):
+    """Identify transition to 13 or 14.
+    
+    On error trials we get one of each, so take the first one
+    """
+    return identify_state_change_times(parsed_df_by_trial, None, [13, 14], 
+        show_warnings=False)
 
 ## Writing functions
 def command_set_parameter(param_name, param_value):
