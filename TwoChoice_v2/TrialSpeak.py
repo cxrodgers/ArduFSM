@@ -338,7 +338,7 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
     if show_warnings and multi_warn_flag:
         print "warning: multiple target state changes found on some trial"
     
-    return np.array(res, dtype=np.float)
+    return np.array(res, dtype=np.float) / 1000.0
 
 def identify_servo_retract_times(parsed_df_by_trial):
     """Identify transition to 13 or 14.
