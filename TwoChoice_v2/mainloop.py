@@ -130,7 +130,7 @@ def get_rig_specific(rigname):
             '2PSTP': NO,
             'SRVTT': 2000,
             'RD_L': 65,
-            'RD_R': 50,
+            'RD_R': 45,
             }
     
     elif rigname == 'L2':
@@ -160,7 +160,7 @@ def get_rig_specific_licktrain(rigname):
     if rigname == 'L1':
         return {
             'RD_L': 65,
-            'RD_R': 50,
+            'RD_R': 45,
             }
     
     elif rigname == 'L2':
