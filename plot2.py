@@ -135,7 +135,7 @@ class Plotter(object):
         # these are marked differently and discounted from certain ANOVAs
         # maybe include user delivery trials too?
         if 'isrnd' in translated_trial_matrix:
-            translated_trial_matrix['bad'] = translated_trial_matrix['isrnd'] == NO 
+            translated_trial_matrix['bad'] = ~translated_trial_matrix['isrnd']
         else:
             translated_trial_matrix['bad'] = False
 
