@@ -183,7 +183,7 @@ def assign_rig_specific_params(rigname, params_table):
     d = get_rig_specific(rigname)
     for param_name, param_value in d.items():
         try:
-            params_table['init_val'][param_name] = param_value
+            params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
             raise ValueError("cannot find param named %s" % param_name)
     return params_table

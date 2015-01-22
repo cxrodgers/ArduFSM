@@ -68,7 +68,8 @@ class TrialSetter:
                 for param_name, param_val in iparams['init_val'].iterkv():
                     cmd = TrialSpeak.command_set_parameter(param_name, param_val) 
                     self.chatter.queued_write_to_device(cmd)
-                    self.params_table['current-value'][param_name] = int(param_val)
+                    self.params_table.loc[
+                        param_name, 'current-value'] = int(param_val)
                 
                 # Mark as sent
                 self.initial_params_sent = True  
