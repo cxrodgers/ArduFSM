@@ -276,7 +276,7 @@ class Auto:
     Always begins with SessionStarter, then goes random.
     Switches to forced alt automatically based on biases.
     """
-    def __init__(self, trial_types, **kwargs):
+    def __init__(self, trial_types, debug=False, **kwargs):
         self.name = 'auto'
         self.params = {
             'subsch': 'none',
@@ -295,11 +295,18 @@ class Auto:
         self.sub_schedulers['SessionStarter'] = \
             SessionStarter(trial_types=trial_types)
         
-        self.n_trials_session_starter = 2# 8
-        self.n_trials_forced_alt = 5 #30 # 60
-        self.n_trials_sticky = 3 #10
-        self.n_trials_recent_win = 10 #50
-        self.n_trials_recent_random_thresh = 2 #10
+        if debug:
+            self.n_trials_session_starter = 2
+            self.n_trials_forced_alt = 5
+            self.n_trials_sticky = 3
+            self.n_trials_recent_win = 10
+            self.n_trials_recent_random_thresh = 2
+        else:
+            self.n_trials_session_starter = 8
+            self.n_trials_forced_alt = 50
+            self.n_trials_sticky = 8
+            self.n_trials_recent_win = 50
+            self.n_trials_recent_random_thresh = 10
         
         self.last_changed_trial = 0
         
