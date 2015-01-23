@@ -217,3 +217,27 @@ def run_anova(numericated_trial_matrix):
                 pos_word='Correct', neg_word='Incorrect')
 
     return ss
+
+
+
+def count_hits_by_type(trials_info, split_key='trial_type'):    
+    """Returns (nhit, ntot) for each value of split_key in trials_info as dict."""
+    uniq_types = np.unique(trials_info[split_key])
+    typ2perf = {}
+    
+    for typ in uniq_types:
+        msk = trials_info[split_key] == typ
+        typ2perf[typ] = calculate_nhit_ntot(trials_info[msk])
+        
+    return typ2perf
+
+def calculate_nhit_ntot(df):
+    """Return nhits and ntotal trials"""
+    nhit = np.sum(df['outcome'] == 'hit')
+    ntot = np.sum(df['outcome'] != 'curr')
+    return nhit, ntot
+
+def calculate_safe_perf(df):
+    """Returns nhits / ntots, unless NaN, in which case 0."""
+    nhit, ntot = calculate_nhit_ntot(df)
+    return nhit / float(ntot) if ntot > 0 else 0.

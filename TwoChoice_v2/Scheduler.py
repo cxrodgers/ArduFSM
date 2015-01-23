@@ -355,16 +355,25 @@ class Auto:
         # Actually, better to take the diff of perf between sides for forced
         # side. Although this is a bigger issue than unexplainable variance
         # shouldn't be interpreted.
+        side2perf_all = TrialMatrix.count_hits_by_type(
+            translated_trial_matrix, split_key='rewside')     
+        if 'left' in side2perf_all and 'right' in side2perf_all:
+            lperf = side2perf_all['left'][0] / float(side2perf_all['left'][1])
+            rperf = side2perf_all['right'][0] / float(side2perf_all['right'][1])
+            sideperf_diff = rperf - lperf
+        else:
+            sideperf_diff = 0
+        
         if aov_res['pvals']['p_prevchoice'] < 0.05:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
-        elif aov_res['pvals']['p_Intercept'] < 0.05:
+        elif np.abs(sideperf_diff) > .2:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antiside' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedSide']
             
-            if aov_res['fit']['fit_Intercept'] > 0:
+            if sideperf_diff > 0:
                 self.current_sub_scheduler.params['side'] = 'left'
             else:
                 self.current_sub_scheduler.params['side'] = 'right'
