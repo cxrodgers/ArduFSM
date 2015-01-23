@@ -352,6 +352,9 @@ class Auto:
             return
         
         # Take the largest significant bias
+        # Actually, better to take the diff of perf between sides for forced
+        # side. Although this is a bigger issue than unexplainable variance
+        # shouldn't be interpreted.
         if aov_res['pvals']['p_prevchoice'] < 0.05:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
