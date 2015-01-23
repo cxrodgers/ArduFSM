@@ -130,6 +130,12 @@ class UIActionTaker:
             trial_types=self.ui.ts_obj.scheduler.trial_types,
             side='right', **kwargs)        
 
+    def schedule_auto(self, **kwargs):
+        """Change to auto scheduler"""
+        self.ui.ts_obj.scheduler = Scheduler.Auto(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            **kwargs)        
+
 
 class UI:
     def __init__(self, chatter, logfilename, ts_obj, timeout=1000):
@@ -191,6 +197,7 @@ class UI:
             ('A', 'force alt', self.ui_action_taker.force_alt),   
             ('F', 'force L', self.ui_action_taker.force_l),
             ('G', 'force R', self.ui_action_taker.force_r),
+            ('Z', 'auto', self.ui_action_taker.schedule_auto),
             ]
             
     def start(self):

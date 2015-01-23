@@ -2,7 +2,7 @@
 import numpy as np
 import my
 from TrialSpeak import YES, NO, HIT
-
+import TrialSpeak, TrialMatrix
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -276,4 +276,107 @@ class Auto:
     Always begins with SessionStarter, then goes random.
     Switches to forced alt automatically based on biases.
     """
-    pass
+    def __init__(self, trial_types, **kwargs):
+        self.name = 'auto'
+        self.params = {
+            'subsch': 'none',
+            'status': 'X',
+            }
+        self.trial_types = trial_types.copy()
+        
+        # Initialize my contained types
+        self.sub_schedulers = {}
+        self.sub_schedulers['ForcedAlternation'] = \
+            ForcedAlternation(trial_types=trial_types)
+        self.sub_schedulers['RandomStim'] = \
+            RandomStim(trial_types=trial_types)
+        self.sub_schedulers['ForcedSide'] = \
+            ForcedSide(trial_types=trial_types, side='right')
+        self.sub_schedulers['SessionStarter'] = \
+            SessionStarter(trial_types=trial_types)
+        
+        self.n_trials_session_starter = 2# 8
+        self.n_trials_forced_alt = 5 #30 # 60
+        self.n_trials_sticky = 3 #10
+        self.n_trials_recent_win = 10 #50
+        self.n_trials_recent_random_thresh = 2 #10
+        
+        self.last_changed_trial = 0
+        
+
+    def generate_trial_params(self, trial_matrix):
+        # already translated
+        translated_trial_matrix = trial_matrix.copy()
+        
+        if len(translated_trial_matrix) < self.n_trials_session_starter:
+            self.current_sub_scheduler = self.sub_schedulers['SessionStarter']
+            self.params['status'] = 'start'
+        elif len(translated_trial_matrix) < self.n_trials_forced_alt: # 60
+            self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
+            self.params['status'] = 'start2'
+        else:
+            self.choose_scheduler_main_body(translated_trial_matrix)
+        
+        self.params['subsch'] = self.current_sub_scheduler.name
+        
+        return self.current_sub_scheduler.generate_trial_params(trial_matrix)
+
+    def choose_scheduler_main_body(self, translated_trial_matrix):
+        # Main body of session
+        this_trial = len(translated_trial_matrix)
+        
+        # Do nothing if we've changed recently
+        if this_trial < self.last_changed_trial + self.n_trials_sticky:
+            return
+        
+        # Check whether we've had at least 10 random in the last 50
+        recents = translated_trial_matrix['isrnd'].values[
+            -self.n_trials_recent_win:]
+        recent_randoms = recents.sum()
+        if len(recents) == self.n_trials_recent_win and \
+            recent_randoms < self.n_trials_recent_random_thresh:
+            # Set to occasional random
+            self.current_sub_scheduler = self.sub_schedulers['RandomStim']
+            self.last_changed_trial = this_trial
+            self.params['status'] = 'randchk' + str(this_trial)       
+            return
+        
+        # Run the anova
+        numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
+            translated_trial_matrix)
+        aov_res = TrialMatrix._run_anova(numericated_trial_matrix)        
+        if aov_res is None:
+            self.current_sub_scheduler = self.sub_schedulers['RandomStim']
+            self.last_changed_trial = this_trial
+            self.params['status'] = 'an_none' + str(this_trial)
+            return
+        
+        # Take the largest significant bias
+        if aov_res['pvals']['p_prevchoice'] < 0.05:
+            self.last_changed_trial = this_trial
+            self.params['status'] = 'antistay' + str(this_trial)
+            self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
+        elif aov_res['pvals']['p_Intercept'] < 0.05:
+            self.last_changed_trial = this_trial
+            self.params['status'] = 'antiside' + str(this_trial)
+            self.current_sub_scheduler = self.sub_schedulers['ForcedSide']
+            
+            if aov_res['fit']['fit_Intercept'] > 0:
+                self.current_sub_scheduler.params['side'] = 'left'
+            else:
+                self.current_sub_scheduler.params['side'] = 'right'
+            
+        else:
+            self.last_changed_trial = this_trial
+            self.params['status'] = 'good' + str(this_trial)
+            self.current_sub_scheduler = self.sub_schedulers['RandomStim']        
+
+    def choose_params_first_trial(self, trial_matrix):
+        """Called when params for first trial are needed"""
+        return self.generate_trial_params(trial_matrix)
+    
+    def choose_params(self, trial_matrix):
+        """Called when params for next trial are needed."""
+        return self.generate_trial_params(trial_matrix)
+    
+    
