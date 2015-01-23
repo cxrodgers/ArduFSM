@@ -73,7 +73,7 @@ class Plotter(object):
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(11, 4))
+        f, ax = plt.subplots(1, 1, figsize=(11, 3))
         f.subplots_adjust(left=.45, right=.95, top=.75)
         
         # Make handles to each outcome
@@ -98,6 +98,9 @@ class Plotter(object):
         self.graphics_handles = {
             'f': f, 'ax': ax, 'ax2': ax2, 'label2lines': label2lines}
         
+        self.graphics_handles['suptitle'] = f.suptitle('', size='small')
+        
+
         # create the window
         plt.show()
     
@@ -192,6 +195,7 @@ class Plotter(object):
 
         ## PLOTTING axis labels and title
         ax = self.graphics_handles['ax']
+        f = self.graphics_handles['f']
         
         # Use the ytick_labels calculated above
         ax.set_yticks(range(len(trial_type_names)))
@@ -208,7 +212,8 @@ class Plotter(object):
             len(translated_trial_matrix)))    
         
         # title set above
-        ax.set_title(title_string, size='small')
+        #~ ax.set_title(title_string, size='small')
+        self.graphics_handles['suptitle'].set_text(title_string)
         
         ## plot division between L and R
         line = self.graphics_handles['label2lines']['divis']
