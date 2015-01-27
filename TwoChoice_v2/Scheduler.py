@@ -303,10 +303,10 @@ class Auto:
             self.n_trials_recent_random_thresh = 2
         else:
             self.n_trials_session_starter = 8
-            self.n_trials_forced_alt = 50
+            self.n_trials_forced_alt = 60
             self.n_trials_sticky = 8
-            self.n_trials_recent_win = 50
-            self.n_trials_recent_random_thresh = 10
+            self.n_trials_recent_win = 48
+            self.n_trials_recent_random_thresh = 8
         
         self.last_changed_trial = 0
         
@@ -371,11 +371,11 @@ class Auto:
         else:
             sideperf_diff = 0
         
-        if aov_res['pvals']['p_prevchoice'] < 0.05:
+        if aov_res['pvals']['p_prevchoice'] < 0.05 and aov_res['fit']['fit_prevchoice'] > 0:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
-        elif np.abs(sideperf_diff) > .2:
+        elif np.abs(sideperf_diff) > .25:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antiside' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedSide']
