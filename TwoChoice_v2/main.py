@@ -31,6 +31,14 @@ import trial_setter2
 import mainloop
 
 
+def display_plot_once(logfilename, trial_types):
+    plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
+    plotter.init_handles()
+    plotter.update(logfilename)     
+    plt.show()
+
+
+
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
