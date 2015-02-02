@@ -52,7 +52,7 @@ into States.cpp.
 // And we can argue about how these two categories map onto the categories above.
 //
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 22
+#define N_TRIAL_PARAMS 23
 #define tpidx_STPPOS 0 // reqd
 #define tpidx_MRT 1 // latch
 #define tpidx_REWSIDE 2 // reqd
@@ -75,7 +75,7 @@ into States.cpp.
 #define tpidx_IS_RANDOM 19 // reqd
 #define tpidx_TOU_THRESH 20 // init-only
 #define tpidx_REL_THRESH 21 // init-only
-
+#define tpidx_STP_HALL 22
 
 //// Global trial results structure. Can be set by user-defined states. 
 // Will be reported during mandatory INTER_TRIAL_INTERVAL state.
@@ -120,8 +120,8 @@ enum STATE_TYPE
 };
 
 // Declare utility functions
-void rotate_motor(int rotation, unsigned int delay_ms=100);
 int rotate(long n_steps);
+int rotate_to_sensor(int step_size, bool positive_peak, long set_position);
 
 // Declare non-class states
 int state_inter_rotation_pause(unsigned long time, long state_duration,

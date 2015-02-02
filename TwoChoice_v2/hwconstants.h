@@ -34,9 +34,8 @@
 //// ANALOG
 #define __HWCONSTANTS_H_HALL 0
 
-
-
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
+#define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
 
 #endif

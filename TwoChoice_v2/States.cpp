@@ -26,14 +26,14 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT"
+  "TOUT", "RELT", "STPHAL"
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
-  6, 3
+  6, 3, 0
   };
 
 // Whether to report on each trial  
@@ -46,7 +46,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
-  0, 0
+  0, 0, 0
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -228,20 +228,100 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // Calculate how much more we need to rotate
   long remaining_rotation = param_values[tpidx_STPPOS] - 
     sticky_stepper_position;
+  int step_size = 1;
+  int actual_steps = remaining_rotation;
   
   // Take a shorter negative rotation, if available
   // For instance, to go from 0 to 150, it's better to go -50
   if (remaining_rotation > 100)
     remaining_rotation -= 200;
+  
+  // convoluted way to determine step_size
+  if (remaining_rotation < 0)
+    step_size = -1;
     
-  // Do it
-  rotate(remaining_rotation);
+  // Perform the rotation
+  if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
+  {
+    if (param_values[tpidx_STPPOS] == 50)
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+    else
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+    if (actual_steps != remaining_rotation)
+    {
+      Serial.print(millis());
+      Serial.print(" DBG STPERR ");
+      Serial.println(actual_steps - remaining_rotation);
+    }
+  }
+  else
+  {
+    // This is the old rotation function
+    rotate(remaining_rotation);
+  }
   
   next_state = MOVE_SERVO;
   return 0;    
 }
   
 
+int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
+{ /* Rotate to a position where the Hall effect sensor detects a peak.
+  
+  step_size : typically 1 or -1, the number of steps to use between checks
+  positive_peak : whether to stop when a positive or negative peak detected
+  set_position : will set "sticky_stepper_position" to this afterwards
+  */
+  bool keep_going = 1;
+  int sensor = analogRead(__HWCONSTANTS_H_HALL);
+  int prev_sensor = sensor;
+  int actual_steps = 0;
+  
+  // Enable the stepper according to the type of setup
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+  else
+    digitalWrite(ENABLE_STEPPER, HIGH);
+  
+  // Sometimes the stepper spins like crazy without a delay here
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
+  
+  // iterate till target found
+  while (keep_going)
+  {
+    // BLOCKING CALL //
+    // Replace this with more iterations of smaller steps
+    stimStepper->step(step_size);
+    actual_steps += step_size;
+    
+    // update sensor and store previous value
+    prev_sensor = sensor;
+    sensor = analogRead(__HWCONSTANTS_H_HALL);
+
+    // test if peak found
+    if (positive_peak && (sensor > 520) && ((sensor - prev_sensor) < -2))
+    {
+        // Positive peak: sensor is high, but decreasing
+        keep_going = 0;
+    }
+    else if (!positive_peak && (sensor < 504) && ((sensor - prev_sensor) > 2))
+    {
+        // Negative peak: sensor is low, but increasing
+        keep_going = 0;
+    }
+  }
+  
+  // update to specified position
+  sticky_stepper_position = set_position;
+  
+  // disable
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+  else
+    digitalWrite(ENABLE_STEPPER, LOW);    
+  
+  return actual_steps;
+}
 
 int rotate(long n_steps)
 { /* Low-level rotation function 
@@ -257,14 +337,14 @@ int rotate(long n_steps)
     digitalWrite(ENABLE_STEPPER, HIGH);
 
   // Sometimes the stepper spins like crazy without a delay here
-  delay(100);
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
   stimStepper->step(n_steps);
 
   // This delay doesn't seem necessary
-  //delay(100);
+  //delay(50);
   
   // disable
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
