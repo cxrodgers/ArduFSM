@@ -28,11 +28,11 @@
 // light
 #define __HWCONSTANTS_H_HOUSE_LIGHT 5
 
-
-//// ANALOG
-
 // Servo
 #define LINEAR_SERVO 4
+
+//// ANALOG
+#define __HWCONSTANTS_H_HALL 0
 
 
 
