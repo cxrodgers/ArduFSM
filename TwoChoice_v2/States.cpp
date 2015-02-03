@@ -26,14 +26,14 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT", "STPHAL"
+  "TOUT", "RELT", "STPHAL", "HALPOS",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
-  6, 3, 0
+  6, 3, 0, 50
   };
 
 // Whether to report on each trial  
@@ -46,7 +46,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
-  0, 0, 0
+  0, 0, 0, 0
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -243,7 +243,7 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // Perform the rotation
   if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
   {
-    if (param_values[tpidx_STPPOS] == 50)
+    if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
       actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
     else
       actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);

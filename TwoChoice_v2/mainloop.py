@@ -69,6 +69,7 @@ def get_params_table():
         ('TOUT',    6,        0, 0, 1, 1, 1),
         ('RELT',    6,        0, 0, 1, 1, 1),
         ('STPHAL',  MD,       0, 0, 0, 1, 1),
+        ('HALPOS',  MD,       0, 0, 0, 1, 1),
         ],
         columns=('name', 'init_val', 'required_ET', 'reported_ET', 
             'ui-accessible', 'rig-dependent', 'send_on_init'),
@@ -133,6 +134,7 @@ def get_rig_specific(rigname):
             'RD_L': 70,
             'RD_R': 45,
             'STPHAL': YES,
+            'HALPOS': 150,
             }
     
     elif rigname == 'L2':
@@ -142,7 +144,8 @@ def get_rig_specific(rigname):
             'SRVTT': 2000,
             'RD_L': 19,
             'RD_R': 18,
-            'STPHAL': NO,
+            'STPHAL': YES,
+            'HALPOS': 50,
             }
     
     elif rigname == 'L3':
@@ -152,7 +155,8 @@ def get_rig_specific(rigname):
             'SRVTT': 2000,
             'RD_L': 32,
             'RD_R': 25,
-            'STPHAL': NO,
+            'STPHAL': YES,
+            'HALPOS': 50,
             }  
     
     else:
