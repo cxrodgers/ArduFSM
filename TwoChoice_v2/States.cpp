@@ -18,6 +18,8 @@ Defines the following:
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
+#define EXTRA_180DEG_ROT
+
 extern STATE_TYPE next_state;
 
 // These should go into some kind of Protocol.h or something
@@ -219,6 +221,21 @@ int state_rotate_stepper1(STATE_TYPE& next_state)
   */
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
+  
+  // Rotate randomly +180 or -180 to confuse the subject
+  // This should be its own state but let's keep it simple for now
+  // Could get this as a trial param
+  int steps = random(0, 2);
+
+  // convert to steps, +100 or -100
+  steps = steps * 200 - 100;
+
+  // rotate    
+  #ifdef EXTRA_180DEG_ROT
+  delay(50); // between 1st and intermediate
+  rotate(steps);      
+  #endif
+    
   next_state = INTER_ROTATION_PAUSE;
   return 0;    
 }
