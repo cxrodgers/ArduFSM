@@ -57,7 +57,7 @@ def get_params_table():
         ('TO',      6000,     0, 0, 1, 0, 1),       
         ('TOE',     YES,      0, 0, 1, 0, 1),
         ('MRT',     1,        0, 0, 1, 0, 1),
-        ('STPSPD',  MD,       0, 0, 0, 1, 0),
+        ('STPSPD',  MD,       0, 0, 0, 1, 1),
         ('STPFR',   50,       0, 0, 0, 1, 0),
         ('2PSTP',   MD,       0, 0, 0, 1, 1),
         ('SRVST',   1000,     0, 0, 0, 1, 0),
@@ -128,18 +128,18 @@ def get_rig_specific(rigname):
     """
     if rigname == 'L1':
         return {
-            'STPSPD': 20,
+            'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 70,
-            'RD_R': 45,
+            'RD_L': 75,
+            'RD_R': 42,
             'STPHAL': YES,
             'HALPOS': 150,
             }
     
     elif rigname == 'L2':
         return {
-            'STPSPD': 20,
+            'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
             'RD_L': 19,
