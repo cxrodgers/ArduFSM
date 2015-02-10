@@ -219,7 +219,7 @@ int state_rotate_stepper1(STATE_TYPE& next_state)
   The second rotation later achieves the final position.
   The house light is also turned off now.
   */
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  //~ digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
   
   // Rotate randomly +180 or -180 to confuse the subject
@@ -248,6 +248,8 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   int step_size = 1;
   int actual_steps = remaining_rotation;
   
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+    
   // Take a shorter negative rotation, if available
   // For instance, to go from 0 to 150, it's better to go -50
   if (remaining_rotation > 100)
