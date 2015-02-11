@@ -304,6 +304,7 @@ void loop()
       break;
 
     case WAIT_FOR_SERVO_MOVE:
+      // This state never actually happens, only MOVE_SERVO
       state_wait_for_servo_move.run(time);
       break;
     
