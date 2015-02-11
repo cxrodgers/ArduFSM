@@ -14,7 +14,7 @@ from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhi
 import TrialSpeak, TrialMatrix
 from TrialSpeak import YES, NO
 
-o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
+o2c = {'hit': 'lightgreen', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
 
 def format_perf_string(nhit, ntot):
@@ -80,7 +80,7 @@ class Plotter(object):
         label2lines = {}
         for outcome, color in o2c.items():
             label2lines[outcome], = ax.plot(
-                [None], [None], 'o', label=outcome, color=color)
+                [None], [None], 'o', label=outcome, color=color, mec=color)
         
         # Plot the bads
         label2lines['bad'], = ax.plot(
