@@ -79,8 +79,12 @@ class Plotter(object):
         # Make handles to each outcome
         label2lines = {}
         for outcome, color in o2c.items():
-            label2lines[outcome], = ax.plot(
-                [None], [None], 'o', label=outcome, color=color, mec=color)
+            if color == 'white':
+                label2lines[outcome], = ax.plot(
+                    [None], [None], 'o', label=outcome, color=color)
+            else:
+                label2lines[outcome], = ax.plot(
+                    [None], [None], 'o', label=outcome, color=color, mec=color)                
         
         # Plot the bads
         label2lines['bad'], = ax.plot(
