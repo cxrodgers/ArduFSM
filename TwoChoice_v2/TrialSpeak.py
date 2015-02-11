@@ -295,7 +295,7 @@ def identify_state_change_time_old(splines, state0, state1):
     return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
 
 def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
-    show_warnings=True):
+    show_warnings=True, error_on_multi=False):
     """Return time that state changed from state0 to state1
     
     parsed_df_by_trial : result of parse_lines_into_df_split_by_trial
@@ -334,6 +334,8 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
         else:
             res.append(df['time'][picked[0]])
             multi_warn_flag = True
+            if error_on_multi:
+                raise(ValueError("multiple events on this trial"))
     
     if show_warnings and multi_warn_flag:
         print "warning: multiple target state changes found on some trial"
