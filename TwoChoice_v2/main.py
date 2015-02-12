@@ -31,18 +31,11 @@ import trial_setter2
 import mainloop
 
 
-def display_plot_once(logfilename, trial_types):
-    plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
-    plotter.init_handles()
-    plotter.update(logfilename)     
-    plt.show()
-
-
-
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
+#~ serial_port = '/dev/ttyACM1'
 
 ## Get params
 params_table = mainloop.get_params_table()
@@ -50,10 +43,14 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
-trial_types = mainloop.get_trial_types('trial_types_3srvpos')
+if rigname in ['L1', 'L2']:
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos')
+else:
+    trial_types = mainloop.get_trial_types('trial_types_4srvpos')
 
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
+scheduler = Scheduler.Auto(trial_types=trial_types)
 
 ## Create Chatter
 logfilename = 'out.log'
@@ -164,8 +161,9 @@ finally:
         print "UI closed"
     
     if RUN_GUI:
-        plt.close(plotter.graphics_handles['f'])
-        print "GUI closed"
+        pass
+        #~ plt.close(plotter.graphics_handles['f'])
+        #~ print "GUI closed"
     
     if final_message is not None:
         print final_message
