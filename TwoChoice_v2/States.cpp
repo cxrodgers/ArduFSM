@@ -18,7 +18,7 @@ Defines the following:
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
-#define EXTRA_180DEG_ROT
+//#define EXTRA_180DEG_ROT
 
 extern STATE_TYPE next_state;
 
