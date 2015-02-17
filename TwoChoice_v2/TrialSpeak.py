@@ -295,13 +295,15 @@ def identify_state_change_time_old(splines, state0, state1):
     return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
 
 def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
-    show_warnings=True, error_on_multi=False):
+    show_warnings=True, error_on_multi=False, command='ST_CHG'):
     """Return time that state changed from state0 to state1
     
     parsed_df_by_trial : result of parse_lines_into_df_split_by_trial
         (May be more efficient to rewrite this to operate on the whole thing?)
     state0 and state1 : any argument that pick_rows can work on, so
         13 works or [13, 14] works
+    command : the state change token
+        ST_CHG2 uses the time at the end, instead of beginning, of the loop
     
     If multiple hits per trial found:
         returns first one
@@ -315,16 +317,19 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
     # Iterate over trials
     for df in parsed_df_by_trial:
         # Get st_chg commands
-        st_chg_rows = my.pick_rows(df, command='ST_CHG')
+        st_chg_rows = my.pick_rows(df, command=command)
         
         # Split the argument string and intify
-        split_arg = pandas.DataFrame(
-            st_chg_rows['argument'].str.split().tolist(),
-            dtype=np.int, columns=['state0', 'state1'],
-            index=st_chg_rows.index)
-        
-        # Match to state0, state1
-        picked = my.pick(split_arg, state0=state0, state1=state1)
+        if len(st_chg_rows) > 0:
+            split_arg = pandas.DataFrame(
+                st_chg_rows['argument'].str.split().tolist(),
+                dtype=np.int, columns=['state0', 'state1'],
+                index=st_chg_rows.index)
+            
+            # Match to state0, state1
+            picked = my.pick(split_arg, state0=state0, state1=state1)
+        else:
+            picked = []
         
         # Split on number of hits per trial
         if len(picked) == 0:

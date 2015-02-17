@@ -368,6 +368,12 @@ void loop()
     Serial.print(current_state);
     Serial.print(" ");
     Serial.println(next_state);
+    
+    Serial.print(millis());
+    Serial.print(" ST_CHG2 ");
+    Serial.print(current_state);
+    Serial.print(" ");
+    Serial.println(next_state);
   }
   current_state = next_state;
   
