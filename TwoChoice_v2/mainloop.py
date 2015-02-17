@@ -150,11 +150,11 @@ def get_rig_specific(rigname):
     
     elif rigname == 'L3':
         return {
-            'STPSPD': 20,
+            'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 30,
-            'RD_R': 23,
+            'RD_L': 28,
+            'RD_R': 22,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
