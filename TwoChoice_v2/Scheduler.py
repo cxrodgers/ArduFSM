@@ -303,9 +303,9 @@ class Auto:
             self.n_trials_recent_random_thresh = 2
         else:
             self.n_trials_session_starter = 8
-            self.n_trials_forced_alt = 60
-            self.n_trials_sticky = 8
-            self.n_trials_recent_win = 48
+            self.n_trials_forced_alt = 45
+            self.n_trials_sticky = 6
+            self.n_trials_recent_win = 32
             self.n_trials_recent_random_thresh = 8
         
         self.last_changed_trial = 0
@@ -371,11 +371,14 @@ class Auto:
         else:
             sideperf_diff = 0
         
+        # Decide whether stay, side, or neither bias is critical
         if aov_res['pvals']['p_prevchoice'] < 0.05 and aov_res['fit']['fit_prevchoice'] > 0:
+            # Stay bias
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
-        elif np.abs(sideperf_diff) > .25:
+        elif np.abs(sideperf_diff) > .3:
+            # Side bias
             self.last_changed_trial = this_trial
             self.params['status'] = 'antiside' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedSide']
@@ -384,8 +387,8 @@ class Auto:
                 self.current_sub_scheduler.params['side'] = 'left'
             else:
                 self.current_sub_scheduler.params['side'] = 'right'
-            
         else:
+            # No bias
             self.last_changed_trial = this_trial
             self.params['status'] = 'good' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['RandomStim']        
