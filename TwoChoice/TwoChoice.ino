@@ -1,13 +1,9 @@
-/* Simple protocol to test the setting of trial-by-trial settings.
-
-Waits to receive a rewarded side, and maybe some other stuff.
-Randomly generates a response.
+/* A two-alternative choice behavior with left and right lick ports.
 
 TODO
 ----
 * Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
   as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
-* Some standard way to create waiting states.
 * move definitions of trial_params to header file, so can be auto-generated
 * diagnostics: which state it is in on each call (or subset of calls)
 
@@ -15,8 +11,6 @@ Here are the things that the user should have to change for each protocol:
 * Enum of states
 * User-defined states in switch statement
 * param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
-
-
 */
 #include "chat.h"
 #include "hwconstants.h"
@@ -27,7 +21,7 @@ Here are the things that the user should have to change for each protocol:
 #include "TimedState.h"
 #include "States.h"
 
-
+// Make this true to generate random responses for debugging
 #define FAKE_RESPONDER 0
 
 extern char* param_abbrevs[N_TRIAL_PARAMS];
