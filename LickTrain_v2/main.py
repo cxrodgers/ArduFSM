@@ -13,7 +13,7 @@ import ArduFSM
 import TrialSpeak, TrialMatrix
 import trial_setter_ui
 import Scheduler
-import trial_setter2
+import trial_setter
 import mainloop
 
 
@@ -41,7 +41,7 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
 logfilename = chatter.ofi.name
 
 ## Trial setter
-ts_obj = trial_setter2.TrialSetter(chatter=chatter, 
+ts_obj = trial_setter.TrialSetter(chatter=chatter, 
     params_table=params_table,
     scheduler=scheduler)
 

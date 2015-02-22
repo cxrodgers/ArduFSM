@@ -163,7 +163,7 @@ class RandomStim:
         
         This object simply chooses randomly from all trial types, iid.
         Returns in TrialSpeak. TODO: return straight from trial_types,
-        and let trial_setter2 handle the translation to TrialSpeak.
+        and let trial_setter handle the translation to TrialSpeak.
         """
         res = {}
         
@@ -212,7 +212,7 @@ class ForcedSide:
         
         This object simply chooses randomly from all trial types, iid.
         Returns in TrialSpeak. TODO: return straight from trial_types,
-        and let trial_setter2 handle the translation to TrialSpeak.
+        and let trial_setter handle the translation to TrialSpeak.
         """
         res = {}
         
