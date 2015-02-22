@@ -1,4 +1,31 @@
-"""Module for logic to choose params for next trial"""
+"""Objects that choose the params for the next trial, given the history.
+
+Each Scheduler object should respond to:
+* choose_params(trial_matrix)
+* choose_params_first_trial(trial_matrix)
+and should return a dict of the params for the next trial.
+
+Each Scheduler object should also be initialized with a 'trial_types'
+DataFrame that contains all possible trial types to choose from, and should
+choose one of its rows on each trial. In some cases it will only ever
+choose from a subset of those trial types, but it should retain the full
+trial_types DataFrame because this is used by plotter objects to determine
+which trial types to display.
+
+TODOs/gotchas:
+* It's a little finicky the way trial_types is passed around different
+scheduler objects, and needs to be kept in a format that is readable by
+the plotter object. Not sure how to better handle this.
+* The handling of sub_trial_types and picked_trial_types is ugly, especially
+around SessionStarter which derives from ForcedAlternation.
+* Currently, the received trial_matrix is translated ("real words") but
+the returned params need to be untranslated ("TrialSpeak"). The untranslation
+should probably be handled by whatever is calling Scheduler.
+* It's weird that schedulers from different protocols (TwoChoice and LickTrain)
+are mixed together here. Not sure how to better handle it. Probably
+this file should contain only bare-bones schedulers and each protocol
+contains its own more specific ones.
+"""
 import numpy as np
 import my
 from TrialSpeak import YES, NO, HIT
