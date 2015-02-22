@@ -1,8 +1,7 @@
 # Test script for SimpleTrialRelease
 import ArduFSM
-import ArduFSM.chat2
 
-chatter = ArduFSM.chat2.Chatter(to_user='out.log', baud_rate=115200, 
+chatter = ArduFSM.chat.Chatter(to_user='out.log', baud_rate=115200, 
     serial_timeout=.1, serial_port='/dev/ttyACM1')
 
 

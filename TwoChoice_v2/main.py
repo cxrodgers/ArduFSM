@@ -22,7 +22,6 @@ tcv2_path = os.path.expanduser('~/dev/ArduFSM/TwoChoice_v2')
 if tcv2_path not in sys.path:
     sys.path.append(tcv2_path)
 import ArduFSM
-import ArduFSM.chat2
 import ArduFSM.plot2
 import TrialSpeak, TrialMatrix
 import trial_setter_ui
@@ -55,7 +54,7 @@ scheduler = Scheduler.Auto(trial_types=trial_types)
 ## Create Chatter
 logfilename = 'out.log'
 logfilename = None # autodate
-chatter = ArduFSM.chat2.Chatter(to_user=logfilename, to_user_dir='./logfiles',
+chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
 
