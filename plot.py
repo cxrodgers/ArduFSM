@@ -1,5 +1,23 @@
 """Contains various plotting objects to work with TwoChoice and LickTrain.
 
+Currently there is a mixture of old and new approaches here.
+* The Plotter object is intended to be a base class for all kinds of
+plotters, but it looks like it's limited to only plotting by trial
+(instead of, for instance, by time).
+* Derived classes from Plotter (currently only PlotterByServoThrow is in
+use) provide additional specifity by defining:
+    assign_trial_type_to_trials_info
+    get_list_of_trial_type_names
+* PlotterByStimNumber looks like a general-purpose plotter for multiple
+  kinds of stimuli.
+* There are some older methods for plotting but I think they are out of date.
+
+One finicky thing is the way the 'trial_types' are passed around, and
+shared with the scheduler object. It also needs to be matched up with
+scheduler trial_types. If this variable is intended to always be the same,
+then we should just match on an index variable. If it is not intended to be
+the same, then we should relax that assumption, but right now I think the
+code assumes that it is.
 """
 
 import numpy as np, pandas, time
@@ -194,7 +212,7 @@ class Plotter(object):
         # plot vert bars where bad trials occurred
         msk = translated_trial_matrix['bad']
         line = self.graphics_handles['label2lines']['bad']
-        line.set_xdata(np.where(msk)[0])
+        line.set_xdata(np.where(msk)[0])-
         line.set_ydata(translated_trial_matrix['trial_type'][msk])
 
 
