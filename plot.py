@@ -1,4 +1,4 @@
-"""A "fork" of plot.py to make it work with TwoChoice_v2.
+"""Contains various plotting objects to work with TwoChoice and LickTrain.
 
 """
 
