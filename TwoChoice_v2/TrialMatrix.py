@@ -219,6 +219,17 @@ def run_anova(numericated_trial_matrix):
     return ss
 
 
+def count_hits_by_type_from_trials_info(trials_info, split_key='trial_type'):    
+    """Returns (nhit, ntot) for each value of split_key in trials_info as dict."""
+    uniq_types = np.unique(trials_info[split_key])
+    typ2perf = {}
+    
+    for typ in uniq_types:
+        msk = trials_info[split_key] == typ
+        typ2perf[typ] = calculate_nhit_ntot(trials_info[msk])
+        
+    return typ2perf
+
 
 def count_hits_by_type(trials_info, split_key='trial_type'):    
     """Returns (nhit, ntot) for each value of split_key in trials_info as dict."""

@@ -8,7 +8,8 @@ import my
 import scipy.stats
 
 # move these to TrialMatrix so we can phase this out
-from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
+#from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
+from TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 
 
 import TrialSpeak, TrialMatrix
