@@ -18,9 +18,6 @@ import curses
 import matplotlib.pyplot as plt
 
 # Ardu imports
-tcv2_path = os.path.expanduser('~/dev/ArduFSM/TwoChoice_v2')
-if tcv2_path not in sys.path:
-    sys.path.append(tcv2_path)
 import ArduFSM
 import TrialSpeak, TrialMatrix
 import trial_setter_ui
