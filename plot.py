@@ -1,10 +1,20 @@
+"""A "fork" of plot.py to make it work with TwoChoice_v2.
+
+"""
+
 import numpy as np, pandas, time
 import matplotlib.pyplot as plt
 import my
 import scipy.stats
-import trials_info_tools # replace this with specifics
 
-o2c = {'hit': 'g', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
+# move these to TrialMatrix so we can phase this out
+from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
+
+
+import TrialSpeak, TrialMatrix
+from TrialSpeak import YES, NO
+
+o2c = {'hit': 'lightgreen', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
 
 def format_perf_string(nhit, ntot):
@@ -13,8 +23,33 @@ def format_perf_string(nhit, ntot):
     res = '%d/%d=%0.2f' % (nhit, ntot, perf)
     return res
 
+def count_rewards(splines):
+    """Counts the rewards delivered in each trial
+    
+    Returns : dict with the keys 'left auto', 'right auto', 'left manual',
+        and 'right manual'. The values are arrays of the same length as
+        splines containing the number of each event on each trial.
+    """
+    # Get the rewards by each trial in splines
+    evname2token = {
+        'left auto' : 'EV R_L',
+        'right auto' : 'EV R_R',
+        'left manual' : 'EV AAR_L',
+        'right manual' : 'EV AAR_R',
+        }
+    evname2list = dict([(evname, []) for evname in evname2token])
 
-
+    # Iterate over trials
+    for nspline, spline in enumerate(splines):        
+        # Iterate over events
+        for evname, token in evname2token.items():
+            # Count events of this type in this trial
+            n_events = np.sum([s.strip().endswith(token) for s in spline])
+            evname2list[evname].append(n_events)
+    
+    # Arrayify
+    res = dict([(evname, np.asarray(l)) for evname, l in evname2list.items()])
+    return res
 
 
 class Plotter(object):
@@ -38,14 +73,18 @@ class Plotter(object):
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(11, 4))
-        f.subplots_adjust(left=.35, right=.95, top=.75)
+        f, ax = plt.subplots(1, 1, figsize=(11, 3))
+        f.subplots_adjust(left=.45, right=.95, top=.75)
         
         # Make handles to each outcome
         label2lines = {}
         for outcome, color in o2c.items():
-            label2lines[outcome], = ax.plot(
-                [None], [None], 'o', label=outcome, color=color)
+            if color == 'white':
+                label2lines[outcome], = ax.plot(
+                    [None], [None], 'o', label=outcome, color=color)
+            else:
+                label2lines[outcome], = ax.plot(
+                    [None], [None], 'o', label=outcome, color=color, mec=color)                
         
         # Plot the bads
         label2lines['bad'], = ax.plot(
@@ -63,6 +102,9 @@ class Plotter(object):
         self.graphics_handles = {
             'f': f, 'ax': ax, 'ax2': ax2, 'label2lines': label2lines}
         
+        self.graphics_handles['suptitle'] = f.suptitle('', size='small')
+        
+
         # create the window
         plt.show()
     
@@ -75,104 +117,186 @@ class Plotter(object):
     def update(self, filename):   
         """Read info from filename and update the plot"""
         ## Load data and make trials_info
-        # Read file
-        with file(filename) as fi:
-            lines = fi.readlines()
-
-        # Split by trial
-        splines = trials_info_tools.split_by_trial(lines)
-
-        if len(splines) <= 1:
-            # Probably just the first trial
+        # Check log
+        lines = TrialSpeak.read_lines_from_file(filename)
+        splines = TrialSpeak.split_by_trial(lines)        
+        
+        # Really we should wait until we hear something from the arduino
+        # Simply wait till at least one line has been received
+        if len(splines) == 0 or len(splines[0]) == 0:
             return
 
-        # Make trials_info
-        trials_info = trials_info_tools.make_trials_info_from_splines(splines)
+        # Construct trial_matrix. I believe this will always have at least
+        # one line in it now, even if it's composed entirely of Nones.
+        trials_info = TrialMatrix.make_trials_info_from_splines(splines)
 
+        ## Translate condensed trialspeak into full data
+        # Put this part into TrialSpeak.py
+        translated_trial_matrix = TrialSpeak.translate_trial_matrix(trials_info)
+        
+        # return if nothing to do
+        if len(translated_trial_matrix) < 1:
+            return
+        
+        # define the "bad" trials
+        # these are marked differently and discounted from certain ANOVAs
+        # maybe include user delivery trials too?
+        if 'isrnd' in translated_trial_matrix:
+            translated_trial_matrix['bad'] = ~translated_trial_matrix['isrnd']
+        else:
+            translated_trial_matrix['bad'] = False
 
         ## Define trial types, the ordering on the plot
         # Make any updates to trial type parameters (child-class-dependent)
         self.update_trial_type_parameters(lines)
         
         # Add type information to trials_info and generate type names
-        trials_info = self.assign_trial_type_to_trials_info(trials_info)
+        translated_trial_matrix = self.assign_trial_type_to_trials_info(translated_trial_matrix)
         trial_type_names = self.get_list_of_trial_type_names()
 
-        
         ## Count performance by type
         # Hits by type
-        typ2perf = trials_info_tools.count_hits_by_type_from_trials_info(
-            trials_info[~trials_info.bad])
-        typ2perf_all = trials_info_tools.count_hits_by_type_from_trials_info(
-            trials_info)
-        
-        # Hits by side
-        side2perf = trials_info_tools.count_hits_by_type_from_trials_info(
-            trials_info[~trials_info.bad], split_key='rewside')
-        side2perf_all = trials_info_tools.count_hits_by_type_from_trials_info(
-            trials_info, split_key='rewside')            
+        typ2perf = count_hits_by_type_from_trials_info(
+            translated_trial_matrix[~translated_trial_matrix.bad])
+        typ2perf_all = count_hits_by_type_from_trials_info(
+            translated_trial_matrix)
         
         # Combined
-        total_nhit, total_ntot = trials_info_tools.calculate_nhit_ntot(
-            trials_info[~trials_info.bad])
+        total_nhit, total_ntot = calculate_nhit_ntot(
+            translated_trial_matrix[~translated_trial_matrix.bad])
 
         # Turn the typ2perf into ticklabels
         ytick_labels = typ2perf2ytick_labels(trial_type_names, 
             typ2perf, typ2perf_all)
 
+        ## title string
+        # number of rewards
+        title_string = self.form_string_rewards(splines, 
+            translated_trial_matrix)
+        title_string += '\n' + self.form_string_all_trials_perf(
+            translated_trial_matrix)
+        title_string += '\n' + self.form_string_unforced_trials_perf(
+            translated_trial_matrix)
 
-        ## count rewards
-        # Get the rewards by each trial in splines
-        n_rewards_l = []
-        for nspline, spline in enumerate(splines):
-            n_rewards = np.sum(map(lambda s: 'EVENT REWARD' in s, spline))
-            n_rewards_l.append(n_rewards)
-        n_rewards_a = np.asarray(n_rewards_l)
+        ## PLOTTING
+        # plot each outcome
+        for outcome in ['hit', 'error', 'spoil', 'curr']:
+            # Get rows corresponding to this outcome
+            msk = translated_trial_matrix['outcome'] == outcome
+
+            # Get the line corresponding to this outcome and set the xdata
+            # to the appropriate trial numbers and the ydata to the trial types
+            line = self.graphics_handles['label2lines'][outcome]
+            line.set_xdata(np.where(msk)[0])
+            line.set_ydata(translated_trial_matrix['trial_type'][msk].values)
+
+        # plot vert bars where bad trials occurred
+        msk = translated_trial_matrix['bad']
+        line = self.graphics_handles['label2lines']['bad']
+        line.set_xdata(np.where(msk)[0])
+        line.set_ydata(translated_trial_matrix['trial_type'][msk])
+
+
+        ## PLOTTING axis labels and title
+        ax = self.graphics_handles['ax']
+        f = self.graphics_handles['f']
         
-        # Match those onto the rewards from each side
-        l_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 0).values])
-        r_rewards = np.sum(n_rewards_a[(trials_info['rewside'] == 1).values])
+        # Use the ytick_labels calculated above
+        ax.set_yticks(range(len(trial_type_names)))
+        ax.set_yticklabels(ytick_labels, size='small')
         
-        # turn the rewards into a title string
-        title_string = '%d rewards L; %d rewards R;\n' % (l_rewards, r_rewards)
+        # The ylimits go BACKWARDS so that trial types are from top to bottom
+        ymax = np.max(ax.get_yticks())
+        ymin = np.min(ax.get_yticks())
+        ax.set_ylim((ymax + .5, ymin -.5))
         
+        # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
+        ax.set_xlim((
+            len(translated_trial_matrix) - self.trial_plot_window_size, 
+            len(translated_trial_matrix)))    
         
-        ## A line of info about unforced trials
-        title_string += 'UF: '
-        if 0 in side2perf:
-            title_string += 'L: ' + \
-                format_perf_string(side2perf[0][0], side2perf[0][1]) + '; '
-        if 1 in side2perf:
-            title_string += 'R: ' + \
-                format_perf_string(side2perf[1][0], side2perf[1][1]) + ';'
-        if len(trials_info) > self.cached_anova_len1 or self.cached_anova_text1 == '':
-            anova_stats = trials_info_tools.run_anova(
-                trials_info, remove_bad=True)
-            self.cached_anova_text1 = anova_stats
-            self.cached_anova_len1 = len(trials_info)
-        else:
-            anova_stats = self.cached_anova_text1
-        title_string += '. Biases: ' + anova_stats
-        title_string += '\n'
+        # title set above
+        #~ ax.set_title(title_string, size='small')
+        self.graphics_handles['suptitle'].set_text(title_string)
         
+        ## plot division between L and R
+        line = self.graphics_handles['label2lines']['divis']
+        line.set_xdata(ax.get_xlim())
+        line.set_ydata([np.mean(ax.get_yticks())] * 2)
         
-        ## A line of info about all trials
-        title_string += 'All: '
-        if 0 in side2perf_all:
-            title_string += 'L_A: ' + \
-                format_perf_string(side2perf_all[0][0], side2perf_all[0][1]) + '; '
-        if 1 in side2perf_all:
-            title_string += 'R_A: ' + \
-                format_perf_string(side2perf_all[1][0], side2perf_all[1][1])
-        if len(trials_info) > self.cached_anova_len2 + 5 or self.cached_anova_text2 == '':
-            anova_stats = trials_info_tools.run_anova(
-                trials_info, remove_bad=False)
+        ## PLOTTING finalize
+        plt.show()
+        plt.draw()    
+
+    def form_string_rewards(self, splines, translated_trial_matrix):
+        """Form a string with the number of rewards on each side"""
+        # Count rewards
+        d = count_rewards(splines)
+
+        # Stringify
+        s = 'Rewards (auto/total): L=%d/%d R=%d/%d' % (
+            d['left auto'].sum(), 
+            d['left auto'].sum() + d['left manual'].sum(),
+            d['right auto'].sum(), 
+            d['right auto'].sum() + d['right manual'].sum(),
+            )
+        
+        return s
+
+    
+    def form_string_all_trials_perf(self, translated_trial_matrix):
+        """Form a string with side perf and anova for all trials"""
+        side2perf_all = count_hits_by_type_from_trials_info(
+            translated_trial_matrix, 
+            split_key='rewside')     
+        
+        string_perf_by_side = self.form_string_perf_by_side(side2perf_all)
+        
+        if len(translated_trial_matrix) > self.cached_anova_len2 or self.cached_anova_text2 == '':
+            numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
+                translated_trial_matrix)
+            anova_stats = TrialMatrix.run_anova(numericated_trial_matrix)
             self.cached_anova_text2 = anova_stats
-            self.cached_anova_len2 = len(trials_info)
+            self.cached_anova_len2 = len(translated_trial_matrix)
         else:
             anova_stats = self.cached_anova_text2
-        title_string += '. Biases: ' + anova_stats
         
+        return 'All: ' + string_perf_by_side + '. Biases: ' + anova_stats
+    
+    def form_string_unforced_trials_perf(self, translated_trial_matrix):
+        """Exactly the same as form_string_all_trials_perf, except that:
+        
+        We drop all trials where bad is True.
+        We use cached_anova_len1 and cached_anova_text1 instead of 2.
+        """
+        side2perf = count_hits_by_type_from_trials_info(
+            translated_trial_matrix[~translated_trial_matrix.bad], 
+            split_key='rewside')
+
+        string_perf_by_side = self.form_string_perf_by_side(side2perf)
+        
+        if len(translated_trial_matrix) > self.cached_anova_len1 or self.cached_anova_text1 == '':
+            numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
+                translated_trial_matrix[~translated_trial_matrix.bad])
+            anova_stats = TrialMatrix.run_anova(numericated_trial_matrix)
+            self.cached_anova_text2 = anova_stats
+            self.cached_anova_len2 = len(translated_trial_matrix)
+        else:
+            anova_stats = self.cached_anova_text2
+        
+        return 'UF: ' + string_perf_by_side + '. Biases: ' + anova_stats        
+
+    def form_string_perf_by_side(self, side2perf):
+        s = ''
+        if 'left' in side2perf:
+            s += 'L: ' + \
+                format_perf_string(side2perf['left'][0], side2perf['left'][1]) + '; '
+        if 'right' in side2perf:
+            s += 'R: ' + \
+                format_perf_string(side2perf['right'][0], side2perf['right'][1]) + ';'        
+        return s
+
+    def plot_rewards_trace(self, n_rewards_a):
         ## PLOTTING REWARDS
         # Plot the rewards as a separate trace
         for line in self.graphics_handles['ax2'].lines:
@@ -181,53 +305,6 @@ class Plotter(object):
             np.arange(len(n_rewards_a)), n_rewards_a, 'k-')
         self.graphics_handles['ax2'].set_yticks(
             np.arange(np.max(n_rewards_a) + 2))
-
-
-        ## PLOTTING
-        # plot each outcome
-        for outcome in ['hit', 'error', 'spoil', 'curr']:
-            # Get rows corresponding to this outcome
-            msk = trials_info['outcome'] == outcome
-
-            # Get the line corresponding to this outcome and set the xdata
-            # to the appropriate trial numbers and the ydata to the trial types
-            line = self.graphics_handles['label2lines'][outcome]
-            line.set_xdata(np.where(msk)[0])
-            line.set_ydata(trials_info['trial_type'][msk])
-        
-        # plot vert bars where bad trials occurred
-        msk = trials_info['bad']
-        line = self.graphics_handles['label2lines']['bad']
-        line.set_xdata(np.where(msk)[0])
-        line.set_ydata(trials_info['trial_type'][msk])
-
-
-        ## PLOTTING axis labels and title
-        ax = self.graphics_handles['ax']
-        
-        # Use the ytick_labels calculated above
-        ax.set_yticks(range(len(trial_type_names)))
-        ax.set_yticklabels(ytick_labels, size='small')
-        
-        # The ylimits go BACKWARDS so that trial types are from top to bottom
-        ax.set_ylim((len(trial_type_names) - .5, -.5))
-        
-        # The xlimits are a sliding window of size TRIAL_PLOT_WINDOW_SIZE
-        ax.set_xlim((
-            len(trials_info) - self.trial_plot_window_size, 
-            len(trials_info)))    
-        
-        # title set above
-        ax.set_title(title_string, size='medium')
-        
-        ## plot division between L and R
-        line = self.graphics_handles['label2lines']['divis']
-        #~ line.set_xdata(ax.get_xlim())
-        #~ line.set_ydata([self.servo_throw - .5] * 2)
-        
-        ## PLOTTING finalize
-        plt.show()
-        plt.draw()    
     
     def update_till_interrupt(self, filename, interval=.3):
         # update over and over
@@ -296,78 +373,105 @@ class PlotterByStimNumber(Plotter):
 
 class PlotterWithServoThrow(Plotter):
     """Object encapsulating the logic and parameters to plot trials by throw."""
-    def __init__(self, pos_near=1150, pos_delta=25, servo_throw=8,
-        **base_kwargs):
+    def __init__(self, trial_types, **base_kwargs):
         # Initialize base
         super(PlotterWithServoThrow, self).__init__(**base_kwargs)
         
         # Initialize me
-        self.pos_near = pos_near
-        self.pos_delta = pos_delta
-        self.servo_throw = servo_throw        
-    
-    def update_trial_type_parameters(self, lines):
-        """Looks for changes in servo throw or pos delta params.
+        self.trial_types = trial_types
         
-        lines: read from file
-        """
-        # update servo_throw in case it has increased
-        st_lines = filter(lambda line: 'SET ST ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_servo_throw = int(st_line.strip().split()[-1])
-            
-            # only update if increased
-            if inferred_servo_throw > self.servo_throw:
-                self.servo_throw = inferred_servo_throw
-
-        # extract pos_delta from history
-        st_lines = filter(lambda line: 'SET PD ' in line, lines)
-        if len(st_lines) > 0:
-            st_line = st_lines[-1]
-            inferred_pos_delta = int(st_line.strip().split()[-1])
-            self.pos_delta = inferred_pos_delta    
-    
     def assign_trial_type_to_trials_info(self, trials_info):
         """Returns a copy of trials_info with a column called trial_type.
         
-        # Sequentially assign from LEFT to RIGHT in increasing servo throw
-        # eg LEFT 1150, LEFT 1175, LEFT 1200, RIGHT 1150, RIGHT 1175, RIGHT 1200
+        We match the srvpos and stppos variables in trials_info to the 
+        corresponding rows of self.trial_types. The index of the matching row
+        is the trial type for that trial.
+        
+        Warnings are issued if keywords are missing, multiple matches are 
+        found (in which case the first is used), or no match is found
+        (in which case the first trial type is used, although this should
+        probably be changed to None).
         """
         trials_info = trials_info.copy()
         
-        # Check if any don't integer divide by pos_delta
-        if np.any(np.mod(trials_info['servo_position'] - self.pos_near, 
-            self.pos_delta) != 0):
-            print "error: raw servo positions do not divide by POS_DELTA"
+        # Set up the pick kwargs for how we're going to pick the matching type
+        # The key is the name in self.trial_types, and the value is the name
+        # in trials_info
+        pick_kwargs = {'stppos': 'stepper_pos', 'srvpos': 'servo_pos', 
+            'rewside': 'rewside'}
         
-        # Divide by pos_delta
-        integer_positions = (
-            trials_info['servo_position'] - self.pos_near) / self.pos_delta
+        # Test for missing kwargs
+        warn_missing_kwarg = []
+        for key, val in pick_kwargs.items():
+            if val not in trials_info.columns:
+                pick_kwargs.pop(key)
+                warn_missing_kwarg.append(key)
+        if len(warn_missing_kwarg) > 0:
+            print "warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg)
         
-        # Check if any are out of range
-        if np.any(integer_positions < 0) or np.any(
-            integer_positions >= self.servo_throw):
-            print "warning: positions below or above servo throw thresholds"
-            integer_positions[integer_positions < 0] = 0
-            integer_positions[integer_positions >= self.servo_throw] = \
-                self.servo_throw - 1
+        # Iterate over trials
+        # Could probably be done more efficiently with a groupby
+        trial_types_l = []
+        warn_no_matches = []
+        warn_multiple_matches = []
+        warn_missing_data = []
+        warn_type_error = []
+        for idx, ti_row in trials_info.iterrows():
+            # Pick the matching row in trial_types
+            trial_pick_kwargs = dict([
+                (k, ti_row[v]) for k, v in pick_kwargs.items() 
+                if not pandas.isnull(ti_row[v])])
+            
+            # Try to pick
+            try:
+                pick_idxs = my.pick(self.trial_types, **trial_pick_kwargs)
+            except TypeError:
+                # typically, comparing string with int
+                warn_type_error.append(idx)
+                pick_idxs = [0]
+            
+            # error check missing data
+            if len(trial_pick_kwargs) < len(pick_kwargs):
+                warn_missing_data.append(idx)            
+            
+            # error-check and reduce to single index
+            if len(pick_idxs) == 0:
+                # no match, use the first trial type
+                1/0
+                warn_no_matches.append(idx)
+                pick_idx = 0
+            elif len(pick_idxs) > 1:
+                # multiple match
+                warn_multiple_matches.append(idx)
+                pick_idx = pick_idxs[0]
+            else:
+                # no error
+                pick_idx = pick_idxs[0]
+            
+            # Store result
+            trial_types_l.append(pick_idx)
 
-        # Store integer position
-        trials_info['servo_intpos'] = integer_positions
-        
-        # Finally combine with side info
-        trials_info['trial_type'] = \
-            trials_info['rewside'] * self.servo_throw + integer_positions
-        
+        # issue warnings
+        if len(warn_type_error) > 0:
+            print "error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error))
+        if len(warn_missing_data) > 0:
+            print "error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data))
+        if len(warn_no_matches) > 0:
+            print "error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches))
+        elif len(warn_multiple_matches) > 0:
+            print "error: multiple matches found on some trials"
+
+        # Put into trials_info and return
+        trials_info['trial_type'] = trial_types_l
         return trials_info
 
     def get_list_of_trial_type_names(self):
         """Name of each trial type."""
-        res = \
-            ['LEFT %d' % n for n in range(self.servo_throw)] + \
-            ['RIGHT %d' % n for n in range(self.servo_throw)]
-        
+        res = list(self.trial_types['name'])        
         return res
 
 

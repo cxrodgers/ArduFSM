@@ -13,7 +13,6 @@ tcv2_path = os.path.expanduser('~/dev/ArduFSM/TwoChoice_v2')
 if tcv2_path not in sys.path:
     sys.path.append(tcv2_path)
 import ArduFSM
-import ArduFSM.plot2
 import TrialSpeak, TrialMatrix
 import trial_setter_ui
 import Scheduler
@@ -78,7 +77,7 @@ final_message = None
 try:
     ## Initialize GUI
     if RUN_GUI:
-        plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
+        plotter = ArduFSM.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
         last_updated_trial = 0
     

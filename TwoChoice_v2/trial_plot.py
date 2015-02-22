@@ -2,7 +2,6 @@
 
 import numpy as np, glob, pandas
 import ArduFSM
-import ArduFSM.plot2
 import time
 import matplotlib.pyplot as plt
 
@@ -20,7 +19,7 @@ with file(filename) as fi:
     lines = fi.readlines()
 
 # initiate plotter object
-plotter = ArduFSM.plot2.PlotterWithServoThrow(trial_types)
+plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
 
 # initiate the graphics
 plotter.init_handles()
