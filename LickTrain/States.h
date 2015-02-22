@@ -1,5 +1,5 @@
 /* Header file for declaring protocol-specific states.
-This implements a two-alternative choice task with two lick ports.
+This implements a lick training task that rewards licks without stimuli.
 
 Defines the following
 * tpidx_ macros ... these allow you to index into trial_params

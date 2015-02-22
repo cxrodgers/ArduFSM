@@ -1,5 +1,5 @@
 /* Implementation file for declaring protocol-specific states.
-This implements a two-alternative choice task with two lick ports.
+This implements a lick training task that rewards licks without stimuli.
 
 Defines the following:
 * param_abbrevs, which defines the shorthand for the trial parameters
