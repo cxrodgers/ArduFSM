@@ -212,7 +212,7 @@ class Plotter(object):
         # plot vert bars where bad trials occurred
         msk = translated_trial_matrix['bad']
         line = self.graphics_handles['label2lines']['bad']
-        line.set_xdata(np.where(msk)[0])-
+        line.set_xdata(np.where(msk)[0])
         line.set_ydata(translated_trial_matrix['trial_type'][msk])
 
 
