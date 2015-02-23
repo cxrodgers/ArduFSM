@@ -17,13 +17,14 @@ import time
 import curses
 import matplotlib.pyplot as plt
 
-# Ardu imports
+# Ardu imports. Because this is an example script that will be run in another
+# directory, don't assume we can import TrialSpeak et al directly
 import ArduFSM
-import TrialSpeak, TrialMatrix
-import trial_setter_ui
-import Scheduler
-import trial_setter
-import mainloop
+from ArduFSM import TrialSpeak, TrialMatrix
+from ArduFSM import trial_setter_ui
+from ArduFSM import Scheduler
+from ArduFSM import trial_setter
+from ArduFSM import mainloop
 
 
 ## Find out what rig we're in using the current directory
@@ -38,7 +39,7 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
-if rigname in ['L1', 'L2']:
+if rigname in ['L1', 'L2', 'L3']:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
 else:
     trial_types = mainloop.get_trial_types('trial_types_4srvpos')
