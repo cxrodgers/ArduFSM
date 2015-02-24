@@ -4,6 +4,7 @@ For instance, this module contains functions for reading log files, splitting
 them by trial, and also for generating commands to send to the arduino.
 """
 import pandas, numpy as np, my
+import StringIO
 
 ack_token = 'ACK'
 release_trial_token = 'RELEASE_TRL'
@@ -369,3 +370,176 @@ def command_set_parameter(param_name, param_value):
 def command_release_trial():
     """Returns the command to use to release the current trial."""
     return release_trial_token
+
+
+
+
+## This is a reimplementation of the make_trial_matrix function
+## Careful if the logfile is corrupted, I think the parsing will lead
+## to a segfault here.
+## Ideally we could parse the entire logfile into something with a variable
+## number of columns?
+def get_trial_parameters2(pldf, logfile_lines):
+    """Parse out TRLP lines using pldf and logfile_lines.
+    
+    Returns df pivoted on trial.
+    """
+    # choose trlp lines
+    trlp_idxs = my.pick(pldf, command='TRLP')
+    if len(trlp_idxs) == 0:
+        return None
+
+    # read into table
+    trlp_strings_a = np.asarray(logfile_lines)[trlp_idxs]
+    sio = StringIO.StringIO("".join(trlp_strings_a))
+    trlp_df = pandas.read_table(sio, sep=' ', 
+        names=('time', 'command', 'trlp_name', 'trlp_value'),
+        )
+
+    # Add trial marker and pivot on trial.
+    # Should we check for dups / missings?
+    trlp_df['trial'] = pldf['trial'][trlp_idxs].values
+    trlps_by_trial = trlp_df.pivot_table(
+        index='trial', values='trlp_value', columns='trlp_name')
+    
+    return trlps_by_trial
+
+def get_trial_results2(pldf, logfile_lines):
+    """Parse out TRLR lines using pldf and logfile_lines.
+    
+    Returns df pivoted on trial.
+    """
+    # choose trlr lines
+    trlr_idxs = my.pick(pldf, command='TRLR')
+    if len(trlr_idxs) == 0:
+        return None
+
+    # read into table
+    trlr_strings_a = np.asarray(logfile_lines)[trlr_idxs]
+    sio = StringIO.StringIO("".join(trlr_strings_a))
+    trlr_df = pandas.read_table(sio, sep=' ', 
+        names=('time', 'command', 'trlr_name', 'trlr_value'),
+        )
+
+    # Add trial marker and pivot on trial.
+    # Should we check for dups / missings?
+    trlr_df['trial'] = pldf['trial'][trlr_idxs].values
+    trlrs_by_trial = trlr_df.pivot_table(
+        index='trial', values='trlr_value', columns='trlr_name')
+    
+    return trlrs_by_trial
+
+def get_trial_timings(pldf, logfile_lines, 
+    token_l=(start_trial_token, trial_released_token),
+    ):
+    """Parse out lines with trial timing tokens using pldf and logfile_lines.
+    
+    Returns df pivoted on trial.
+    """
+        
+    # choose lines
+    idxs = pldf.index[pldf['command'].isin(token_l)]
+    if len(idxs) == 0:
+        return None
+    
+    # read into table
+    sio = StringIO.StringIO("".join([logfile_lines[idx] for idx in idxs]))
+    parsed_command_lines = pandas.read_table(sio, sep=' ',
+        names=('time', 'command'))
+    
+    # Add trial marker
+    parsed_command_lines['trial'] = pldf['trial'][idxs].values
+    
+    # Pivot by trial
+    piv = parsed_command_lines.pivot_table(index='trial', values='time', 
+        columns='command') / 1000.
+    
+    # Drop the "-1" trial
+    piv = piv.drop(-1)
+    
+    return piv
+
+def make_trials_matrix_from_logfile_lines2(logfile_lines,
+    always_insert=('resp', 'outc')):
+    """Parse out the parameters and outcomes from the lines in the logfile
+    
+    For each trial, the following parameters are extracted:
+        trial_start : time in seconds at which TRL_START was issued
+        trial_released: time in seconds at which trial was released
+        All parameters and results listed for each trial.
+    
+    If the first trial has not started yet, an empty DataFrame is returned.
+
+    The columns in always_insert are always inserted, even if they 
+    weren't present. They will be inserted with np.nan, so the dtype 
+    should be numerical, not stringy. The main use-case is the response 
+    columns which are missing during the first trial but which most 
+    code assumes exists.
+    """
+    if len(logfile_lines) == 0:
+        return pandas.DataFrame(np.zeros((0, len(always_insert))),
+            columns=always_insert)
+    
+    # Parse
+    pldf = parse_lines_into_df(logfile_lines)
+    if len(pldf) == 0:
+        return pandas.DataFrame(np.zeros((0, len(always_insert))),
+            columns=always_insert)
+
+    # Find the boundaries between trials in logfile_lines
+    trl_start_idxs = my.pick_rows(pldf, 
+        command=start_trial_token).index
+    if len(trl_start_idxs) == 0:
+        return pandas.DataFrame(np.zeros((0, len(always_insert))),
+            columns=always_insert)
+    
+    # Assign trial numbers. The first chunk of lines are pre-session setup,
+    # so subtract 1 to make that trial "-1".
+    # Use side = 'right' to place TRL_START itself correctly
+    pldf['trial'] = np.searchsorted(np.asarray(trl_start_idxs), 
+        np.asarray(pldf.index), side='right') - 1    
+    
+    # Extract various things
+    trlps_by_trial = get_trial_parameters2(pldf, logfile_lines)
+    trlrs_by_trial = get_trial_results2(pldf, logfile_lines)
+    tt_by_trial = get_trial_timings(pldf, logfile_lines)
+    
+    # Join
+    res = pandas.concat(
+        [trlps_by_trial, trlrs_by_trial, tt_by_trial], axis=1,
+        verify_integrity=True)
+    
+    # Lower case the names
+    res.columns = [col.lower() for col in res.columns]
+    
+    # rename timings names
+    res = res.rename(columns={
+        'trl_start': 'start_time',
+        'trl_released': 'release_time',
+        })
+
+    # Define duration
+    if 'release_time' in res.columns and 'start_time' in res.columns:
+        res['duration'] = res['release_time'] - res['start_time']
+    else:
+        res['release_time'] = pandas.Series([], dtype=np.float)
+        res['start_time'] = pandas.Series([], dtype=np.float)
+        res['duration'] = pandas.Series([], dtype=np.float)
+    
+    # Reorder
+    ordered_cols = ['start_time', 'release_time', 'duration']
+    for col in sorted(res.columns):
+        if col not in ordered_cols:
+            ordered_cols.append(col)
+    res = res[ordered_cols]
+    
+    # Insert always_insert
+    for col in always_insert:
+        if col not in res:
+            res[col] = np.nan
+    
+    # Name index
+    res.index.name = 'trial'
+
+    
+    return res

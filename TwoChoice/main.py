@@ -104,7 +104,7 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        translated_trial_matrix = ts_obj.update(splines)
+        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
         
         ## Meta-scheduler
         # Not sure how to handle this yet. Probably should be an object

@@ -74,7 +74,7 @@ class TrialSetter:
                 # Mark as sent
                 self.initial_params_sent = True  
                     
-    def update(self, splines):
+    def update(self, splines, logfile_lines):
         """Main loop of trial setter
         
         Releases trials as necessary by parsing splines and calling scheduler
@@ -92,7 +92,8 @@ class TrialSetter:
         # Now we know that the Arduino has booted up and that the initial
         # params have been sent.
         # Construct trial_matrix
-        trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
+        #trial_matrix = TrialMatrix.make_trials_info_from_splines(splines)
+        trial_matrix = TrialSpeak.make_trials_matrix_from_logfile_lines2(logfile_lines)
         current_trial = len(trial_matrix) - 1
         
         # Translate
