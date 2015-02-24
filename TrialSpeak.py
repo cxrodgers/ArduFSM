@@ -543,3 +543,86 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
 
     
     return res
+
+
+def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
+    """Read logfile into a DataFrame
+    
+    Each line in the file will be a row in the data frame.
+    Each line is separated by whitespace into the different columns.
+    Thus, the first column will be "time", the second "command", and the
+    rest "arguments".
+    
+    nargs : how many argument columns to add. Lines that contain more arguments
+        than this will be silently truncated! Lines with fewer will be padded
+        with None.
+    add_trial_column : optionally add a column for the trial number of 
+        each line. Lines before the first trial begins have trial number -1.
+    
+    The dtype will always be int for the time column and object (ie, string)
+    for every other column. This is to ensure consistency. You may want
+    to coerce certain columns into numeric dtypes.
+    """
+    # Determine how many argument columns to use
+    arg_cols = ['arg%d' % n for n in range(nargs)]
+    all_cols = ['time', 'command'] + arg_cols
+    
+    # Set dtypes
+    dtype_d = {'time': np.int, 'command': np.object}
+    for col in arg_cols:
+        dtype_d[col] = np.object
+    
+    # Read. Important to avoid reading header of index or you can get
+    # weird errors here, like unnamed columns.
+    rdf = pandas.read_table(logfile, sep=' ', names=all_cols, 
+        index_col=False, header=None, dtype=dtype_d)    
+    if not np.all(rdf.columns == all_cols):
+        raise IOError("cannot read columns correctly from logfile")
+    
+    # Join on trial number
+    if add_trial_column:
+        # Find the boundaries between trials in logfile_lines
+        trl_start_idxs = my.pick_rows(rdf, 
+            command=start_trial_token).index
+        if len(trl_start_idxs) > 0:            
+            # Assign trial numbers. The first chunk of lines are 
+            # pre-session setup, so subtract 1 to make that trial "-1".
+            # Use side = 'right' to place TRL_START itself correctly
+            rdf['trial'] = np.searchsorted(np.asarray(trl_start_idxs), 
+                np.asarray(rdf.index), side='right') - 1        
+    
+    return rdf
+    
+def get_commands_from_parsed_lines(parsed_lines, command):
+    """Return only those lines that match "command" and set dtypes.
+    
+    For instance, for ST_CHG, we keep two numeric arguments.
+    """
+    # Pick
+    res = my.pick_rows(parsed_lines, command=command)
+    
+    # Decide which columns to keep and how to coerce
+    if command == 'ST_CHG2':
+        keep_args = ['arg0', 'arg1']
+        arg_dtypes = [np.int, np.int]
+    elif command == 'ST_CHG':
+        keep_args = ['arg0', 'arg1']
+        arg_dtypes = [np.int, np.int]
+    else:
+        # Keep all args?
+        1/0
+    
+    # Keep only the columns we want
+    keep_cols = ['time', 'command'] + keep_args
+    if 'trial' in res.columns:
+        keep_cols.append('trial')    
+    res = res[keep_cols]
+
+    # Coerce dtypes
+    for argname, dtyp in zip(keep_args, arg_dtypes):
+        try:
+            res[argname] = res[argname].astype(dtyp)
+        except ValueError:
+            print "warning: cannot coerce column %s to %r" % (argname, dtyp)
+
+    return res
