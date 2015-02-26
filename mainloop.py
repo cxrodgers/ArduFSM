@@ -111,7 +111,7 @@ def get_params_table_licktrain():
 def get_serial_port(rigname):
     """Get the serial port for the specified rigname"""
     d = {
-        'L0': '/dev/ttyACM0',
+        'L0': '/dev/ttyUSB0',
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
@@ -129,11 +129,11 @@ def get_rig_specific(rigname):
     """
     if rigname == 'L0':
         return {
-            'STPSPD': 10,
+            'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 68,
-            'RD_R': 36,
+            'RD_L': 50,
+            'RD_R': 50,
             'STPHAL': NO,
             'HALPOS': 50,
             }
