@@ -274,3 +274,36 @@ int handle_chat(char* received_chat,
   return 0;
 }   
 
+int safe_int_convert(char *string_data, long &variable)
+{ /* Check that string_data can be converted to long before setting variable.
+  
+  Returns 1 if string data could not be converted to %d.
+  */
+  long conversion_var = 0;
+  int status;
+  
+  // Parse into %d
+  // Returns number of arguments successfully parsed
+  status = sscanf(string_data, "%ld", &conversion_var);
+    
+  //~ Serial.print("DBG SIC ");
+  //~ Serial.print(string_data);
+  //~ Serial.print("-");
+  //~ Serial.print(conversion_var);
+  //~ Serial.print("-");
+  //~ Serial.print(status);
+  //~ Serial.println(".");
+  
+  if (status == 1) {
+    // Good, we converted one variable
+    variable = conversion_var;
+    return 0;
+  }
+  else {
+    // Something went wrong, probably no variables converted
+    Serial.print("ERR SIC cannot parse -");
+    Serial.print(string_data);
+    Serial.println("-");
+    return 1;
+  }
+}

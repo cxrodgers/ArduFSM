@@ -21,9 +21,9 @@ int communications(unsigned long time);
 int handle_chat(char* received_chat,
   bool &flag_start_trial, char *protocol_cmd, char *argument1,
   char *argument2);
+int safe_int_convert(char *string_data, long &variable);
 
 //// General chat stuff
 char* receive_chat();
-
 
 #endif
