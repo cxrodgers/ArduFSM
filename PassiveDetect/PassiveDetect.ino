@@ -7,6 +7,7 @@
 #include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
+#include "Actions.h"
 
 
 extern char* param_abbrevs[N_TRIAL_PARAMS];
