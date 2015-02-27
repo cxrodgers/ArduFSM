@@ -108,6 +108,39 @@ def get_params_table_licktrain():
     
     return params_table
 
+def get_params_table_passive_detect():
+    """Params table for lick train
+
+    Note that the value 0 may never be sent to the Arduino, due to limitations
+    in the Arudino-side conversion of strings to int. To send boolean values,
+    use YES and NO. It is undetermined whether negative values should be allowed.
+
+    We currently define MD as 0, since this is not an allowable value to send.
+    """
+    params_table = pandas.DataFrame([
+        ('ITI',     2000,     0, 1, 1, 0, 1),            
+        ('ISGO',    MD,       1, 1, 0, 0, 0),
+        ('NSTPS',   3,        1, 1, 0, 0, 0),
+        ('STPT',    10,       1, 0, 0, 0, 0),
+        ('MRT',     1,        0, 0, 1, 0, 1),
+        ('RWIN',    2000,     0, 0, 1, 0, 1),
+        ('IRI',     1500,     0, 0, 0, 0, 1),    
+        ('2PSTP',   MD,       0, 0, 0, 1, 1),
+        ('TOUT',    6,        0, 0, 1, 1, 1),
+        ('RELT',    6,        0, 0, 1, 1, 1),
+        ('STPSPD',  MD,       0, 0, 1, 1, 1),
+        ('RD_L',    MD,       0, 0, 1, 1, 1),
+        ('RD_R',    MD,       0, 0, 1, 1, 1),
+        ],
+        columns=('name', 'init_val', 'required_ET', 'reported_ET', 
+            'ui-accessible', 'rig-dependent', 'send_on_init'),
+        ).set_index('name')
+    bool_list = ['required_ET', 'reported_ET', 'ui-accessible', 
+        'rig-dependent', 'send_on_init']
+    params_table[bool_list] = params_table[bool_list].astype(np.bool)
+    
+    return params_table    
+
 def get_serial_port(rigname):
     """Get the serial port for the specified rigname"""
     d = {
@@ -174,13 +207,25 @@ def get_rig_specific(rigname):
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
 
+def get_rig_specific_passive_detect(rigname):
+    """Return a dict of params for each rig.
+    
+    Currently hard coded but should probably be read from disk.
+    """
+    return {
+        'STPSPD': 2,
+        '2PSTP': YES,
+        'RD_L': 50,
+        'RD_R': 50,
+        }
+
 def get_rig_specific_licktrain(rigname):
     """Return a dict of params for each rig for licktrain.
     """
     if rigname == 'L1':
         return {
             'RD_L': 68,
-            'RD_R': 36,
+            'RD_R': 35,
             }
     
     elif rigname == 'L2':
@@ -214,6 +259,16 @@ def assign_rig_specific_params_licktrain(rigname, params_table):
     for param_name, param_value in d.items():
         try:
             params_table['init_val'][param_name] = param_value
+        except KeyError:
+            raise ValueError("cannot find param named %s" % param_name)
+    return params_table
+
+def assign_rig_specific_params_passive_detect(rigname, params_table):
+    """Get rig-specific params and assign to init and current val in table"""
+    d = get_rig_specific_passive_detect(rigname)
+    for param_name, param_value in d.items():
+        try:
+            params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
             raise ValueError("cannot find param named %s" % param_name)
     return params_table

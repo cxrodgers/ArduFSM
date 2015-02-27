@@ -219,6 +219,52 @@ class RandomStim:
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
 
+class RandomStimPassiveDetect:
+    def __init__(self, trial_types, **kwargs):
+        """Initialize a new RandomStim scheduler.
+        
+        This is for PassiveDetect but I think it might work for everything.        
+        Chooses randomly from rows in 'trial_types'.
+        """
+        self.name = 'random stim'
+        self.params = kwargs
+        self.trial_types = trial_types.copy()
+    
+    def generate_trial_params(self, trial_matrix):
+        """Given trial matrix so far, generate params for next trial.
+        
+        This object simply chooses randomly from all trial types, iid.
+        Returns in TrialSpeak. TODO: return straight from trial_types,
+        and let trial_setter handle the translation to TrialSpeak.
+        """
+        # Choose a random row and convert to dict
+        idx = self.trial_types.index[
+            np.random.randint(0, len(self.trial_types))]
+        res = self.trial_types.ix[idx].to_dict()
+        
+        # Save current side for display
+        for key, val in res.items():
+            self.params[key] = val
+        
+        # remove the "name" line from trial_types
+        if 'name' in res:
+            res.pop('name')
+        
+        # upcase all the keys
+        res2 = {}
+        for key, val in res.items():
+            res2[key.upper()] = val
+        
+        # Remember to untranslate here if necessary
+        return res2
+
+    def choose_params_first_trial(self, trial_matrix):
+        """Called when params for first trial are needed"""
+        return self.generate_trial_params(trial_matrix)
+    
+    def choose_params(self, trial_matrix):
+        """Called when params for next trial are needed."""
+        return self.generate_trial_params(trial_matrix)
 
 class ForcedSide:
     """Forces trials from a given side"""
