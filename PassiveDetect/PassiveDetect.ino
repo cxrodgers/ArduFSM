@@ -41,17 +41,46 @@ Stepper *stimStepper = 0;
 
 //// Setup function
 void setup()
-{
+{ /* Standard setup function to initialize the arduino.
+  
+  1. Initializes the serial port and announces time and (TODO) version info
+  2. Runs a protocol-specific user_setup1() function that sets things like
+     inputs/outpus before receiving any serial communcation.
+  3. Runs serial communication until enough info has been received to run
+     the first trial.
+  4. Runs a protocol-specific user_setup2() function that finalizes anything
+     that depens on receiving input, like 2-pin vs 4-pin mode.
+  */
   unsigned long time = millis();
   int status = 1;
   
+  // Initalize serial port communication and announce time
   Serial.begin(115200);
   Serial.print(time);
   Serial.println(" DBG begin setup");
 
-  //// Begin user protocol code
-  //// Put this in a user_setup1() function?
+  // Protocol-specific setup1, to be run before receiving any serial data
+  user_setup1();
+
+  // Run communications until we've received enough startup info to
+  // start the first trial.
+  while (!flag_start_trial)
+  {
+    status = communications(time);
+    if (status != 0)
+    {
+      Serial.println("comm error in setup");
+      delay(1000);
+    }
+  }
   
+  // Now finalize the setup using the received initial parameters
+  user_setup2();
+}
+
+void user_setup1()
+{ /* Protocol-specific setup code that runs before first communication */
+
   // MPR121 touch sensor setup
   pinMode(TOUCH_IRQ, INPUT);
   digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
@@ -66,24 +95,12 @@ void setup()
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   
   // random number seed
-  randomSeed(analogRead(3));
+  randomSeed(analogRead(__HWCONSTANTS_H_RANDOM_SEED_INPUT));    
+}
 
-  //// Run communications until we've received all setup info
-  // Later make this a new flag. For now wait for first trial release.
-  while (!flag_start_trial)
-  {
-    status = communications(time);
-    if (status != 0)
-    {
-      Serial.println("comm error in setup");
-      delay(1000);
-    }
-  }
-  
-  
-  //// Now finalize the setup using the received initial parameters
-  // user_setup2() function?
-  
+void user_setup2()
+{ /* Protocol-specific setup code that runs before the first loop */
+
   // Set up the stepper according to two-pin or four-pin mode
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
   { // Two-pin mode
@@ -116,10 +133,8 @@ void setup()
     param_values[tpidx_REL_THRESH]);
 
   // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);  
 }
-
-
 
 //// Loop function
 void loop()
