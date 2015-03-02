@@ -8,7 +8,7 @@
 #include "TimedState.h"
 #include "States.h"
 #include "Actions.h"
-
+#include "ArduFSM.h"
 
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
@@ -39,44 +39,6 @@ uint16_t sticky_touched = 0;
 // We won't assign till we know if it's 2pin or 4pin
 Stepper *stimStepper = 0;
 
-//// Setup function
-void setup()
-{ /* Standard setup function to initialize the arduino.
-  
-  1. Initializes the serial port and announces time and (TODO) version info
-  2. Runs a protocol-specific user_setup1() function that sets things like
-     inputs/outpus before receiving any serial communcation.
-  3. Runs serial communication until enough info has been received to run
-     the first trial.
-  4. Runs a protocol-specific user_setup2() function that finalizes anything
-     that depens on receiving input, like 2-pin vs 4-pin mode.
-  */
-  unsigned long time = millis();
-  int status = 1;
-  
-  // Initalize serial port communication and announce time
-  Serial.begin(115200);
-  Serial.print(time);
-  Serial.println(" DBG begin setup");
-
-  // Protocol-specific setup1, to be run before receiving any serial data
-  user_setup1();
-
-  // Run communications until we've received enough startup info to
-  // start the first trial.
-  while (!flag_start_trial)
-  {
-    status = communications(time);
-    if (status != 0)
-    {
-      Serial.println("comm error in setup");
-      delay(1000);
-    }
-  }
-  
-  // Now finalize the setup using the received initial parameters
-  user_setup2();
-}
 
 void user_setup1()
 { /* Protocol-specific setup code that runs before first communication */
