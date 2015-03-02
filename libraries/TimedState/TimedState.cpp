@@ -1,6 +1,6 @@
 #include "TimedState.h"
 
-void TimedState::run(unsigned long time)
+State* TimedState::run(unsigned long time)
 { /* Boilerplate 'run' code for a state with a certain length of time.
     
   This is called on every pass, as long as the FSM is in this state.
@@ -19,6 +19,7 @@ void TimedState::run(unsigned long time)
     * Otherwise, run loop()
   */
   // always store time of last call
+  State* next_state;
   time_of_last_call = time;    
     
   // boiler plate timer code
@@ -31,13 +32,15 @@ void TimedState::run(unsigned long time)
   
   if (flag_stop || (time >= timer))
   {
-    s_finish();
+    next_state = s_finish();
     timer = 0;      
   }
   else
   {
-    loop();
+    next_state = loop();
   }
+  
+  return next_state;
 };
 
 

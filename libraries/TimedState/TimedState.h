@@ -37,15 +37,16 @@ Where the object derives from something that implements the basic pattern
 above, and the user just filles in the run_once(), run_many_times(), etc
 */
 
+
 class State
 {
   public:
     State() { };
-    State* run(unsigned long time);
-    int my_id = 0;
+    virtual State* run(unsigned long time);
+    int id = 0;
 };
 
-class TimedState
+class TimedState : public State
 {
   // TODO: add a setter function for updating its duration, eg, when
   // the corresponding param is changed.
@@ -55,8 +56,8 @@ class TimedState
     unsigned long duration = 0;
     bool flag_stop = 0;
     virtual void s_setup() {};
-    virtual void loop() {};
-    virtual void s_finish() {};
+    virtual State* loop() {};
+    virtual State* s_finish() {};
   
   public:
     TimedState(unsigned long d) : duration(d) { 
@@ -65,7 +66,7 @@ class TimedState
       // operate with. Then this error check would work.
       if (d < 0) Serial.println("ERR duration <0"); 
     };
-    void run(unsigned long time);
+    State* run(unsigned long time);
     void set_duration(unsigned long new_duration);
     virtual void update() {};
 };
