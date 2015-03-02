@@ -192,10 +192,13 @@ class Plotter(object):
         # number of rewards
         title_string = self.form_string_rewards(splines, 
             translated_trial_matrix)
-        title_string += '\n' + self.form_string_all_trials_perf(
-            translated_trial_matrix)
-        title_string += '\n' + self.form_string_unforced_trials_perf(
-            translated_trial_matrix)
+        
+        # This depends on rewside existing, which is only true for 2AC
+        if 'rewside' in translated_trial_matrix.columns:
+            title_string += '\n' + self.form_string_all_trials_perf(
+                translated_trial_matrix)
+            title_string += '\n' + self.form_string_unforced_trials_perf(
+                translated_trial_matrix)
 
         ## PLOTTING
         # plot each outcome
@@ -418,6 +421,110 @@ class PlotterWithServoThrow(Plotter):
         # in trials_info
         pick_kwargs = {'stppos': 'stepper_pos', 'srvpos': 'servo_pos', 
             'rewside': 'rewside'}
+        
+        # Test for missing kwargs
+        warn_missing_kwarg = []
+        for key, val in pick_kwargs.items():
+            if val not in trials_info.columns:
+                pick_kwargs.pop(key)
+                warn_missing_kwarg.append(key)
+        if len(warn_missing_kwarg) > 0:
+            print "warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg)
+        
+        # Iterate over trials
+        # Could probably be done more efficiently with a groupby
+        trial_types_l = []
+        warn_no_matches = []
+        warn_multiple_matches = []
+        warn_missing_data = []
+        warn_type_error = []
+        for idx, ti_row in trials_info.iterrows():
+            # Pick the matching row in trial_types
+            trial_pick_kwargs = dict([
+                (k, ti_row[v]) for k, v in pick_kwargs.items() 
+                if not pandas.isnull(ti_row[v])])
+            
+            # Try to pick
+            try:
+                pick_idxs = my.pick(self.trial_types, **trial_pick_kwargs)
+            except TypeError:
+                # typically, comparing string with int
+                warn_type_error.append(idx)
+                pick_idxs = [0]
+            
+            # error check missing data
+            if len(trial_pick_kwargs) < len(pick_kwargs):
+                warn_missing_data.append(idx)            
+            
+            # error-check and reduce to single index
+            if len(pick_idxs) == 0:
+                # no match, use the first trial type
+                1/0
+                warn_no_matches.append(idx)
+                pick_idx = 0
+            elif len(pick_idxs) > 1:
+                # multiple match
+                warn_multiple_matches.append(idx)
+                pick_idx = pick_idxs[0]
+            else:
+                # no error
+                pick_idx = pick_idxs[0]
+            
+            # Store result
+            trial_types_l.append(pick_idx)
+
+        # issue warnings
+        if len(warn_type_error) > 0:
+            print "error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error))
+        if len(warn_missing_data) > 0:
+            print "error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data))
+        if len(warn_no_matches) > 0:
+            print "error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches))
+        elif len(warn_multiple_matches) > 0:
+            print "error: multiple matches found on some trials"
+
+        # Put into trials_info and return
+        trials_info['trial_type'] = trial_types_l
+        return trials_info
+
+    def get_list_of_trial_type_names(self):
+        """Name of each trial type."""
+        res = list(self.trial_types['name'])        
+        return res
+
+
+
+class PlotterPassiveDetect(Plotter):
+    """Simple plotter"""
+    def __init__(self, trial_types, **base_kwargs):
+        # Initialize base
+        super(PlotterPassiveDetect, self).__init__(**base_kwargs)
+        
+        # Initialize me
+        self.trial_types = trial_types
+        
+    def assign_trial_type_to_trials_info(self, trials_info):
+        """Returns a copy of trials_info with a column called trial_type.
+        
+        We match the srvpos and stppos variables in trials_info to the 
+        corresponding rows of self.trial_types. The index of the matching row
+        is the trial type for that trial.
+        
+        Warnings are issued if keywords are missing, multiple matches are 
+        found (in which case the first is used), or no match is found
+        (in which case the first trial type is used, although this should
+        probably be changed to None).
+        """
+        trials_info = trials_info.copy()
+        
+        # Set up the pick kwargs for how we're going to pick the matching type
+        # The key is the name in self.trial_types, and the value is the name
+        # in trials_info
+        pick_kwargs = {'isgo': 'isgo'}
         
         # Test for missing kwargs
         warn_missing_kwarg = []

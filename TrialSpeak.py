@@ -426,7 +426,6 @@ def get_trial_results2(pldf, logfile_lines):
     trlr_df['trial'] = pldf['trial'][trlr_idxs].values
     trlrs_by_trial = trlr_df.pivot_table(
         index='trial', values='trlr_value', columns='trlr_name')
-    
     return trlrs_by_trial
 
 def get_trial_timings(pldf, logfile_lines, 
@@ -475,6 +474,9 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     should be numerical, not stringy. The main use-case is the response 
     columns which are missing during the first trial but which most 
     code assumes exists.
+    
+    TODO: bug here where malformed lines cause pldf and lines not to match
+    up anymore.
     """
     if len(logfile_lines) == 0:
         return pandas.DataFrame(np.zeros((0, len(always_insert))),
@@ -540,7 +542,6 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     
     # Name index
     res.index.name = 'trial'
-
     
     return res
 
@@ -575,9 +576,20 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
     # Read. Important to avoid reading header of index or you can get
     # weird errors here, like unnamed columns.
     rdf = pandas.read_table(logfile, sep=' ', names=all_cols, 
-        index_col=False, header=None, dtype=dtype_d)    
+        index_col=False, header=None)
     if not np.all(rdf.columns == all_cols):
         raise IOError("cannot read columns correctly from logfile")
+    
+    # Convert dtypes. We have to do it here, because if done during reading
+    # it will crash on mal-formed dtypes. Could catch that error and then
+    # run this...
+    # Well this isn't that useful because it leaves dtypes messed up. Need
+    # to find and drop the problematic lines.
+    for col, dtyp in dtype_d.items():
+        try:
+            rdf[col] = rdf[col].astype(dtyp)
+        except ValueError:
+            print "warning: cannot coerce %s to %r" % (col, dtyp)
     
     # Join on trial number
     if add_trial_column:

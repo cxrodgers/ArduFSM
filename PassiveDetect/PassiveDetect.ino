@@ -1,13 +1,10 @@
-/* Simple protocol to test the "trial release" functionality. 
-
-On each trial, the arduino does nothing except listen for chats and
-waits to receive a "RELEASE_TRL" command. Upon this command, it terminates
-the current trial and begins the next one.
+/* Passive detection task.
 */
 #include "chat.h"
 #include "hwconstants.h"
 #include "mpr121.h"
 #include <Wire.h> // also for mpr121
+#include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
 
@@ -36,7 +33,10 @@ STATE_TYPE next_state;
 // touched monitor
 uint16_t sticky_touched = 0;
 
-
+/// not sure how to static these since they are needed by both loop and setup
+// Stepper
+// We won't assign till we know if it's 2pin or 4pin
+Stepper *stimStepper = 0;
 
 //// Setup function
 void setup()
@@ -82,14 +82,42 @@ void setup()
   
   //// Now finalize the setup using the received initial parameters
   // user_setup2() function?
-
+  
+  // Set up the stepper according to two-pin or four-pin mode
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+  { // Two-pin mode
+    pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
+    pinMode(TWOPIN_STEPPER_1, OUTPUT);
+    pinMode(TWOPIN_STEPPER_2, OUTPUT);
+    
+    // Make sure it's off    
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
+    
+    // Initialize
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+  }
+  else
+  { // Four-pin mode
+    pinMode(ENABLE_STEPPER, OUTPUT);
+    pinMode(PIN_STEPPER1, OUTPUT);
+    pinMode(PIN_STEPPER2, OUTPUT);
+    pinMode(PIN_STEPPER3, OUTPUT);
+    pinMode(PIN_STEPPER4, OUTPUT);
+    digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
+    
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
+  }
+  
   // thresholds for MPR121
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
 
-
-
+  // Set the speed of the stepper
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
 }
+
 
 
 //// Loop function
@@ -105,9 +133,12 @@ void loop()
   // statics 
   // these are just "declared" here, they can be modified at the beginning
   // of each trial
+  static STATE_TYPE current_state = WAIT_TO_START_TRIAL;
+  static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
   static StateInterTrialInterval state_inter_trial_interval(
     param_values[tpidx_ITI]);
-
+  static StatePostRewardPause state_post_reward_pause(
+        param_values[tpidx_INTER_REWARD_INTERVAL]);
 
   // The next state, by default the same as the current state
   next_state = current_state;
@@ -189,12 +220,32 @@ void loop()
       //// User-defined code goes here
       // declare the states. Here we're both updating the parameters
       // in case they've changed, and resetting all timers.
+      srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
       state_inter_trial_interval = StateInterTrialInterval(
         param_values[tpidx_ITI]);
 
       
-      next_state = INTER_TRIAL_INTERVAL;
+      next_state = MOVE_STEPPER1;
       break;
+
+    case MOVE_STEPPER1:
+      state_move_stepper1(next_state);
+      break;
+
+    case RESPONSE_WINDOW:
+      srw.update(touched);
+      srw.run(time);
+      break;
+    
+    case REWARD_L:
+      Serial.print(time);
+      Serial.println(" EV R_L");
+      state_reward_l(next_state);
+      break;
+    
+    case POST_REWARD_PAUSE:
+      state_post_reward_pause.run(time);
+      break;    
 
     case INTER_TRIAL_INTERVAL:
       // turn the light on
@@ -310,8 +361,6 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
       asynch_action_reward_l();
     } else if (strncmp(argument1, "REWARD_R\0", 9) == 0) {
       asynch_action_reward_r();
-    } else if (strncmp(argument1, "REWARD\0", 7) == 0) {
-      asynch_action_reward();
     } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
       asynch_action_set_thresh();
     } else if (strncmp(argument1, "HLON\0", 5) == 0) {
@@ -382,16 +431,6 @@ void asynch_action_reward_r()
   digitalWrite(R_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_R]);
   digitalWrite(R_REWARD_VALVE, LOW); 
-}
-
-void asynch_action_reward()
-{
-  if (param_values[tpidx_REWSIDE] == LEFT)
-    asynch_action_reward_l();
-  else if (param_values[tpidx_REWSIDE] == RIGHT)
-    asynch_action_reward_r();
-  else
-    Serial.println("ERR unknown rewside");
 }
 
 void asynch_action_set_thresh()
