@@ -10,6 +10,11 @@
 #include "Actions.h"
 #include "ArduFSM.h"
 
+//// Standard globals
+// flag to remember whether we've received the start next trial signal
+bool flag_start_trial = 0;
+
+// params and results
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern bool param_report_ET[N_TRIAL_PARAMS];
@@ -17,26 +22,16 @@ extern char* results_abbrevs[N_TRIAL_RESULTS];
 extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
 
-//// Miscellaneous globals
-// flag to remember whether we've received the start next trial signal
-// currently being used in both setup() and loop() so it can't be staticked
-bool flag_start_trial = 0;
-
-
-//// Declarations
-int take_action(char *protocol_cmd, char *argument1, char *argument2);
-
-
-//// User-defined variables, etc, go here
-/// these should all be staticked into loop()
+// state monitor
+STATE_TYPE current_state;
 STATE_TYPE next_state; 
 
+//// Protocol specific globals
 // touched monitor
 uint16_t sticky_touched = 0;
+uint16_t touched = 0;
 
-/// not sure how to static these since they are needed by both loop and setup
-// Stepper
-// We won't assign till we know if it's 2pin or 4pin
+// Stepper. We won't assign till we know if it's 2pin or 4pin
 Stepper *stimStepper = 0;
 
 
@@ -98,6 +93,21 @@ void user_setup2()
   stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);  
 }
 
+void user_every_loop()
+{
+  // Poll touch inputs
+  touched = pollTouchInputs();
+  
+  // announce sticky
+  if (touched != sticky_touched)
+  {
+    Serial.print(time);
+    Serial.print(" TCH ");
+    Serial.println(touched);
+    sticky_touched = touched;
+  }  
+}
+
 //// Loop function
 void loop()
 { /* Called over and over again. On each call, the behavior is determined
@@ -120,138 +130,62 @@ void loop()
 
   // The next state, by default the same as the current state
   next_state = current_state;
-    
-  
+
   // misc
   int status = 1;
-  
-  //// User protocol variables
-  uint16_t touched = 0;
-  
   
   //// Run communications
   status = communications(time);
   
-  
   //// User protocol code
-  // could put other user-specified every_loop() stuff here
-  
-  // Poll touch inputs
-  touched = pollTouchInputs();
-  
-  // announce sticky
-  if (touched != sticky_touched)
-  {
-    Serial.print(time);
-    Serial.print(" TCH ");
-    Serial.println(touched);
-    sticky_touched = touched;
-  }  
-  
+  user_every_loop();
+
   //// Begin state-dependent operations
-  // Try to replace every case with a single function or object call
-  // Ultimately this could be a dispatch table.
-  // Also, eventually we'll probably want them to return next_state,
-  // but currently it's generally passed by reference.
+  // The relevant state function or object is called for the current state.
+  // next_state will be set
+  // TODO: have it return next_state instead of setting
+  // TODO: make each state an object so we can just do next_state.run(time)
   switch (current_state)
   {
     //// Wait till the trial is released. Same for all protocols.
     case WAIT_TO_START_TRIAL:
-      // Wait until we receive permission to continue  
-      if (flag_start_trial)
-      {
-        // Announce that we have ended the trial and reset the flag
-        Serial.print(time);
-        Serial.println(" TRL_RELEASED");
-        flag_start_trial = 0;
-        
-        // Proceed to next trial
-        next_state = TRIAL_START;
-      }
+      state_function_wait_to_start_trial(time);
       break;
 
     //// TRIAL_START. Same for all protocols.
     case TRIAL_START:
-      // Set up the trial based on received trial parameters
-      Serial.print(time);
-      Serial.println(" TRL_START");
-      for(int i=0; i < N_TRIAL_PARAMS; i++)
-      {
-        if (param_report_ET[i]) 
-        {
-          // Buffered write would be nice here
-          Serial.print(time);
-          Serial.print(" TRLP ");
-          Serial.print(param_abbrevs[i]);
-          Serial.print(" ");
-          Serial.println(param_values[i]);
-        }
-      }
-    
-      // Set up trial_results to defaults
-      for(int i=0; i < N_TRIAL_RESULTS; i++)
-      {
-        results_values[i] = default_results_values[i];
-      }      
-      
-      
-      //// User-defined code goes here
-      // declare the states. Here we're both updating the parameters
-      // in case they've changed, and resetting all timers.
-      srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
-      state_inter_trial_interval = StateInterTrialInterval(
-        param_values[tpidx_ITI]);
-
-      
-      next_state = MOVE_STEPPER1;
+      state_function_trial_start(time);
       break;
-
+  
+    // Protocol-specific states
     case MOVE_STEPPER1:
       state_move_stepper1(next_state);
       break;
 
     case RESPONSE_WINDOW:
-      srw.update(touched);
-      srw.run(time);
+      state_function_response_window(time, touched);
       break;
     
     case REWARD_L:
-      Serial.print(time);
-      Serial.println(" EV R_L");
-      state_reward_l(next_state);
+      state_function_reward_l(time);
       break;
     
     case POST_REWARD_PAUSE:
       state_post_reward_pause.run(time);
       break;    
 
+    // Standard inter trial interval state that announces trial results
     case INTER_TRIAL_INTERVAL:
-      // turn the light on
-      digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-      
-      // Announce trial_results
-      state_inter_trial_interval.run(time);
+      state_function_inter_trial_interval(time);
       break;
     
     // need an else here
   }
   
-  
   //// Update the state variable
   if (next_state != current_state)
   {
-      
-    Serial.print(time);
-    Serial.print(" ST_CHG ");
-    Serial.print(current_state);
-    Serial.print(" ");
-    Serial.println(next_state);
-    
-    Serial.print(millis());
-    Serial.print(" ST_CHG2 ");
-    Serial.print(current_state);
-    Serial.print(" ");
-    Serial.println(next_state);
+    announce_state_change(time, current_state, next_state);
   }
   current_state = next_state;
   

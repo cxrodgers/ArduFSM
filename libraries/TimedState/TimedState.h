@@ -37,6 +37,14 @@ Where the object derives from something that implements the basic pattern
 above, and the user just filles in the run_once(), run_many_times(), etc
 */
 
+class State
+{
+  public:
+    State() { };
+    State* run(unsigned long time);
+    int my_id = 0;
+};
+
 class TimedState
 {
   // TODO: add a setter function for updating its duration, eg, when

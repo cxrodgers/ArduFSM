@@ -225,3 +225,38 @@ int state_reward_l(STATE_TYPE& next_state)
   next_state = POST_REWARD_PAUSE;
   return 0;  
 }
+
+
+/* Required protocol specific functions */
+void user_trial_start(unsingned long time)
+{  /* Protocol-specific code that runs at trial start */
+  // declare the states. Here we're both updating the parameters
+  // in case they've changed, and resetting all timers.
+  srw = StateResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
+  state_inter_trial_interval = StateInterTrialInterval(
+    param_values[tpidx_ITI]);
+
+  next_state = MOVE_STEPPER1;
+}
+
+
+/* State functions */
+void state_function_response_window(unsigned long time, uint16_t touched) {
+  srw.update(touched);
+  srw.run(time);
+}
+
+void state_function_reward_l(unsigned long time) {
+  Serial.print(time);
+  Serial.println(" EV R_L");
+  state_reward_l();  
+}
+
+void state_function_inter_trial_interval(unsigned long time) {
+  // turn the light on
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  
+  // Announce trial_results
+  state_inter_trial_interval.run(time);
+}
+

@@ -142,4 +142,16 @@ class StatePostRewardPause : public TimedState {
     StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
 
+
+
+
+
+/* State functions */
+void state_function_wait_to_start_trial(unsigned long time, 
+  bool flag_start_trial);
+void state_function_trial_start(unsigned long time);
+void state_function_response_window(unsigned long time, uint16_t touched);
+void state_function_reward_l(unsigned long time);
+void state_function_inter_trial_interval(unsigned long time);
+
 #endif
