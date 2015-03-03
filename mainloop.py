@@ -120,7 +120,7 @@ def get_params_table_passive_detect():
     params_table = pandas.DataFrame([
         ('ITI',     2000,     0, 1, 1, 0, 1),            
         ('ISGO',    MD,       1, 1, 0, 0, 0),
-        ('NSTPS',   3,        1, 1, 0, 0, 0),
+        ('NSTPS',   1,        1, 1, 1, 0, 1),
         ('STPT',    10,       1, 0, 0, 0, 0),
         ('MRT',     1,        0, 0, 1, 0, 1),
         ('RWIN',    2000,     0, 0, 1, 0, 1),
