@@ -83,6 +83,16 @@ void setup()
   pinMode(R_REWARD_VALVE, OUTPUT);
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
   
+  // Ensure the two-pin enable pin is low, even before receiving
+  // any input from user. Otherwise, it defaults to digital input
+  // which seems to be enough to enable the H-bridge.
+  // However, note that we don't even know if we're in two-pin
+  // mode yet, so hopefully whatever is on this pin can take a low.
+  // A better way to do this is to put a pull-down resistor on
+  // the protoboard.
+  pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+    
   // initialize the house light to ON
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   
