@@ -31,7 +31,7 @@ from ArduFSM import mainloop
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
-#~ serial_port = '/dev/ttyACM1'
+serial_port = '/dev/ttyACM0'
 
 ## Get params
 params_table = mainloop.get_params_table()
@@ -41,6 +41,8 @@ params_table['current-value'] = params_table['init_val'].copy()
 ## Get trial types
 if rigname in ['L1', 'L3']:
     trial_types = mainloop.get_trial_types('trial_types_4srvpos')
+elif rigname == 'L0':
+    trial_types = mainloop.get_trial_types('trial_types_4srvpos_r')
 else:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
 
