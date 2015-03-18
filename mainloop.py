@@ -144,7 +144,7 @@ def get_params_table_passive_detect():
 def get_serial_port(rigname):
     """Get the serial port for the specified rigname"""
     d = {
-        'L0': '/dev/ttyUSB0',
+        'L0': '/dev/ttyACM0',
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
@@ -166,7 +166,7 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 36,
+            'RD_L': 19,
             'RD_R': 47,
             'STPHAL': NO,
             'HALPOS': 50,

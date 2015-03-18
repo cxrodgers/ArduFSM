@@ -31,7 +31,7 @@ from ArduFSM import mainloop
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
-serial_port = '/dev/ttyACM0'
+#~ serial_port = '/dev/ttyACM0'
 
 ## Get params
 params_table = mainloop.get_params_table()
