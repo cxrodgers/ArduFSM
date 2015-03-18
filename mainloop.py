@@ -166,7 +166,7 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 35,
+            'RD_L': 36,
             'RD_R': 47,
             'STPHAL': NO,
             'HALPOS': 50,
@@ -177,8 +177,8 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 68,
-            'RD_R': 30,
+            'RD_L': 71,
+            'RD_R': 31,
             'STPHAL': YES,
             'HALPOS': 50,
             }
@@ -188,7 +188,7 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 17,
+            'RD_L': 18,
             'RD_R': 16,
             'STPHAL': YES,
             'HALPOS': 50,
@@ -196,7 +196,7 @@ def get_rig_specific(rigname):
     
     elif rigname == 'L3':
         return {
-            'STPSPD': 30,
+            'STPSPD': 20,
             '2PSTP': YES,
             'SRVTT': 2000,
             'RD_L': 26,
