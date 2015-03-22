@@ -30,3 +30,36 @@ long results_values[N_TRIAL_RESULTS] = {
 long default_results_values[N_TRIAL_RESULTS] = {
   0
   };
+
+  
+long* get_param_values() {
+  return param_values;
+}
+
+long* get_results_values() {
+  return results_values;
+}
+
+char** get_results_abbrevs() {
+  return results_abbrevs;
+}
+
+char** get_param_abbrevs() {
+  return param_abbrevs;
+}
+
+int get_n_trial_params() {
+  return N_TRIAL_PARAMS;
+}
+
+int get_n_trial_results() {
+  return N_TRIAL_RESULTS;
+}
+
+bool* get_param_report_ET() {
+  return param_report_ET;
+}
+
+long* get_default_results_values() {
+  return default_results_values;
+}

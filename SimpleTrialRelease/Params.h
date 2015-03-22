@@ -27,4 +27,13 @@ extern char* results_abbrevs[N_TRIAL_RESULTS];
 extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
 
+long* get_param_values();
+long* get_results_values();
+char** get_results_abbrevs();
+char** get_param_abbrevs();
+int get_n_trial_params();
+int get_n_trial_results();
+bool* get_param_report_ET();
+long* get_default_results_values();
+
 #endif // SIMPLETRIALRELEASE_PARAMS_H_
