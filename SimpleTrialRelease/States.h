@@ -19,6 +19,7 @@ class StateWait : public TimedState {
     State* s_finish();
   public:
     StateWait(long d) : TimedState(d) { };
+    int id = 4;
 };
 
 

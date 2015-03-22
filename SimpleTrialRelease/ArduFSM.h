@@ -81,6 +81,7 @@ class StateWaitToStartTrial : public State {
     State* run(unsigned long time);
   public:
     StateWaitToStartTrial() : State() { };
+    int id = 1;
 };
 
 // This one runs once when the trial starts
@@ -89,6 +90,7 @@ class StateTrialStart : public State {
     State* run(unsigned long time);
   public:
     StateTrialStart() : State() { };
+    int id = 2;
 };
 
 // This one runs at the end of each trial
@@ -98,6 +100,7 @@ class StateFinishTrial : public TimedState {
     State* s_finish();
   public:
     StateFinishTrial(long d) : TimedState(d) { };
+    int id = 3;
 };
 
 
