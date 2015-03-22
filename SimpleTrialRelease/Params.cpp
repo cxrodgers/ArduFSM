@@ -21,6 +21,12 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   
 
 //// Results
-char* results_abbrevs[N_TRIAL_RESULTS] = {};
-long results_values[N_TRIAL_RESULTS] = {};
-long default_results_values[N_TRIAL_RESULTS] = {};
+char* results_abbrevs[N_TRIAL_RESULTS] = {
+    "RESP"
+    };
+long results_values[N_TRIAL_RESULTS] = {
+    0
+    };
+long default_results_values[N_TRIAL_RESULTS] = {
+    0
+    };

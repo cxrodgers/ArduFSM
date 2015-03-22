@@ -8,6 +8,7 @@
 #define tpidx_ITI 0
 
 // Results
-#define N_TRIAL_RESULTS 0
+#define N_TRIAL_RESULTS 1
+#define tridx_RESPONSE 0
 
 #endif // SIMPLETRIALRELEASE_PARAMS_H_
