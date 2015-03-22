@@ -21,7 +21,6 @@ State* user_trial_start()
 #define __ARDUFSM_H_INCLUDED
 
 #include "Arduino.h" 
-#include "States.h"
 
 //// Basic State definition
 // Every State defines a run method, which returns a pointer to the next State.
