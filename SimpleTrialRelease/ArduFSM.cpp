@@ -26,7 +26,55 @@ bool flag_start_trial = 0;
 // Instantiate the standard states
 State* state_wait_to_start_trial = new StateWaitToStartTrial;
 State* state_trial_start = new StateTrialStart;
-State* state_inter_trial_interval = new StateInterTrialInterval;
+State* state_inter_trial_interval = new StateInterTrialInterval(
+  param_values[tpidx_ITI]);
+
+
+//// Implementation of derived TimedState
+State* TimedState::run(unsigned long time)
+{ /* Boilerplate 'run' code for a state with a certain length of time.
+    
+  This is called on every pass, as long as the FSM is in this state.
+  Depending on the current state of the timer, flag_stop, and the time, this
+  calls s_setup(), loop(), or s_finish().
+
+  States that inherit from this should define their own s_setup(), loop(),
+  and s_finish().
+    
+  Simple algorithm:
+    * If the timer is set to 0, take this to mean that we haven't started yet.
+      Run s_setup()
+      Set the timer and the flag
+    * If the time is greater than the timer, or the flag_stop has been set,
+      run the s_finish()
+    * Otherwise, run loop()
+  */
+  // always store time of last call
+  State* next_state;
+  time_of_last_call = time;    
+    
+  // boiler plate timer code
+  if (timer == 0)  {
+    s_setup();
+    flag_stop = 0;
+    timer = time + duration;
+  }
+  
+  if (flag_stop || (time >= timer))  {
+    next_state = s_finish();
+    timer = 0;      
+  }
+  else {
+    next_state = loop();
+  }
+  
+  return next_state;
+};
+
+void TimedState::set_duration(unsigned long new_duration) {
+  /* Update the duration of the state, for instance after param change */
+  duration = new_duration;
+}
 
 
 //// Implementations of standard states
@@ -81,26 +129,24 @@ State* StateTrialStart::run(unsigned long time)
   return user_trial_start(time);
 }
 
-// StateInterTrialInterval
-// Announces results
-// Waits (TODO: make a TimedState)
-// returns state_wait_to_start_trial
-State* StateInterTrialInterval::run(unsigned long time)
-{
+
+//// StateInterTrialInterval methods
+// Announces results on setup
+void StateInterTrialInterval::s_setup() {
   // Announce results
   for(int i=0; i < N_TRIAL_RESULTS; i++) {
-    Serial.print(time); // previously: time_of_last_call
+    Serial.print(time_of_last_call);
     Serial.print(" TRLR ");
     Serial.print(results_abbrevs[i]);
     Serial.print(" ");
     Serial.println(results_values[i]);
   }
-  
-  // Wait, and return next state
-  delay(param_values[tpidx_ITI]);
-  return state_wait_to_start_trial;   
 }
 
+// Once the timer has elapsed, start the next trial.
+State* StateInterTrialInterval::s_finish() {
+  return state_wait_to_start_trial;   
+}
 
 
 //// Setup function
