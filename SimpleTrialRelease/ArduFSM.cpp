@@ -26,7 +26,7 @@ bool flag_start_trial = 0;
 // Instantiate the standard states
 State* state_wait_to_start_trial = new StateWaitToStartTrial;
 State* state_trial_start = new StateTrialStart;
-State* state_inter_trial_interval = new StateInterTrialInterval(
+State* state_finish_trial = new StateFinishTrial(
   param_values[tpidx_ITI]);
 
 
@@ -130,9 +130,9 @@ State* StateTrialStart::run(unsigned long time)
 }
 
 
-//// StateInterTrialInterval methods
+//// StateFinishTrial methods
 // Announces results on setup
-void StateInterTrialInterval::s_setup() {
+void StateFinishTrial::s_setup() {
   // Announce results
   for(int i=0; i < N_TRIAL_RESULTS; i++) {
     Serial.print(time_of_last_call);
@@ -144,7 +144,7 @@ void StateInterTrialInterval::s_setup() {
 }
 
 // Once the timer has elapsed, start the next trial.
-State* StateInterTrialInterval::s_finish() {
+State* StateFinishTrial::s_finish() {
   return state_wait_to_start_trial;   
 }
 

@@ -48,5 +48,5 @@ void user_every_loop() {
 State* user_trial_start(unsigned long time) {
   Serial.print(time);
   Serial.println(" DBG uts");
-  return state_inter_trial_interval;
+  return state_finish_trial;
 }

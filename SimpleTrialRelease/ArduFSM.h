@@ -5,7 +5,7 @@ derive. One of these is TimedState, which is a base class for states with a
 specified duration.
 
 It also defines the "standard states": StateWaitToStartTrial,
-StateTrialStart, and StateInterTrialInterval. These are instantiated in
+StateTrialStart, and StateFinishTrial. These are instantiated in
 ArduFSM.cpp.
 
 Finally, it defines the setup() function, and other utility functions.
@@ -93,12 +93,12 @@ class StateTrialStart : public State {
 };
 
 // This one runs at the end of each trial
-class StateInterTrialInterval : public TimedState {
+class StateFinishTrial : public TimedState {
   protected:
     void s_setup();
     State* s_finish();
   public:
-    StateInterTrialInterval(long d) : TimedState(d) { };
+    StateFinishTrial(long d) : TimedState(d) { };
 };
 
 
@@ -108,7 +108,7 @@ class StateInterTrialInterval : public TimedState {
 // to them.
 extern State* state_wait_to_start_trial;
 extern State* state_trial_start;
-extern State* state_inter_trial_interval;
+extern State* state_finish_trial;
 
 
 //// Definitions of standard functions
