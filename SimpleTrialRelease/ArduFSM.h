@@ -22,13 +22,26 @@ State* user_trial_start()
 
 #include "Arduino.h" 
 
+//// The value of the unique 'id' field of each state
+// Could think about making this an enum
+#define STATE_ID_WAIT_TO_START_TRIAL 1
+#define STATE_ID_TRIAL_START 2
+#define STATE_ID_FINISH_TRIAL 3
+
+
 //// Basic State definition
-// Every State defines a run method, which returns a pointer to the next State.
+// All states derive from this base class
 class State
 {
   public:
     State() { };
+    
+    // Every State defines a run method, which returns a pointer to the 
+    // next State.
     virtual State* run(unsigned long time);
+    
+    // Each State has a unique "id" field, mainly used in announcing
+    // state changes over the serial port
     int id = 0;
 };
 
@@ -81,7 +94,7 @@ class StateWaitToStartTrial : public State {
     State* run(unsigned long time);
   public:
     StateWaitToStartTrial() : State() { };
-    int id = 1;
+    int id = STATE_ID_WAIT_TO_START_TRIAL;
 };
 
 // This one runs once when the trial starts
@@ -90,7 +103,7 @@ class StateTrialStart : public State {
     State* run(unsigned long time);
   public:
     StateTrialStart() : State() { };
-    int id = 2;
+    int id = STATE_ID_TRIAL_START;
 };
 
 // This one runs at the end of each trial
@@ -100,7 +113,7 @@ class StateFinishTrial : public TimedState {
     State* s_finish();
   public:
     StateFinishTrial(long d) : TimedState(d) { };
-    int id = 3;
+    int id = STATE_ID_FINISH_TRIAL;
 };
 
 

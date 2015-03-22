@@ -1,26 +1,9 @@
-/* Various asynchronous actions.
-
-These are protocol-specific, because for instance they assume certain
-reward delivery configurations. They also rely on specific trial parameters
-like reward durations. However they are often shared between related
-protocols.
-
-The main take_action function could be general, except for its dispatch
-table from keywords to functions.
-
-For now, let's keep these in an Actions.cpp for each protocol separately,
-and then later, consider moving it to libraries/Actions.cpp or
-libraries/TwoChoice_Actions.cpp.
-*/
+// Implementations of asynchronous actions for SimpleTrialRelease
 #include "Actions.h"
 #include "Arduino.h"
 #include "States.h"
 #include "chat.h"
 #include "Params.h"
-
-extern char* param_abbrevs[N_TRIAL_PARAMS];
-extern long param_values[N_TRIAL_PARAMS];
-
 
 
 //// Take protocol action based on user command (ie, setting variable)

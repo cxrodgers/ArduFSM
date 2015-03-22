@@ -11,14 +11,6 @@ extern void user_setup2();
 extern void user_every_loop();
 extern State* user_trial_start(unsigned long time);
 
-// These variables are defined in the protocol-specific Params file
-extern char* param_abbrevs[N_TRIAL_PARAMS];
-extern long param_values[N_TRIAL_PARAMS];
-extern bool param_report_ET[N_TRIAL_PARAMS];
-extern char* results_abbrevs[N_TRIAL_RESULTS];
-extern long results_values[N_TRIAL_RESULTS];
-extern long default_results_values[N_TRIAL_RESULTS];
-
 // Global so that we know whether the trial has started
 // Needed by chat
 bool flag_start_trial = 0;

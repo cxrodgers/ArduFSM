@@ -22,11 +22,11 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
 
 //// Results
 char* results_abbrevs[N_TRIAL_RESULTS] = {
-    "RESP"
-    };
+  "RESP"
+  };
 long results_values[N_TRIAL_RESULTS] = {
-    0
-    };
+  0
+  };
 long default_results_values[N_TRIAL_RESULTS] = {
-    0
-    };
+  0
+  };

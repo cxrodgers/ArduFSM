@@ -1,4 +1,17 @@
-/* Header file for SimpleTrialRelease-related actions */
+/* Various asynchronous actions.
+
+These are protocol-specific, because for instance they assume certain
+reward delivery configurations. They also rely on specific trial parameters
+like reward durations. However they are often shared between related
+protocols.
+
+The main take_action function could be general, except for its dispatch
+table from keywords to functions.
+
+For now, let's keep these in an Actions.cpp for each protocol separately,
+and then later, consider moving it to libraries/Actions.cpp or
+libraries/TwoChoice_Actions.cpp.
+*/
 
 #ifndef __ACTIONS_H_INCLUDED
 #define __ACTIONS_H_INCLUDED
