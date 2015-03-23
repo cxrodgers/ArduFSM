@@ -31,7 +31,10 @@ long default_results_values[N_TRIAL_RESULTS] = {
   0
   };
 
-  
+
+//// Boilerplate getter functions
+// These are needed by ArduFSM library
+// Can we move them into a separate file since this will not change?  
 long* get_param_values() {
   return param_values;
 }

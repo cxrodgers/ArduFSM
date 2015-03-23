@@ -27,6 +27,9 @@ extern char* results_abbrevs[N_TRIAL_RESULTS];
 extern long results_values[N_TRIAL_RESULTS];
 extern long default_results_values[N_TRIAL_RESULTS];
 
+
+//// Boiler plate getter functions. These are used by ArduFSM library because
+// it can't use the hooks above.
 long* get_param_values();
 long* get_results_values();
 char** get_results_abbrevs();
