@@ -42,7 +42,7 @@ params_table['current-value'] = params_table['init_val'].copy()
 if rigname in []:
     trial_types = mainloop.get_trial_types('trial_types_4srvpos')
 elif rigname == 'L0':
-    trial_types = mainloop.get_trial_types('trial_types_4srvpos_r')
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
 else:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
 
