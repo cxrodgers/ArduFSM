@@ -46,7 +46,5 @@ void user_every_loop() {
 
 // Standard user_trial_start() function, run at beginning of every trial
 State* user_trial_start(unsigned long time) {
-  Serial.print(time);
-  Serial.println(" DBG uts");
   return state_wait;
 }
