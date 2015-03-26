@@ -101,10 +101,10 @@ void TimedState::set_duration(unsigned long new_duration) {
 // and resets the flag and continues to state_trial_start
 State* StateWaitToStartTrial::run(unsigned long time)
 {
-  // Debugging
-  Serial.print(time);
-  Serial.println(" DBG swst run");
-  delay(1000);
+  //~ // Debugging
+  //~ Serial.print(time);
+  //~ Serial.println(" DBG swst run");
+  //~ delay(1000);
 
   // Wait until we receive permission to continue  
   if (flag_start_trial) {
