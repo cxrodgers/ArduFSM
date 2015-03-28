@@ -35,14 +35,15 @@ class State
 {
   public:
     State() { };
+
+    // Each State has a unique "id" field, mainly used in announcing
+    // state changes over the serial port
+    virtual int id() { return 0; }
     
     // Every State defines a run method, which returns a pointer to the 
     // next State.
     virtual State* run(unsigned long time);
     
-    // Each State has a unique "id" field, mainly used in announcing
-    // state changes over the serial port
-    int id = 0;
 };
 
 
@@ -94,7 +95,7 @@ class StateWaitToStartTrial : public State {
     State* run(unsigned long time);
   public:
     StateWaitToStartTrial() : State() { };
-    int id = STATE_ID_WAIT_TO_START_TRIAL;
+    int id() { return STATE_ID_WAIT_TO_START_TRIAL; }
 };
 
 // This one runs once when the trial starts
@@ -103,7 +104,7 @@ class StateTrialStart : public State {
     State* run(unsigned long time);
   public:
     StateTrialStart() : State() { };
-    int id = STATE_ID_TRIAL_START;
+    int id() { return STATE_ID_TRIAL_START; }
 };
 
 // This one runs at the end of each trial
@@ -113,7 +114,7 @@ class StateFinishTrial : public TimedState {
     State* s_finish();
   public:
     StateFinishTrial(long d) : TimedState(d) { };
-    int id = STATE_ID_FINISH_TRIAL;
+    int id() { return STATE_ID_FINISH_TRIAL; }    
 };
 
 

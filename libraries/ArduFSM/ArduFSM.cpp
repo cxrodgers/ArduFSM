@@ -101,11 +101,6 @@ void TimedState::set_duration(unsigned long new_duration) {
 // and resets the flag and continues to state_trial_start
 State* StateWaitToStartTrial::run(unsigned long time)
 {
-  //~ // Debugging
-  //~ Serial.print(time);
-  //~ Serial.println(" DBG swst run");
-  //~ delay(1000);
-
   // Wait until we receive permission to continue  
   if (flag_start_trial) {
     // Announce that we have ended the trial and reset the flag
@@ -242,19 +237,25 @@ void loop()
 
 
 //// Utility functions
+// Announce each state change
+// We print the time at the beginning of the loop call, the current and
+// next states, and the current time ("ST_CHG2"). The reason that we print
+// the time at the beginning and end of the loop call is to help estimate
+// the duration of certain states that take a long time (due to delay
+// statements).
 void announce_state_change(unsigned long time, State *current_state,
   State *next_state)
 {
   Serial.print(time);
   Serial.print(" ST_CHG ");
-  Serial.print(current_state->id);
+  Serial.print(current_state->id());
   Serial.print(" ");
-  Serial.println(next_state->id);
+  Serial.println(next_state->id());
 
   Serial.print(millis());
   Serial.print(" ST_CHG2 ");
-  Serial.print(current_state->id);
+  Serial.print(current_state->id());
   Serial.print(" ");
-  Serial.println(next_state->id);
+  Serial.println(next_state->id());
 }
 

@@ -30,7 +30,7 @@ class StateWait : public TimedState {
     State* s_finish();
   public:
     StateWait(long d) : TimedState(d) { };
-    int id = STATE_ID_WAIT;
+    int id() { return STATE_ID_WAIT; }    
 };
 
 
