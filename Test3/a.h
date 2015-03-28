@@ -1,6 +1,9 @@
-extern const int ARRAY_LEN;
-extern int array[ARRAY_LEN];
+#ifndef _a_h
+#define _a_h
+
+extern int array[];
 
 void f();
 
 
+#endif

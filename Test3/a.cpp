@@ -1,4 +1,6 @@
 #include "a.h"
+extern const int ARRAY_LEN;
+
 
 // Do something with every element of "array"
 void f() {
