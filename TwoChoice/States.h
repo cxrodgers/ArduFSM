@@ -96,7 +96,6 @@ class StateResponseWindow : public TimedState {
     // Remember touched and rewards per trial  
     uint16_t my_touched = 0;
     unsigned int my_rewards_this_trial = 0;
-    Servo my_linServo;
     
     // Virtual loop and finish states
     State* loop();
@@ -107,9 +106,7 @@ class StateResponseWindow : public TimedState {
   
   public:
     void update(uint16_t touched);
-    StateResponseWindow(unsigned long d, Servo linServo) : TimedState(d) {
-      my_linServo = linServo;
-    };
+    StateResponseWindow(unsigned long d) : TimedState(d) { }
     int id() { return STATE_RESPONSE_WINDOW; }
 };
 
@@ -119,8 +116,7 @@ class StateFakeResponseWindow : public StateResponseWindow {
     void set_licking_variables(bool &, bool &);
   
   public:
-    StateFakeResponseWindow(unsigned long d, Servo linServo) : 
-    StateResponseWindow(d, linServo) { };
+    StateFakeResponseWindow(unsigned long d) : StateResponseWindow(d) { }
 };
 
 // StateInterRotationPause : waits between stepper rotations and
@@ -130,7 +126,7 @@ class StateInterRotationPause : public TimedState {
     State* s_finish() { return state_rotate_stepper2; }
   
   public:
-    StateInterRotationPause(unsigned long d) : TimedState(d) { };
+    StateInterRotationPause(unsigned long d) : TimedState(d) { }
     int id() { return STATE_INTER_ROTATION_PAUSE; }    
 };
 
@@ -138,16 +134,11 @@ class StateInterRotationPause : public TimedState {
 // state_inter_trial_interval when finished
 class StateErrorTimeout : public TimedState {
   protected:
-    // Keeps a hook to linServo so that we can keep moving it
-    Servo my_linServo;
-  
     void s_setup();
     State* s_finish() { return state_finish_trial; }
   
   public:
-    StateErrorTimeout(unsigned long d, Servo linServo) : TimedState(d) {
-      my_linServo = linServo;
-    };
+    StateErrorTimeout(unsigned long d) : TimedState(d) { };
     int id() { return STATE_ERROR_TIMEOUT; }        
 };
 
@@ -155,16 +146,11 @@ class StateErrorTimeout : public TimedState {
 // and then transitions to state_response_window.
 class StateWaitForServoMove : public TimedState {
   protected:
-    // Keep a hook to linServo so we can move it
-    Servo my_linServo;
-    
     void s_setup();
     State* s_finish() { return state_response_window; }
   
   public:
-    StateWaitForServoMove(unsigned long d, Servo linServo) : TimedState(d) { 
-      my_linServo = linServo;
-    };
+    StateWaitForServoMove(unsigned long d) : TimedState(d) { };
     int id() { return STATE_WAIT_FOR_SERVO_MOVE; }
 };
 
@@ -178,6 +164,10 @@ class StatePostRewardPause : public TimedState {
     StatePostRewardPause(unsigned long d) : TimedState(d) { };
     int id() { return STATE_POST_REWARD_PAUSE; }
 };
+
+
+//// Accessor methods for static variables like motors
+Servo* get_servo();
 
 
 #endif // __STATES_H_INCLUDED__

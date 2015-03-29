@@ -38,9 +38,6 @@ State* user_trial_start()
 // initial position of stim arm .. user must ensure this is correct
 long sticky_stepper_position = 0;
 
-// Servo
-Servo linServo;
-
 // Stepper. We won't assign till we know if it's 2pin or 4pin
 Stepper *stimStepper = 0;
 
@@ -69,7 +66,8 @@ void user_setup1() {
   randomSeed(analogRead(3));
 
   // attach servo
-  linServo.attach(LINEAR_SERVO);  
+  Servo* servo = get_servo();
+  servo->attach(LINEAR_SERVO);
 }
 
 // Standard user_setup2() function, run after first communications complete.
@@ -114,7 +112,8 @@ void user_setup2() {
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
   
   // linear servo setup
-  linServo.write(param_values[tpidx_SRV_FAR]);
+  Servo* servo = get_servo();
+  servo->write(param_values[tpidx_SRV_FAR]);
   delay(param_values[tpidx_SERVO_SETUP_T]);
 }
 

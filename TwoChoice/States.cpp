@@ -11,7 +11,13 @@
 //// Globals, defined in ino.
 extern long sticky_stepper_position;
 extern Stepper* stimStepper;
-extern Servo linServo;
+
+//// Accessor methods for static variables for hardware
+Servo* get_servo() {
+  static Servo *servo = new Servo;
+  return servo;
+}
+
 
 //// StateResponseWindow implementation
 void StateResponseWindow::update(uint16_t touched) {
@@ -97,7 +103,7 @@ State* StateResponseWindow::s_finish()
   
   // Stuff that needs to happen at beginning of ITI
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  linServo.write(param_values[tpidx_SRV_FAR]);
+  get_servo()->write(param_values[tpidx_SRV_FAR]);
   return state_finish_trial;
 }
 
@@ -121,13 +127,13 @@ void StateFakeResponseWindow::set_licking_variables(
 //// StateErrorTimeout
 void StateErrorTimeout::s_setup() {
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  my_linServo.write(param_values[tpidx_SRV_FAR]);
+  get_servo()->write(param_values[tpidx_SRV_FAR]);
 }
 
 
 //// StateWaitForServoMove
 void StateWaitForServoMove::s_setup() {
-  my_linServo.write(param_values[tpidx_SRVPOS]);
+  get_servo()->write(param_values[tpidx_SRVPOS]);
 }
 
 
@@ -304,12 +310,12 @@ State* state_rotate_stepper2 = new StateRotateStepper2();
 State* state_reward_l = new StateRewardL();
 State* state_reward_r = new StateRewardR();
 State* state_response_window = new StateResponseWindow(
-  param_values[tpidx_RESP_WIN_DUR], linServo);
+  param_values[tpidx_RESP_WIN_DUR]);
 State* state_inter_rotation_pause = new StateInterRotationPause(50);
 State* state_wait_for_servo_move = new StateWaitForServoMove(
-  param_values[tpidx_SRV_TRAVEL_TIME], linServo);
+  param_values[tpidx_SRV_TRAVEL_TIME]);
 State* state_error_timeout = new StateErrorTimeout(
-  param_values[tpidx_ERROR_TIMEOUT], linServo);
+  param_values[tpidx_ERROR_TIMEOUT]);
 State* state_post_reward_pause = new StatePostRewardPause(
   param_values[tpidx_INTER_REWARD_INTERVAL]);
 
