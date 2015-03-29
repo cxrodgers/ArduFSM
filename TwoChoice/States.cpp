@@ -59,7 +59,7 @@ State* StateResponseWindow::s_finish()
   
   // Stuff that needs to happen at beginning of ITI
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  //~ get_servo()->write(param_values[tpidx_SRV_FAR]);
+  get_servo()->write(param_values[tpidx_SRV_FAR]);
   return state_finish_trial;
 }
 
@@ -68,9 +68,9 @@ State* StateResponseWindow::s_finish()
 // event.
 void StateResponseWindow::set_licking_variables(
   bool &licking_l, bool &licking_r) { 
-  //~ uint16_t my_touched = get_touch_status(0);
-  //~ licking_l = (get_touched_channel(my_touched, 0) == 1);
-  //~ licking_r = (get_touched_channel(my_touched, 1) == 1);    
+  uint16_t my_touched = get_touch_status(0);
+  licking_l = (get_touched_channel(my_touched, 0) == 1);
+  licking_r = (get_touched_channel(my_touched, 1) == 1);    
 }
 
 
@@ -78,22 +78,22 @@ void StateResponseWindow::set_licking_variables(
 // Differs only in that it randomly fakes a response by randomly choosing licks
 void StateFakeResponseWindow::set_licking_variables(
   bool &licking_l, bool &licking_r) {
-  //~ uint16_t my_touched = get_touch_status(0);    
-  //~ licking_l = (random(0, 10000) < 3);    
-  //~ licking_r = (random(0, 10000) < 3);   
+  uint16_t my_touched = get_touch_status(0);    
+  licking_l = (random(0, 10000) < 3);    
+  licking_r = (random(0, 10000) < 3);   
 }
 
 
 //// StateErrorTimeout
 void StateErrorTimeout::s_setup() {
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  //~ get_servo()->write(param_values[tpidx_SRV_FAR]);
+  get_servo()->write(param_values[tpidx_SRV_FAR]);
 }
 
 
 //// StateWaitForServoMove
 void StateWaitForServoMove::s_setup() {
-  //~ get_servo()->write(param_values[tpidx_SRVPOS]);
+  get_servo()->write(param_values[tpidx_SRVPOS]);
 }
 
 
