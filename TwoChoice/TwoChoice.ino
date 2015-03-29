@@ -32,9 +32,8 @@ State* user_trial_start()
 #include "Params.h"
 
 
-//// Global variables, to be passed around between states
-// touched monitor
-uint16_t sticky_touched = 0;
+//// Global variables. These are global because they are used in this
+// file, and also in multiple different states.
 
 // initial position of stim arm .. user must ensure this is correct
 long sticky_stepper_position = 0;
@@ -42,8 +41,7 @@ long sticky_stepper_position = 0;
 // Servo
 Servo linServo;
 
-// Stepper
-// We won't assign till we know if it's 2pin or 4pin
+// Stepper. We won't assign till we know if it's 2pin or 4pin
 Stepper *stimStepper = 0;
 
 
@@ -123,6 +121,7 @@ void user_setup2() {
 // Standard user_every_loop() function, run on every loop
 void user_every_loop(unsigned long time) {
   // Poll touch inputs
+  static uint16_t sticky_touched = 0;
   uint16_t touched = 0;
   touched = pollTouchInputs();
   

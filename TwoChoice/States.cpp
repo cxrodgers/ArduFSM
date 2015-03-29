@@ -126,11 +126,6 @@ void StateErrorTimeout::s_setup() {
 
 
 //// StateWaitForServoMove
-void StateWaitForServoMove::update(Servo linServo) {
-  // Actually this belongs in the constructor.
-  my_linServo = linServo;
-}
-
 void StateWaitForServoMove::s_setup() {
   my_linServo.write(param_values[tpidx_SRVPOS]);
 }
@@ -309,10 +304,10 @@ State* state_rotate_stepper2 = new StateRotateStepper2();
 State* state_reward_l = new StateRewardL();
 State* state_reward_r = new StateRewardR();
 State* state_response_window = new StateResponseWindow(
-  param_values[tpidx_RESP_WIN_DUR]);
+  param_values[tpidx_RESP_WIN_DUR], linServo);
 State* state_inter_rotation_pause = new StateInterRotationPause(50);
 State* state_wait_for_servo_move = new StateWaitForServoMove(
-  param_values[tpidx_SRV_TRAVEL_TIME]);
+  param_values[tpidx_SRV_TRAVEL_TIME], linServo);
 State* state_error_timeout = new StateErrorTimeout(
   param_values[tpidx_ERROR_TIMEOUT], linServo);
 State* state_post_reward_pause = new StatePostRewardPause(

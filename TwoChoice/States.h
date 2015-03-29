@@ -96,6 +96,7 @@ class StateResponseWindow : public TimedState {
     // Remember touched and rewards per trial  
     uint16_t my_touched = 0;
     unsigned int my_rewards_this_trial = 0;
+    Servo my_linServo;
     
     // Virtual loop and finish states
     State* loop();
@@ -106,7 +107,9 @@ class StateResponseWindow : public TimedState {
   
   public:
     void update(uint16_t touched);
-    StateResponseWindow(unsigned long d) : TimedState(d) { };
+    StateResponseWindow(unsigned long d, Servo linServo) : TimedState(d) {
+      my_linServo = linServo;
+    };
     int id() { return STATE_RESPONSE_WINDOW; }
 };
 
@@ -116,7 +119,8 @@ class StateFakeResponseWindow : public StateResponseWindow {
     void set_licking_variables(bool &, bool &);
   
   public:
-    StateFakeResponseWindow(unsigned long d) : StateResponseWindow(d) { };
+    StateFakeResponseWindow(unsigned long d, Servo linServo) : 
+    StateResponseWindow(d, linServo) { };
 };
 
 // StateInterRotationPause : waits between stepper rotations and
@@ -158,8 +162,9 @@ class StateWaitForServoMove : public TimedState {
     State* s_finish() { return state_response_window; }
   
   public:
-    void update(Servo linServo);
-    StateWaitForServoMove(unsigned long d) : TimedState(d) { };
+    StateWaitForServoMove(unsigned long d, Servo linServo) : TimedState(d) { 
+      my_linServo = linServo;
+    };
     int id() { return STATE_WAIT_FOR_SERVO_MOVE; }
 };
 
