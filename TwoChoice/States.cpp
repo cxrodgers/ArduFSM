@@ -151,14 +151,46 @@ void StateWaitForServoMove::s_setup() {
 
 //// StateRotateStepper1
 State* StateRotateStepper1::run(unsigned long time) {
-  //~ rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
+  rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
   return state_inter_rotation_pause;
 }
 
 
 //// StateRotateStepper2
 State* StateRotateStepper2::run(unsigned long time) {
-
+  // Calculate how much more we need to rotate
+  long remaining_rotation = param_values[tpidx_STPPOS] - 
+    sticky_stepper_position;
+  int step_size = 1;
+  int actual_steps = remaining_rotation;
+  
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+    
+  // Take a shorter negative rotation, if available
+  // For instance, to go from 0 to 150, it's better to go -50
+  if (remaining_rotation > 100)
+    remaining_rotation -= 200;
+  
+  // convoluted way to determine step_size
+  if (remaining_rotation < 0)
+    step_size = -1;
+    
+  // Perform the rotation
+  if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES) {
+    if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+    else
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+    if (actual_steps != remaining_rotation) {
+      Serial.print(millis());
+      Serial.print(" DBG STPERR ");
+      Serial.println(actual_steps - remaining_rotation);
+    }
+  } else {
+    // This is the old rotation function
+    rotate(remaining_rotation);
+  }
+  
   return state_wait_for_servo_move;
 }
 
