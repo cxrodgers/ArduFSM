@@ -8,9 +8,9 @@
 #include "Params.h"
 
 
-//~ //// Globals, defined in ino.
-//~ extern long sticky_stepper_position;
-//~ extern Stepper* stimStepper;
+//// Globals, defined in ino.
+extern long sticky_stepper_position;
+extern Stepper* stimStepper;
 
 
 //~ //// Accessor methods for static variables for hardware
