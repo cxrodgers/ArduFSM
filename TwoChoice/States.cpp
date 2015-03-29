@@ -94,7 +94,7 @@ State* StateResponseWindow::loop() {
     next_state = state_error_timeout;
     results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_ERROR;
   }
-    
+  
   return next_state;
 }
 
@@ -197,12 +197,21 @@ State* StateRotateStepper2::run(unsigned long time) {
 
 //// The reward states use delay because they need to be millisecond-precise
 State* StateRewardL::run(unsigned long time) {
-
+  Serial.print(time);
+  Serial.println(" EV R_L");  
+  digitalWrite(L_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_L]);
+  digitalWrite(L_REWARD_VALVE, LOW); 
+  
   return state_post_reward_pause;
 }
 
 State* StateRewardR::run(unsigned long time) {
-
+  Serial.print(time);
+  Serial.println(" EV R_R");  
+  digitalWrite(R_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_R]);
+  digitalWrite(R_REWARD_VALVE, LOW); 
 
   return state_post_reward_pause;
 }
