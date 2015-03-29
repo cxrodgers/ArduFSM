@@ -107,6 +107,17 @@ void user_setup2() {
   // thresholds for MPR121
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
+  
+  // Set the speed of the stepper
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  
+  // initial position of the stepper
+  sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
+  
+  // linear servo setup
+  Servo* servo = get_servo();
+  servo->write(param_values[tpidx_SRV_FAR]);
+  delay(param_values[tpidx_SERVO_SETUP_T]);  
 }
 
 // Standard user_every_loop() function, run on every loop
