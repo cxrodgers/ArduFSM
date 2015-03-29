@@ -49,6 +49,25 @@ void user_setup1() {
   Serial.print(millis());
   Serial.println(" DBG begin user_setup1");
 
+  // MPR121 touch sensor setup
+  pinMode(TOUCH_IRQ, INPUT);
+  digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
+  Wire.begin();
+  
+  // output pins
+  pinMode(L_REWARD_VALVE, OUTPUT);
+  pinMode(R_REWARD_VALVE, OUTPUT);
+  pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
+  
+  // initialize the house light to ON
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  
+  // random number seed
+  randomSeed(analogRead(3));
+
+  // attach servo
+  Servo* servo = get_servo();
+  servo->attach(LINEAR_SERVO);
 }
 
 // Standard user_setup2() function, run after first communications complete.
@@ -57,7 +76,37 @@ void user_setup1() {
 void user_setup2() {
   Serial.print(millis());
   Serial.println(" DBG begin user_setup2");
-
+  
+  // Set up the stepper according to two-pin or four-pin mode
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+  { // Two-pin mode
+    pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
+    pinMode(TWOPIN_STEPPER_1, OUTPUT);
+    pinMode(TWOPIN_STEPPER_2, OUTPUT);
+    
+    // Make sure it's off    
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
+    
+    // Initialize
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+  }
+  else
+  { // Four-pin mode
+    pinMode(ENABLE_STEPPER, OUTPUT);
+    pinMode(PIN_STEPPER1, OUTPUT);
+    pinMode(PIN_STEPPER2, OUTPUT);
+    pinMode(PIN_STEPPER3, OUTPUT);
+    pinMode(PIN_STEPPER4, OUTPUT);
+    digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
+    
+    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
+  }
+  
+  // thresholds for MPR121
+  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+    param_values[tpidx_REL_THRESH]);
 }
 
 // Standard user_every_loop() function, run on every loop
