@@ -119,23 +119,32 @@ void user_setup2() {
 
 // Standard user_every_loop() function, run on every loop
 void user_every_loop(unsigned long time) {
-  // Poll touch inputs
-  static uint16_t sticky_touched = 0;
-  uint16_t touched = 0;
-  touched = pollTouchInputs();
+  // Poll touch inputs and check whether it matches the last announced
+  // value of touched.
+  static uint16_t sticky_announced_touched = 0;
+  uint16_t touched = get_touch_status(1);
   
   // announce sticky
-  if (touched != sticky_touched)
+  if (touched != sticky_announced_touched)
   {
     Serial.print(time);
     Serial.print(" TCH ");
     Serial.println(touched);
-    sticky_touched = touched;
+    sticky_announced_touched = touched;
   }   
 }
 
 // Standard user_trial_start() function, run at beginning of every trial
-// Probably want to update state timers with params_values here
 State* user_trial_start(unsigned long time) {
+  // Update state timers
+  static_cast<TimedState *>(state_error_timeout)->set_duration(
+    param_values[tpidx_ERROR_TIMEOUT]);
+  static_cast<TimedState *>(state_response_window)->set_duration(
+    param_values[tpidx_RESP_WIN_DUR]);
+  static_cast<TimedState *>(state_wait_for_servo_move)->set_duration(
+    param_values[tpidx_SRV_TRAVEL_TIME]);
+  static_cast<TimedState *>(state_post_reward_pause)->set_duration(
+    param_values[tpidx_INTER_REWARD_INTERVAL]);
+  
   return state_rotate_stepper1;
 }

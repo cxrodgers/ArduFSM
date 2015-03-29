@@ -56,7 +56,6 @@ extern State* state_post_reward_pause;
 int rotate(long n_steps);
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position);
 
-
 //// Define derived State objects
 // StateRotateStepper1 : Rotate the stepper motor in the direction defined 
 // by step_first_rotation and transition to inter_rotation_pause.
@@ -94,7 +93,6 @@ class StateRewardR : public State {
 class StateResponseWindow : public TimedState {
   protected:
     // Remember touched and rewards per trial  
-    uint16_t my_touched = 0;
     unsigned int my_rewards_this_trial = 0;
     
     // Virtual loop and finish states
@@ -105,7 +103,6 @@ class StateResponseWindow : public TimedState {
     virtual void set_licking_variables(bool &, bool &);
   
   public:
-    void update(uint16_t touched);
     StateResponseWindow(unsigned long d) : TimedState(d) { }
     int id() { return STATE_RESPONSE_WINDOW; }
 };
@@ -168,6 +165,7 @@ class StatePostRewardPause : public TimedState {
 
 //// Accessor methods for static variables like motors
 Servo* get_servo();
+uint16_t get_touch_status(bool repoll);
 
 
 #endif // __STATES_H_INCLUDED__

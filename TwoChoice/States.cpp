@@ -12,18 +12,26 @@
 extern long sticky_stepper_position;
 extern Stepper* stimStepper;
 
+
 //// Accessor methods for static variables for hardware
 Servo* get_servo() {
   static Servo *servo = new Servo;
   return servo;
 }
 
-
-//// StateResponseWindow implementation
-void StateResponseWindow::update(uint16_t touched) {
- my_touched = touched;
+// This function returns the current touched status. If repoll is True,
+// it repolls and stores the updated version. Otherwise it returns the
+// cached version. We only repoll in user_every_loop so that we can announce
+// it. During response_window, we just check the cached value.
+uint16_t get_touch_status(bool repoll) {
+  static uint16_t sticky_touched = 0;
+  if (repoll)
+    sticky_touched = pollTouchInputs();
+  return sticky_touched;
 }
 
+
+//// StateResponseWindow implementation
 // Determines whether a response has just occurred, and depending
 // on trial contingencies, will set results_values and tranisition
 // to state_reward_l, state_reward_r, state_error_timeout. If no
@@ -108,8 +116,11 @@ State* StateResponseWindow::s_finish()
 }
 
 // Gets the current licking status from the touched variable for each port
+// We don't repoll, because otherwise we wouldn't be able to announce that
+// event.
 void StateResponseWindow::set_licking_variables(
   bool &licking_l, bool &licking_r) { 
+  uint16_t my_touched = get_touch_status(0);
   licking_l = (get_touched_channel(my_touched, 0) == 1);
   licking_r = (get_touched_channel(my_touched, 1) == 1);    
 }
@@ -119,6 +130,7 @@ void StateResponseWindow::set_licking_variables(
 // Differs only in that it randomly fakes a response by randomly choosing licks
 void StateFakeResponseWindow::set_licking_variables(
   bool &licking_l, bool &licking_r) {
+  uint16_t my_touched = get_touch_status(0);    
   licking_l = (random(0, 10000) < 3);    
   licking_r = (random(0, 10000) < 3);   
 }
