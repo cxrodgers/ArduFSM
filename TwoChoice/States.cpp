@@ -8,27 +8,27 @@
 #include "Params.h"
 
 
-//// Globals, defined in ino.
-extern long sticky_stepper_position;
-extern Stepper* stimStepper;
+//~ //// Globals, defined in ino.
+//~ extern long sticky_stepper_position;
+//~ extern Stepper* stimStepper;
 
 
-//// Accessor methods for static variables for hardware
-Servo* get_servo() {
-  static Servo *servo = new Servo;
-  return servo;
-}
+//~ //// Accessor methods for static variables for hardware
+//~ Servo* get_servo() {
+  //~ static Servo *servo = new Servo;
+  //~ return servo;
+//~ }
 
-// This function returns the current touched status. If repoll is True,
-// it repolls and stores the updated version. Otherwise it returns the
-// cached version. We only repoll in user_every_loop so that we can announce
-// it. During response_window, we just check the cached value.
-uint16_t get_touch_status(bool repoll) {
-  static uint16_t sticky_touched = 0;
-  if (repoll)
-    sticky_touched = pollTouchInputs();
-  return sticky_touched;
-}
+//~ // This function returns the current touched status. If repoll is True,
+//~ // it repolls and stores the updated version. Otherwise it returns the
+//~ // cached version. We only repoll in user_every_loop so that we can announce
+//~ // it. During response_window, we just check the cached value.
+//~ uint16_t get_touch_status(bool repoll) {
+  //~ static uint16_t sticky_touched = 0;
+  //~ if (repoll)
+    //~ sticky_touched = pollTouchInputs();
+  //~ return sticky_touched;
+//~ }
 
 
 //// StateResponseWindow implementation
