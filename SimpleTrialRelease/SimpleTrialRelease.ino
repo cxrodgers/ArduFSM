@@ -46,5 +46,9 @@ void user_every_loop(unsigned long time) {
 
 // Standard user_trial_start() function, run at beginning of every trial
 State* user_trial_start(unsigned long time) {
+  // Update the length of the wait state
+  static_cast<TimedState *>(state_wait)->set_duration(
+    param_values[tpidx_ITI]);
+  
   return state_wait;
 }
