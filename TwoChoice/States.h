@@ -164,8 +164,8 @@ class StatePostRewardPause : public TimedState {
 
 
 //// Accessor methods for static variables like motors
-//~ Servo* get_servo();
-//~ uint16_t get_touch_status(bool repoll);
+Servo* get_servo();
+uint16_t get_touch_status(bool repoll);
 
 
 #endif // __STATES_H_INCLUDED__
