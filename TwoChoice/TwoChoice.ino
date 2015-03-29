@@ -67,15 +67,15 @@ void user_every_loop(unsigned long time) {
 
 // Standard user_trial_start() function, run at beginning of every trial
 State* user_trial_start(unsigned long time) {
-  //~ // Update state timers
-  //~ static_cast<TimedState *>(state_error_timeout)->set_duration(
-    //~ param_values[tpidx_ERROR_TIMEOUT]);
-  //~ static_cast<TimedState *>(state_response_window)->set_duration(
-    //~ param_values[tpidx_RESP_WIN_DUR]);
-  //~ static_cast<TimedState *>(state_wait_for_servo_move)->set_duration(
-    //~ param_values[tpidx_SRV_TRAVEL_TIME]);
-  //~ static_cast<TimedState *>(state_post_reward_pause)->set_duration(
-    //~ param_values[tpidx_INTER_REWARD_INTERVAL]);
+  // Update state timers
+  static_cast<TimedState *>(state_error_timeout)->set_duration(
+    param_values[tpidx_ERROR_TIMEOUT]);
+  static_cast<TimedState *>(state_response_window)->set_duration(
+    param_values[tpidx_RESP_WIN_DUR]);
+  static_cast<TimedState *>(state_wait_for_servo_move)->set_duration(
+    param_values[tpidx_SRV_TRAVEL_TIME]);
+  static_cast<TimedState *>(state_post_reward_pause)->set_duration(
+    param_values[tpidx_INTER_REWARD_INTERVAL]);
   
   return state_rotate_stepper1;
 }
