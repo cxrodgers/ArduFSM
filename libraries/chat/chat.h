@@ -15,7 +15,17 @@
 //// Trial speak stuff. Should probably be moved to its own file.
 #define __TRIAL_SPEAK_YES 3
 #define __TRIAL_SPEAK_NO 2
+
 #define __TRIAL_SPEAK_MUST_DEFINE 0
+
+#define __TRIAL_SPEAK_CHOICE_LEFT 1
+#define __TRIAL_SPEAK_CHOICE_RIGHT 2
+#define __TRIAL_SPEAK_CHOICE_NOGO 3
+
+#define __TRIAL_SPEAK_OUTCOME_HIT 1
+#define __TRIAL_SPEAK_OUTCOME_ERROR 2
+#define __TRIAL_SPEAK_OUTCOME_SPOIL 3
+
 
 int communications(unsigned long time);
 int handle_chat(char* received_chat,

@@ -4,9 +4,8 @@
 #include "Arduino.h"
 #include "hwconstants.h"
 #include "Stepper.h"
-
-// include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
+#include "Params.h"
 
 
 //// Globals, defined in ino.
@@ -47,9 +46,9 @@ State* StateResponseWindow::loop() {
   else if (licking_l && licking_r)
     return this;
   else if (licking_l && !licking_r)
-    current_response = LEFT;
+    current_response = __TRIAL_SPEAK_CHOICE_LEFT;
   else if (!licking_l && licking_r)
-    current_response = RIGHT;
+    current_response = __TRIAL_SPEAK_CHOICE_RIGHT;
   else
     Serial.println("ERR this should never happen");
 
@@ -58,17 +57,19 @@ State* StateResponseWindow::loop() {
     results_values[tridx_RESPONSE] = current_response;
   
   // Move to reward state, or error if TOE is set, or otherwise stay
-  if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
+  if ((current_response == __TRIAL_SPEAK_CHOICE_LEFT) && (
+      param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_LEFT))
   { // Hit on left
     next_state = state_reward_l;
     my_rewards_this_trial++;
-    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_HIT;
   }
-  else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
+  else if ((current_response == __TRIAL_SPEAK_CHOICE_RIGHT) && (
+      param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_RIGHT))
   { // Hit on right
     next_state = state_reward_r;
     my_rewards_this_trial++;
-    results_values[tridx_OUTCOME] = OUTCOME_HIT;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_HIT;
   }
   else if (param_values[tpidx_TERMINATE_ON_ERR] == __TRIAL_SPEAK_NO)
   { // Error made, TOE is false
@@ -77,7 +78,7 @@ State* StateResponseWindow::loop() {
   else
   { // Error made, TOE is true
     next_state = state_error_timeout;
-    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_ERROR;
   }
   
   return next_state;
@@ -90,8 +91,8 @@ State* StateResponseWindow::s_finish()
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
   {
-    results_values[tridx_RESPONSE] = NOGO;
-    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    results_values[tridx_RESPONSE] = __TRIAL_SPEAK_CHOICE_NOGO;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_SPOIL;
   }
   
   // Stuff that needs to happen at beginning of ITI

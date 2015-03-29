@@ -128,9 +128,9 @@ void asynch_action_reward_r()
 
 void asynch_action_reward()
 {
-  if (param_values[tpidx_REWSIDE] == LEFT)
+  if (param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_LEFT)
     asynch_action_reward_l();
-  else if (param_values[tpidx_REWSIDE] == RIGHT)
+  else if (param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_RIGHT)
     asynch_action_reward_r();
   else
     Serial.println("ERR unknown rewside");

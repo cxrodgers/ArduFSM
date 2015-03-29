@@ -29,6 +29,7 @@ State* user_trial_start()
 #include "States.h"
 #include "ArduFSM.h"
 #include "Arduino.h"
+#include "Params.h"
 
 
 //// Global variables, to be passed around between states

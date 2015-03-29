@@ -14,20 +14,8 @@
 #ifndef __STATES_H_INCLUDED__
 #define __STATES_H_INCLUDED__
 
-#include "ArduFSM.h"
-#include "Params.h"
 #include <Servo.h>
-
-
-//// Defines for commonly used things
-// Move this to TrialSpeak, and rename CHOICE_LEFT etc
-#define LEFT 1
-#define RIGHT 2
-#define NOGO 3
-
-#define OUTCOME_HIT 1
-#define OUTCOME_ERROR 2
-#define OUTCOME_SPOIL 3
+#include "ArduFSM.h"
 
 
 //// Unique state id, beginning with 10 to avoid overlap with standard states
