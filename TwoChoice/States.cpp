@@ -1,14 +1,4 @@
-/* Implementation file for declaring protocol-specific states.
-This implements a two-alternative choice task with two lick ports.
-
-Defines the following:
-* param_abbrevs, which defines the shorthand for the trial parameters
-* param_values, which define the defaults for those parameters
-* results_abbrevs, results_values, default_results_values
-* implements the state functions and state objects
-
-*/
-
+// Implementations of states used in TwoChoice
 #include "States.h"
 #include "mpr121.h"
 #include "Arduino.h"
@@ -20,60 +10,25 @@ Defines the following:
 
 //#define EXTRA_180DEG_ROT
 
-extern STATE_TYPE next_state;
-
-// These should go into some kind of Protocol.h or something
-char* param_abbrevs[N_TRIAL_PARAMS] = {
-  "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
-  "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
-  "RD_L", "RD_R", "SRVST", "PSW", "TOE",
-  "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT", "STPHAL", "HALPOS",
-  };
-long param_values[N_TRIAL_PARAMS] = {
-  1, 1, 1, 1, 3000,
-  0, 1900, 4500, 45000, 500,
-  40, 40, 1000, 1, 1,
-  6000, 20, 50, 50, 0,
-  6, 3, 0, 50
-  };
-
-// Whether to report on each trial  
-// Currently, manually match this up with Python-side
-// Later, maybe make this settable by Python, and default to all True
-// Similarly, find out which are required on each trial, and error if they're
-// not set. Currently all that are required_ET are also reported_ET.
-bool param_report_ET[N_TRIAL_PARAMS] = {
-  1, 0, 1, 1, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 1,
-  0, 0, 0, 0
-};
-  
-char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
-long results_values[N_TRIAL_RESULTS] = {0, 0};
-long default_results_values[N_TRIAL_RESULTS] = {0, 0};
-
-// Global, persistent variable to remember where the stepper is
-long sticky_stepper_position = 0;
-
-
-//// State definitions
+//// Globals, defined in ino.
+extern long sticky_stepper_position;
 extern Stepper* stimStepper;
+extern Servo linServo;
 
-
-//// StateResponseWindow
-void StateResponseWindow::update(uint16_t touched)
-{
+//// StateResponseWindow implementation
+void StateResponseWindow::update(uint16_t touched) {
  my_touched = touched;
 }
 
-void StateResponseWindow::loop()
-{
+// Determines whether a response has just occurred, and depending
+// on trial contingencies, will set results_values and tranisition
+// to state_reward_l, state_reward_r, state_error_timeout. If no
+// response given, will stay in the same state.
+State* StateResponseWindow::loop() {
   int current_response;
   bool licking_l;
   bool licking_r;
+  State* next_state = this;
   
   // get the licking state 
   // overridden in FakeResponseWindow
@@ -82,17 +37,16 @@ void StateResponseWindow::loop()
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
-    next_state = INTER_TRIAL_INTERVAL;
     flag_stop = 1;
-    return;
+    return state_finish_trial;
   }
 
   // Do nothing if both or neither are being licked.
   // Otherwise, assign current_response.
   if (!licking_l && !licking_r)
-    return;
+    return this;
   else if (licking_l && licking_r)
-    return;
+    return this;
   else if (licking_l && !licking_r)
     current_response = LEFT;
   else if (!licking_l && licking_r)
@@ -107,13 +61,13 @@ void StateResponseWindow::loop()
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
   { // Hit on left
-    next_state = REWARD_L;
+    next_state = state_reward_l;
     my_rewards_this_trial++;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
   { // Hit on right
-    next_state = REWARD_R;
+    next_state = state_reward_r;
     my_rewards_this_trial++;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
@@ -123,125 +77,74 @@ void StateResponseWindow::loop()
   }
   else
   { // Error made, TOE is true
-    next_state = ERROR;
+    next_state = state_error_timeout;
     results_values[tridx_OUTCOME] = OUTCOME_ERROR;
   }
+  
+  return next_state;
 }
 
-void StateResponseWindow::s_finish()
+// The timer is up, so set results values to spoil if nothing has happened
+// yet, and transition to state_inter_trial_interval.
+State* StateResponseWindow::s_finish()
 {
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
   {
     results_values[tridx_RESPONSE] = NOGO;
     results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
-    next_state = INTER_TRIAL_INTERVAL;
   }
+  
+  // Stuff that needs to happen at beginning of ITI
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  linServo.write(param_values[tpidx_SRV_FAR]);
+  return state_finish_trial;
 }
 
-void StateResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
-{ /* Gets the current licking status from the touched variable for each port */
+// Gets the current licking status from the touched variable for each port
+void StateResponseWindow::set_licking_variables(
+  bool &licking_l, bool &licking_r) { 
   licking_l = (get_touched_channel(my_touched, 0) == 1);
   licking_r = (get_touched_channel(my_touched, 1) == 1);    
 }
 
 
 //// StateFakeResponsewindow
-// Differs only in that it randomly fakes a response
-void StateFakeResponseWindow::set_licking_variables(bool &licking_l, bool &licking_r)
-{ /* Fakes a response by randomly choosing lick status for each */
+// Differs only in that it randomly fakes a response by randomly choosing licks
+void StateFakeResponseWindow::set_licking_variables(
+  bool &licking_l, bool &licking_r) {
   licking_l = (random(0, 10000) < 3);    
   licking_r = (random(0, 10000) < 3);   
 }
 
 
-//// Interrotation pause
-void StateInterRotationPause::s_finish()
-{
-  next_state = ROTATE_STEPPER2;
-}
-
-
 //// StateErrorTimeout
-void StateErrorTimeout::s_finish()
-{
-  next_state = INTER_TRIAL_INTERVAL;
-}
-
-void StateErrorTimeout::s_setup()
-{
+void StateErrorTimeout::s_setup() {
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   my_linServo.write(param_values[tpidx_SRV_FAR]);
 }
 
 
-//// Wait for servo move
-void StateWaitForServoMove::update(Servo linServo)
-{
+//// StateWaitForServoMove
+void StateWaitForServoMove::update(Servo linServo) {
   // Actually this belongs in the constructor.
   my_linServo = linServo;
 }
 
-void StateWaitForServoMove::s_setup()
-{
+void StateWaitForServoMove::s_setup() {
   my_linServo.write(param_values[tpidx_SRVPOS]);
-  //~ next_state = ROTATE_STEPPER1;   
 }
 
-void StateWaitForServoMove::s_finish()
-{
-  next_state = RESPONSE_WINDOW;   
-}
 
-//// Inter-trial interval
-void StateInterTrialInterval::s_setup()
-{
-  // First-time code: Report results
-  for(int i=0; i < N_TRIAL_RESULTS; i++)
-  {
-    Serial.print(time_of_last_call);
-    Serial.print(" TRLR ");
-    Serial.print(results_abbrevs[i]);
-    Serial.print(" ");
-    Serial.println(results_values[i]);
-  }
-}
-
-void StateInterTrialInterval::s_finish()
-{
-  next_state = WAIT_TO_START_TRIAL;   
-}
-
-//// Non-class states
-int state_rotate_stepper1(STATE_TYPE& next_state)
-{ /* Start rotating the stepper motor.
-    
-  The first rotation is always the same amount.
-  The second rotation later achieves the final position.
-  The house light is also turned off now.
-  */
-  //~ digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+//// StateRotateStepper1
+State* StateRotateStepper1::run(unsigned long time) {
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
-  
-  // Rotate randomly +180 or -180 to confuse the subject
-  // This should be its own state but let's keep it simple for now
-  // Could get this as a trial param
-  int steps = random(0, 2);
-
-  // convert to steps, +100 or -100
-  steps = steps * 200 - 100;
-
-  // rotate    
-  #ifdef EXTRA_180DEG_ROT
-  delay(50); // between 1st and intermediate
-  rotate(steps);      
-  #endif
-    
-  next_state = INTER_ROTATION_PAUSE;
-  return 0;    
+  return state_inter_rotation_pause;
 }
 
-int state_rotate_stepper2(STATE_TYPE& next_state)
-{ /* The second rotation goes to the final position */
+
+//// StateRotateStepper2
+State* StateRotateStepper2::run(unsigned long time) {
   // Calculate how much more we need to rotate
   long remaining_rotation = param_values[tpidx_STPPOS] - 
     sticky_stepper_position;
@@ -260,30 +163,48 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
     step_size = -1;
     
   // Perform the rotation
-  if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
-  {
+  if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES) {
     if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
       actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
     else
       actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
-    if (actual_steps != remaining_rotation)
-    {
+    if (actual_steps != remaining_rotation) {
       Serial.print(millis());
       Serial.print(" DBG STPERR ");
       Serial.println(actual_steps - remaining_rotation);
     }
-  }
-  else
-  {
+  } else {
     // This is the old rotation function
     rotate(remaining_rotation);
   }
   
-  next_state = MOVE_SERVO;
-  return 0;    
+  return state_wait_for_servo_move;
 }
-  
 
+
+//// The reward states use delay because they need to be millisecond-precise
+State* StateRewardL::run(unsigned long time) {
+  Serial.print(time);
+  Serial.println(" EV R_L");  
+  digitalWrite(L_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_L]);
+  digitalWrite(L_REWARD_VALVE, LOW); 
+  
+  return state_post_reward_pause;
+}
+
+State* StateRewardR::run(unsigned long time) {
+  Serial.print(time);
+  Serial.println(" EV R_R");  
+  digitalWrite(R_REWARD_VALVE, HIGH);
+  delay(param_values[tpidx_REWARD_DUR_R]);
+  digitalWrite(R_REWARD_VALVE, LOW); 
+
+  return state_post_reward_pause;
+}
+
+
+//// Utility functions
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
 { /* Rotate to a position where the Hall effect sensor detects a peak.
   
@@ -381,26 +302,21 @@ int rotate(long n_steps)
   return 0;
 }
 
-//// Post-reward state
-void StatePostRewardPause::s_finish()
-{
-  next_state = RESPONSE_WINDOW;
-}
 
-// The reward states use delay because they need to be millisecond-precise
-int state_reward_l(STATE_TYPE& next_state)
-{
-  digitalWrite(L_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_L]);
-  digitalWrite(L_REWARD_VALVE, LOW); 
-  next_state = POST_REWARD_PAUSE;
-  return 0;  
-}
-int state_reward_r(STATE_TYPE& next_state)
-{
-  digitalWrite(R_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_R]);
-  digitalWrite(R_REWARD_VALVE, LOW); 
-  next_state = POST_REWARD_PAUSE;
-  return 0;  
-}
+//// Instantiate one of each state
+State* state_rotate_stepper1 = new StateRotateStepper1();
+State* state_rotate_stepper2 = new StateRotateStepper2();
+State* state_reward_l = new StateRewardL();
+State* state_reward_r = new StateRewardR();
+
+State* state_response_window = new StateResponseWindow(
+  param_values[tpidx_RESP_WIN_DUR]);
+State* state_inter_rotation_pause = new StateInterRotationPause(50);
+State* state_wait_for_servo_move = new StateWaitForServoMove(
+  param_values[tpidx_SRV_TRAVEL_TIME]);
+State* state_error_timeout = new StateErrorTimeout(
+  param_values[tpidx_ERROR_TIMEOUT], linServo);
+
+State* state_post_reward_pause = new StatePostRewardPause(
+  param_values[tpidx_INTER_REWARD_INTERVAL]);
+
