@@ -8,9 +8,7 @@
 // 2) Define a new macro, STATE_ID_DO_SOMETHING, with a unique integer label,
 //    and make that the value of "id".
 // 3) Instantiate a single copy of StateDoSomething in States.cpp
-// 4) Put an "extern" hook to that copy in States.h, so that the ino file
-//    can use it. I guess this is only necessary for states that will be
-//    referenced by user_start_trial() or similar.
+// 4) Put an "extern" hook to that copy in States.h.
 
 
 #ifndef __STATES_H_INCLUDED__

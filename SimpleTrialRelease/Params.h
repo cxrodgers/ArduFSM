@@ -9,6 +9,16 @@
 //
 // No param can have a value of 0, because the conversion function returns
 // 0 for unparseable data. So, 0 is the error value.
+//
+// To add a new param:
+// 1) In Params.h, increment the value of N_TRIAL_PARAMS, and add a new
+//    macro tpidx_PARAM_NAME with a value equal to N_TRIAL_PARAMS - 1.
+// 2) In Params.cpp, add an abbreviated name to the end of param_abbrevs,
+//    a default param value at the end of param_values, and a boolean to
+//    the end of param_report_ET indicating whether the param should be
+//    reported each trial.
+// A similar procedure applies to adding a new result, except with
+// N_TRIAL_RESULTS, results_abbrevs, results_values, and default_results_values.
 
 #ifndef SIMPLETRIALRELEASE_PARAMS_H_
 #define SIMPLETRIALRELEASE_PARAMS_H_

@@ -8,7 +8,6 @@
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
-//#define EXTRA_180DEG_ROT
 
 //// Globals, defined in ino.
 extern long sticky_stepper_position;
@@ -308,7 +307,6 @@ State* state_rotate_stepper1 = new StateRotateStepper1();
 State* state_rotate_stepper2 = new StateRotateStepper2();
 State* state_reward_l = new StateRewardL();
 State* state_reward_r = new StateRewardR();
-
 State* state_response_window = new StateResponseWindow(
   param_values[tpidx_RESP_WIN_DUR]);
 State* state_inter_rotation_pause = new StateInterRotationPause(50);
@@ -316,7 +314,6 @@ State* state_wait_for_servo_move = new StateWaitForServoMove(
   param_values[tpidx_SRV_TRAVEL_TIME]);
 State* state_error_timeout = new StateErrorTimeout(
   param_values[tpidx_ERROR_TIMEOUT], linServo);
-
 State* state_post_reward_pause = new StatePostRewardPause(
   param_values[tpidx_INTER_REWARD_INTERVAL]);
 
