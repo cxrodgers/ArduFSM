@@ -122,7 +122,19 @@ void user_setup2() {
 
 // Standard user_every_loop() function, run on every loop
 void user_every_loop(unsigned long time) {
-
+  // Poll touch inputs and check whether it matches the last announced
+  // value of touched.
+  static uint16_t sticky_announced_touched = 0;
+  uint16_t touched = get_touch_status(1);
+  
+  // announce sticky
+  if (touched != sticky_announced_touched)
+  {
+    Serial.print(time);
+    Serial.print(" TCH ");
+    Serial.println(touched);
+    sticky_announced_touched = touched;
+  }   
 }
 
 // Standard user_trial_start() function, run at beginning of every trial
