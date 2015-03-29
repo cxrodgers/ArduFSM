@@ -66,9 +66,9 @@ class TimedState : public State
     bool flag_stop = 0;
   
     // virtual functions, to be determined by the derived class
-    virtual void s_setup() {};
-    virtual State* loop() {};
-    virtual State* s_finish() {};
+    virtual void s_setup() { }
+    virtual State* loop() { return this; }
+    virtual State* s_finish() { return this; }
   
   public:
     TimedState(long d) : duration(d) { 
