@@ -6,6 +6,9 @@
 // value, as well as the total number of parameters and results.
 // The values and text abbreviation used to send over the serial port
 // are defined in Params.cpp.
+//
+// No param can have a value of 0, because the conversion function returns
+// 0 for unparseable data. So, 0 is the error value.
 
 #ifndef SIMPLETRIALRELEASE_PARAMS_H_
 #define SIMPLETRIALRELEASE_PARAMS_H_
@@ -18,7 +21,7 @@
 #define N_TRIAL_RESULTS 1
 #define tridx_RESPONSE 0
 
-// Provide hooks to these parameters and results so that files that include
+//// Provide hooks to these parameters and results so that files that include
 // this will be able to access them.
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];

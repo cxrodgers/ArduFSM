@@ -25,14 +25,14 @@ Additionally, you can provide the following:
 #include "States.h"
 #include "ArduFSM.h"
 
-// Standared user_setup1() function, run before first communications.
+// Standard user_setup1() function, run before first communications.
 // This simple protocol doesn't require anything here.
 void user_setup1() {  
   Serial.print(millis());
   Serial.println(" DBG user_setup1");
 }
 
-// Standard user_setup1() function, run after first communications complete.
+// Standard user_setup2() function, run after first communications complete.
 // This simple protocol doesn't require anything here.
 void user_setup2() {  
   Serial.print(millis());
@@ -40,7 +40,7 @@ void user_setup2() {
 }
 
 // Standard user_every_loop() function, run on every loop
-void user_every_loop() {
+void user_every_loop(unsigned long time) {
   
 }
 

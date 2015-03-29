@@ -7,7 +7,7 @@
 // These functions are defined in the protocol-specific *.ino file
 extern void user_setup1();
 extern void user_setup2();
-extern void user_every_loop();
+extern void user_every_loop(unsigned long time);
 extern State* user_trial_start(unsigned long time);
 
 // Global so that we know whether the trial has started
@@ -221,7 +221,7 @@ void loop()
   status = communications(time);
   
   // User-defined every-loop code
-  user_every_loop();
+  user_every_loop(time);
   
   // State
   next_state = current_state->run(time);

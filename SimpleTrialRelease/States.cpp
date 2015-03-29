@@ -10,5 +10,5 @@ State* StateWait::s_finish() {
 }
 
 
-//// Instantiate the states
+//// Instantiate one of each state
 State* state_wait = new StateWait(param_values[tpidx_ITI]);
