@@ -208,6 +208,104 @@ State* StateRewardR::run(unsigned long time) {
 }
 
 
+//// Utility functions
+int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
+{ /* Rotate to a position where the Hall effect sensor detects a peak.
+  
+  step_size : typically 1 or -1, the number of steps to use between checks
+  positive_peak : whether to stop when a positive or negative peak detected
+  set_position : will set "sticky_stepper_position" to this afterwards
+  */
+  bool keep_going = 1;
+  int sensor = analogRead(__HWCONSTANTS_H_HALL);
+  int prev_sensor = sensor;
+  int actual_steps = 0;
+  
+  // Enable the stepper according to the type of setup
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+  else
+    digitalWrite(ENABLE_STEPPER, HIGH);
+  
+  // Sometimes the stepper spins like crazy without a delay here
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
+  
+  // iterate till target found
+  while (keep_going)
+  {
+    // BLOCKING CALL //
+    // Replace this with more iterations of smaller steps
+    stimStepper->step(step_size);
+    actual_steps += step_size;
+    
+    // update sensor and store previous value
+    prev_sensor = sensor;
+    sensor = analogRead(__HWCONSTANTS_H_HALL);
+
+    // test if peak found
+    if (positive_peak && (sensor > 520) && ((sensor - prev_sensor) < -2))
+    {
+        // Positive peak: sensor is high, but decreasing
+        keep_going = 0;
+    }
+    else if (!positive_peak && (sensor < 504) && ((sensor - prev_sensor) > 2))
+    {
+        // Negative peak: sensor is low, but increasing
+        keep_going = 0;
+    }
+  }
+  
+  // update to specified position
+  sticky_stepper_position = set_position;
+  
+  // disable
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+  else
+    digitalWrite(ENABLE_STEPPER, LOW);    
+  
+  return actual_steps;
+}
+
+int rotate(long n_steps)
+{ /* Low-level rotation function 
+  
+  I think positive n_steps means CCW and negative n_steps means CW. It does
+  on L2, at least.
+  */
+
+  // Enable the stepper according to the type of setup
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+  else
+    digitalWrite(ENABLE_STEPPER, HIGH);
+
+  // Sometimes the stepper spins like crazy without a delay here
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
+  
+  // BLOCKING CALL //
+  // Replace this with more iterations of smaller steps
+  stimStepper->step(n_steps);
+
+  // This delay doesn't seem necessary
+  //delay(50);
+  
+  // disable
+  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+  else
+    digitalWrite(ENABLE_STEPPER, LOW);
+  
+  // update sticky_stepper_position
+  sticky_stepper_position = sticky_stepper_position + n_steps;
+  
+  // keep it in the range [0, 200)
+  sticky_stepper_position = (sticky_stepper_position + 200) % 200;
+  
+  
+  return 0;
+}
+
 
 //// Instantiate one of each state
 State* state_rotate_stepper1 = new StateRotateStepper1();
