@@ -3,7 +3,6 @@
 #include "ArduFSM.h"
 #include "Arduino.h"
 #include "chat.h"
-//~ #include "Params.h" // But we don't want to have to include this
 
 // These functions are defined in the protocol-specific *.ino file
 extern void user_setup1();
@@ -15,12 +14,8 @@ extern State* user_trial_start(unsigned long time);
 // Needed by chat
 bool flag_start_trial = 0;
 
-//// Ugly
-// We need to get all of the params and results, but can't include "Params.h"
-// (since this depends on which protocol is used), and can't extern them
-// for some reason. Instead, use the getter methods, and rename the results
-// so that we don't have a name collision. Maybe should use the getter method
-// only inside the function where it is needed?
+
+//// Getter methods for the stuff in Params.h
 extern long* get_param_values();
 extern long* get_results_values();
 extern char** get_results_abbrevs();
@@ -29,15 +24,6 @@ extern int get_n_trial_params();
 extern int get_n_trial_results();
 extern bool* get_param_report_ET();
 extern long* get_default_results_values();
-
-long* param_values2 = get_param_values();
-long* results_values2 = get_results_values();
-int N_TRIAL_PARAMS2 = get_n_trial_params();
-int N_TRIAL_RESULTS2 = get_n_trial_results();
-char** param_abbrevs2 = get_param_abbrevs();
-char** results_abbrevs2 = get_results_abbrevs();
-bool* param_report_ET2 = get_param_report_ET();
-long* default_results_values2 = get_default_results_values();
 
 
 // Instantiate the standard states
@@ -117,24 +103,34 @@ State* StateWaitToStartTrial::run(unsigned long time)
 // Sets results to default values
 // Calls user_trial_start
 State* StateTrialStart::run(unsigned long time)
-{
+{ 
+  // Get the values from Params.h
+  long* param_values = get_param_values();
+  long* results_values = get_results_values();
+  int N_TRIAL_PARAMS = get_n_trial_params();
+  int N_TRIAL_RESULTS = get_n_trial_results();
+  char** param_abbrevs = get_param_abbrevs();
+  char** results_abbrevs = get_results_abbrevs();
+  bool* param_report_ET = get_param_report_ET();
+  long* default_results_values = get_default_results_values();  
+  
   // Set up the trial based on received trial parameters
   Serial.print(time);
   Serial.println(" TRL_START");
-  for(int i=0; i < N_TRIAL_PARAMS2; i++) {
-    if (param_report_ET2[i]) {
+  for(int i=0; i < N_TRIAL_PARAMS; i++) {
+    if (param_report_ET[i]) {
       // Buffered write would be nice here
       Serial.print(time);
       Serial.print(" TRLP ");
-      Serial.print(param_abbrevs2[i]);
+      Serial.print(param_abbrevs[i]);
       Serial.print(" ");
-      Serial.println(param_values2[i]);
+      Serial.println(param_values[i]);
     }
   }
 
   // Set up trial_results to defaults
-  for(int i=0; i < N_TRIAL_RESULTS2; i++) {
-    results_values2[i] = default_results_values2[i];
+  for(int i=0; i < N_TRIAL_RESULTS; i++) {
+    results_values[i] = default_results_values[i];
   }      
   
   // Run user-specific trial start code, including setting next state
@@ -145,13 +141,18 @@ State* StateTrialStart::run(unsigned long time)
 //// StateFinishTrial methods
 // Announces results on setup
 void StateFinishTrial::s_setup() {
+  // Get the values from Params.h
+  long* results_values = get_results_values();
+  int N_TRIAL_RESULTS = get_n_trial_results();
+  char** results_abbrevs = get_results_abbrevs();
+  
   // Announce results
-  for(int i=0; i < N_TRIAL_RESULTS2; i++) {
+  for(int i=0; i < N_TRIAL_RESULTS; i++) {
     Serial.print(time_of_last_call);
     Serial.print(" TRLR ");
-    Serial.print(results_abbrevs2[i]);
+    Serial.print(results_abbrevs[i]);
     Serial.print(" ");
-    Serial.println(results_values2[i]);
+    Serial.println(results_values[i]);
   }
 }
 
