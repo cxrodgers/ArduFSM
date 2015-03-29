@@ -74,9 +74,6 @@ void user_setup1() {
 // Sets up two-pin or four-pin stepper, sets thresholds for MPR121,
 // moves servo to initial position.
 void user_setup2() {
-  Serial.print(millis());
-  Serial.println(" DBG begin user_setup2");
-  
   // Set up the stepper according to two-pin or four-pin mode
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
   { // Two-pin mode
@@ -107,7 +104,7 @@ void user_setup2() {
   // thresholds for MPR121
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
-  
+
   // Set the speed of the stepper
   stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
   
@@ -117,7 +114,7 @@ void user_setup2() {
   // linear servo setup
   Servo* servo = get_servo();
   servo->write(param_values[tpidx_SRV_FAR]);
-  delay(param_values[tpidx_SERVO_SETUP_T]);  
+  delay(param_values[tpidx_SERVO_SETUP_T]);
 }
 
 // Standard user_every_loop() function, run on every loop
