@@ -30,6 +30,9 @@ from ArduFSM import mainloop
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
+if rigname == 'TwoChoice':
+    # we're running in the github directory
+    rigname = 'L0'
 serial_port = mainloop.get_serial_port(rigname)
 #~ serial_port = '/dev/ttyACM1'
 
