@@ -1,3 +1,5 @@
+// Like ArduFSM.cpp
+
 #include "a.h"
 extern const int ARRAY_LEN;
 

@@ -1,3 +1,5 @@
+// Like ArduFSM.h
+
 #ifndef _a_h
 #define _a_h
 
