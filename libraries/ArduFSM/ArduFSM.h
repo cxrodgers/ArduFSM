@@ -42,7 +42,7 @@ class State
     
     // Every State defines a run method, which returns a pointer to the 
     // next State.
-    virtual State* run(unsigned long time);
+    virtual State* run(unsigned long time) = 0;
     
 };
 
@@ -68,7 +68,7 @@ class TimedState : public State
     // virtual functions, to be determined by the derived class
     virtual void s_setup() { }
     virtual State* loop() { return this; }
-    virtual State* s_finish() { return this; }
+    virtual State* s_finish() = 0;
   
   public:
     TimedState(long d) : duration(d) { 
