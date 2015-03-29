@@ -92,7 +92,7 @@ class StateRewardR : public State {
 // StateResponseWindow : waits for response
 class StateResponseWindow : public TimedState {
   protected:
-    // Remember touched and rewards per trial  
+    // Keep track of rewards delivered so we can transition once we reach MRT
     unsigned int my_rewards_this_trial = 0;
     
     // Virtual loop and finish states
