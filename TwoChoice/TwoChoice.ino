@@ -36,10 +36,10 @@ State* user_trial_start()
 // file, and also in multiple different states.
 
 // initial position of stim arm .. user must ensure this is correct
-//~ long sticky_stepper_position = 0;
+long sticky_stepper_position = 0;
 
 // Stepper. We won't assign till we know if it's 2pin or 4pin
-//~ Stepper *stimStepper = 0;
+Stepper *stimStepper = 0;
 
 
 // Standard user_setup1 function
