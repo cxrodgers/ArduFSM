@@ -42,7 +42,59 @@ State* StateResponseWindow::loop() {
   bool licking_r;
   State* next_state = this;
   
+  // get the licking state 
+  // overridden in FakeResponseWindow
+  set_licking_variables(licking_l, licking_r);
   
+  // transition if max rewards reached
+  if (my_rewards_this_trial >= param_values[tpidx_MRT])
+  {
+    flag_stop = 1;
+    return state_finish_trial;
+  }
+
+  // Do nothing if both or neither are being licked.
+  // Otherwise, assign current_response.
+  if (!licking_l && !licking_r)
+    return this;
+  else if (licking_l && licking_r)
+    return this;
+  else if (licking_l && !licking_r)
+    current_response = __TRIAL_SPEAK_CHOICE_LEFT;
+  else if (!licking_l && licking_r)
+    current_response = __TRIAL_SPEAK_CHOICE_RIGHT;
+  else
+    Serial.println("ERR this should never happen");
+
+  // Only assign result if this is the first response
+  if (results_values[tridx_RESPONSE] == 0)
+    results_values[tridx_RESPONSE] = current_response;
+  
+  // Move to reward state, or error if TOE is set, or otherwise stay
+  if ((current_response == __TRIAL_SPEAK_CHOICE_LEFT) && (
+      param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_LEFT))
+  { // Hit on left
+    next_state = state_reward_l;
+    my_rewards_this_trial++;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_HIT;
+  }
+  else if ((current_response == __TRIAL_SPEAK_CHOICE_RIGHT) && (
+      param_values[tpidx_REWSIDE] == __TRIAL_SPEAK_CHOICE_RIGHT))
+  { // Hit on right
+    next_state = state_reward_r;
+    my_rewards_this_trial++;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_HIT;
+  }
+  else if (param_values[tpidx_TERMINATE_ON_ERR] == __TRIAL_SPEAK_NO)
+  { // Error made, TOE is false
+    // Decide how to deal with this non-TOE case
+  }
+  else
+  { // Error made, TOE is true
+    next_state = state_error_timeout;
+    results_values[tridx_OUTCOME] = __TRIAL_SPEAK_OUTCOME_ERROR;
+  }
+    
   return next_state;
 }
 
