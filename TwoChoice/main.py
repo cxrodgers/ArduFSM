@@ -39,6 +39,8 @@ serial_port = mainloop.get_serial_port(rigname)
 ## Get params
 params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
+params_table.loc['RWIN', 'init_val'] = 1000
+params_table.loc['SRVTT', 'init_val'] = 1000
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
