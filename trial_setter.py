@@ -79,6 +79,13 @@ class TrialSetter:
         
         Releases trials as necessary by parsing splines and calling scheduler
         """
+        ## Sanity check
+        if len(logfile_lines) > 0 and not (logfile_lines[0].
+            strip().endswith("DBG begin setup")):
+            raise ValueError(
+                "malformed logfile line 0: %s\nTry re-uploading the protocol."
+                % logfile_lines[0])
+        
         ## Initialization check
         # Try to send initial params
         if not self.initial_params_sent:
