@@ -87,6 +87,10 @@ def parse_lines_into_df(lines):
     In trial speak, each line has the same format: the time in milliseconds,
     space, a string command, space, an optional argument. This function parses
     each line into those three components and returns as a dataframe.
+    
+    Mal-formed lines are silently ignored. If there are no well-formed lines,
+    a DataFrame of length 0 is returned. In any case, the columns are
+    'time' (int), 'command' (object), 'argument' (object)
     """
     # Split each line
     rec_l = []
@@ -105,7 +109,12 @@ def parse_lines_into_df(lines):
         rec_l.append(sp_line)
     
     # DataFrame it and convert string times to integer
-    df = pandas.DataFrame(rec_l, columns=['time', 'command', 'argument'])
+    if len(rec_l) == 0:
+        # Make an empty one
+        df = pandas.DataFrame(np.zeros((0, 3)).astype(np.object), 
+            columns=['time', 'command', 'argument'])
+    else:
+        df = pandas.DataFrame(rec_l, columns=['time', 'command', 'argument'])
     df['time'] = df['time'].astype(np.int)
     return df
 
@@ -487,6 +496,11 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     if len(pldf) == 0:
         return pandas.DataFrame(np.zeros((0, len(always_insert))),
             columns=always_insert)
+    
+    # Error check, because get_trial_parameters2 et al assumes well-formed
+    # lines
+    if len(logfile_lines) != len(pldf):
+        raise ValueError("malformed lines: %r \n..." % logfile_lines[:5])
 
     # Find the boundaries between trials in logfile_lines
     trl_start_idxs = my.pick_rows(pldf, 
