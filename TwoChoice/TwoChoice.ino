@@ -765,6 +765,8 @@ void setup()
   user_setup2();
 }
 
+State* current_state = state_wait_to_start_trial;
+State* next_state = 0;
 
 //// Loop function
 void loop()
@@ -775,8 +777,8 @@ void loop()
   
   // Current state variable, persistent across loops
   // The first time through, we want to initialize to wait_to_start_trial
-  static State* current_state = state_wait_to_start_trial;
-  static State* next_state = state_wait_to_start_trial;
+  //~ State* current_state = state_wait_to_start_trial;
+  //~ State* next_state = state_wait_to_start_trial;
   
   // misc
   int status = 1;
@@ -788,7 +790,15 @@ void loop()
   user_every_loop(time);
   
   // State
+  if (current_state == 0) {
+    Serial.println("ERRRRRRRRRRRRRRRRRRRRRRRRR");
+    delay(1000);
+  }  
   next_state = current_state->run(time);
+  if (next_state == 0) {
+    Serial.println("ERRRRRRRRRRRRRRRRRRRRRRRRR");
+    delay(1000);
+  }
   
   //// Update the state variable
   if (next_state != current_state)
