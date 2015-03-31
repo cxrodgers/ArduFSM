@@ -178,7 +178,7 @@ class StatePostRewardPause : public TimedState {
 
 
 //// Accessor methods for static variables like motors
-Servo* get_servo();
+//Servo* get_servo();
 uint16_t get_touch_status(bool repoll);
 
 //////
@@ -209,11 +209,11 @@ State* state_post_reward_pause = new StatePostRewardPause(
 // Implementations of states used in TwoChoice
 
 //// Accessor methods for static variables for hardware
-Servo *servo = new Servo;
-Servo* get_servo() {
-  //static Servo *servo = new Servo;
-  return servo;
-}
+Servo servo;
+//~ Servo* get_servo() {
+  //~ //static Servo *servo = new Servo;
+  //~ return servo;
+//~ }
 
 // This function returns the current touched status. If repoll is True,
 // it repolls and stores the updated version. Otherwise it returns the
@@ -307,7 +307,7 @@ State* StateResponseWindow::s_finish()
   
   // Stuff that needs to happen at beginning of ITI
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  get_servo()->write(param_values[tpidx_SRV_FAR]);
+  servo.write(param_values[tpidx_SRV_FAR]);
   return state_finish_trial;
 }
 
@@ -347,7 +347,7 @@ State* StatePostRewardPause::s_finish() {
 //// StateErrorTimeout
 void StateErrorTimeout::s_setup() {
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  get_servo()->write(param_values[tpidx_SRV_FAR]);
+  servo.write(param_values[tpidx_SRV_FAR]);
 }
 
 State* StateErrorTimeout::s_finish() {
@@ -356,7 +356,7 @@ State* StateErrorTimeout::s_finish() {
 
 //// StateWaitForServoMove
 void StateWaitForServoMove::s_setup() {
-  get_servo()->write(param_values[tpidx_SRVPOS]);
+  servo.write(param_values[tpidx_SRVPOS]);
 }
 
 State* StateWaitForServoMove::s_finish() {
@@ -570,8 +570,8 @@ void user_setup1() {
   randomSeed(analogRead(3));
 
   // attach servo
-  Servo* servo = get_servo();
-  servo->attach(LINEAR_SERVO);
+  //Servo* servo = get_servo();
+  servo.attach(LINEAR_SERVO);
 }
 
 // Standard user_setup2() function, run after first communications complete.
@@ -616,8 +616,8 @@ void user_setup2() {
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
   
   // linear servo setup
-  Servo* servo = get_servo();
-  servo->write(param_values[tpidx_SRV_FAR]);
+  //Servo* servo = get_servo();
+  servo.write(param_values[tpidx_SRV_FAR]);
   delay(param_values[tpidx_SERVO_SETUP_T]);
 }
 
