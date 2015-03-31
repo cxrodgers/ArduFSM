@@ -46,6 +46,51 @@ Stepper *stimStepper = 0;
 
 
 
+//////// PARAMS H
+
+
+// Params
+#define N_TRIAL_PARAMS 24
+#define tpidx_STPPOS 0 // reqd
+#define tpidx_MRT 1 // latch
+#define tpidx_REWSIDE 2 // reqd
+#define tpidx_SRVPOS 3 //reqd
+#define tpidx_ITI 4 // init-usually
+#define tpidx_2PSTP 5 // init-only
+#define tpidx_SRV_FAR 6 // init-usually
+#define tpidx_SRV_TRAVEL_TIME 7 // init-usually
+#define tpidx_RESP_WIN_DUR 8 // init-usually
+#define tpidx_INTER_REWARD_INTERVAL 9 // init-usually
+#define tpidx_REWARD_DUR_L 10 // init-usually
+#define tpidx_REWARD_DUR_R 11 // init-usually
+#define tpidx_SERVO_SETUP_T 12 // init-only
+#define tpidx_PRE_SERVO_WAIT 13 // init-usually
+#define tpidx_TERMINATE_ON_ERR 14 // latched
+#define tpidx_ERROR_TIMEOUT 15 // latched
+#define tpidx_STEP_SPEED 16 // init-only
+#define tpidx_STEP_FIRST_ROTATION 17 // init-usually
+#define tpidx_STEP_INITIAL_POS 18 // init-only
+#define tpidx_IS_RANDOM 19 // reqd
+#define tpidx_TOU_THRESH 20 // init-only
+#define tpidx_REL_THRESH 21 // init-only
+#define tpidx_STP_HALL 22
+#define tpidx_STP_POSITIVE_STPPOS 23 
+
+// Results
+#define N_TRIAL_RESULTS 2
+#define tridx_RESPONSE 0
+#define tridx_OUTCOME 1
+
+
+////////
+
+
+
+
+
+
+
+
 /////// STATES H
 
 
@@ -185,7 +230,81 @@ uint16_t get_touch_status(bool repoll);
 //////
 
 
+///// PARAMS CPP
 
+
+char* param_abbrevs[N_TRIAL_PARAMS] = {
+  "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
+  "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
+  "RD_L", "RD_R", "SRVST", "PSW", "TOE",
+  "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
+  "TOUT", "RELT", "STPHAL", "HALPOS",
+  };
+
+long param_values[N_TRIAL_PARAMS] = {
+  1, 1, 1, 1, 3000,
+  0, 1900, 4500, 45000, 500,
+  40, 40, 1000, 1, 1,
+  6000, 20, 50, 50, 0,
+  6, 3, 0, 50
+  };
+
+// Whether to report on each trial  
+// Currently, manually match this up with Python-side
+// Later, maybe make this settable by Python, and default to all True
+// Similarly, find out which are required on each trial, and error if they're
+// not set. Currently all that are required_ET are also reported_ET.
+bool param_report_ET[N_TRIAL_PARAMS] = {
+  1, 0, 1, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 0
+};
+
+//// Results
+char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
+long results_values[N_TRIAL_RESULTS] = {0, 0};
+long default_results_values[N_TRIAL_RESULTS] = {0, 0};
+
+
+
+//// Boilerplate getter functions
+// These are needed by ArduFSM library
+// Can we move them into a separate file since this will not change?  
+long* get_param_values() {
+  return param_values;
+}
+
+long* get_results_values() {
+  return results_values;
+}
+
+char** get_results_abbrevs() {
+  return results_abbrevs;
+}
+
+char** get_param_abbrevs() {
+  return param_abbrevs;
+}
+
+int get_n_trial_params() {
+  return N_TRIAL_PARAMS;
+}
+
+int get_n_trial_results() {
+  return N_TRIAL_RESULTS;
+}
+
+bool* get_param_report_ET() {
+  return param_report_ET;
+}
+
+long* get_default_results_values() {
+  return default_results_values;
+}
+
+/////// END PARAMS CPP
 
 
 

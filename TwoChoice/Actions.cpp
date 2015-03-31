@@ -3,7 +3,7 @@
 #include "Arduino.h"
 //#include "States.h"
 #include "chat.h"
-#include "Params.h"
+//#include "Params.h"
 #include "hwconstants.h"
 #include "mpr121.h"
 
