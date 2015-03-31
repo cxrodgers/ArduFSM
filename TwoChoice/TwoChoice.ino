@@ -785,6 +785,7 @@ void loop()
   
   // Run communications
   status = communications(time);
+  char buffer[30];
   
   // User-defined every-loop code
   user_every_loop(time);
@@ -794,11 +795,26 @@ void loop()
     Serial.println("ERRRRRRRRRRRRRRRRRRRRRRRRR");
     delay(1000);
   }  
+  
+  sprintf(buffer, "%p", current_state);
+  Serial.print("0 DBG CS ");
+  Serial.println(buffer);
+
+  sprintf(buffer, "%p", state_response_window);
+  Serial.print("0 DBG SRS1 ");
+  Serial.println(buffer);
+
+  
   next_state = current_state->run(time);
   if (next_state == 0) {
     Serial.println("ERRRRRRRRRRRRRRRRRRRRRRRRR");
     delay(1000);
   }
+  
+  sprintf(buffer, "%p", next_state);
+  Serial.print("0 DBG NS ");
+  Serial.println(buffer);
+  delay(500);
   
   //// Update the state variable
   if (next_state != current_state)
