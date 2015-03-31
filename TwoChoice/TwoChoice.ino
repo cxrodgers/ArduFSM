@@ -209,8 +209,9 @@ State* state_post_reward_pause = new StatePostRewardPause(
 // Implementations of states used in TwoChoice
 
 //// Accessor methods for static variables for hardware
+Servo *servo = new Servo;
 Servo* get_servo() {
-  static Servo *servo = new Servo;
+  //static Servo *servo = new Servo;
   return servo;
 }
 
