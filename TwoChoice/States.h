@@ -120,7 +120,7 @@ class StateFakeResponseWindow : public StateResponseWindow {
 // transitions to state_rotate_stepper2 when done.
 class StateInterRotationPause : public TimedState {
   protected:
-    State* s_finish() { return state_rotate_stepper2; }
+    State* s_finish();
   
   public:
     StateInterRotationPause(unsigned long d) : TimedState(d) { }
@@ -132,7 +132,7 @@ class StateInterRotationPause : public TimedState {
 class StateErrorTimeout : public TimedState {
   protected:
     void s_setup();
-    State* s_finish() { return state_finish_trial; }
+    State* s_finish();
   
   public:
     StateErrorTimeout(unsigned long d) : TimedState(d) { };
@@ -144,7 +144,7 @@ class StateErrorTimeout : public TimedState {
 class StateWaitForServoMove : public TimedState {
   protected:
     void s_setup();
-    State* s_finish() { return state_response_window; }
+    State* s_finish();
   
   public:
     StateWaitForServoMove(unsigned long d) : TimedState(d) { };
@@ -155,7 +155,7 @@ class StateWaitForServoMove : public TimedState {
 // state_response_window.
 class StatePostRewardPause : public TimedState {
   protected:
-    State* s_finish() { return state_response_window; }
+    State* s_finish();
   
   public:
     StatePostRewardPause(unsigned long d) : TimedState(d) { };

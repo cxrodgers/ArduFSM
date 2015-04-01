@@ -142,10 +142,18 @@ void StateErrorTimeout::s_setup() {
   get_servo()->write(param_values[tpidx_SRV_FAR]);
 }
 
+State* StateErrorTimeout::s_finish() {
+  return state_finish_trial;
+}
+
 
 //// StateWaitForServoMove
 void StateWaitForServoMove::s_setup() {
   get_servo()->write(param_values[tpidx_SRVPOS]);
+}
+
+State* StateWaitForServoMove::s_finish() {
+  return state_response_window;
 }
 
 
@@ -153,6 +161,12 @@ void StateWaitForServoMove::s_setup() {
 State* StateRotateStepper1::run(unsigned long time) {
   rotate(param_values[tpidx_STEP_FIRST_ROTATION]);
   return state_inter_rotation_pause;
+}
+
+
+//// StateInterRotationPause
+State* StateInterRotationPause::s_finish() {
+  return state_rotate_stepper2;
 }
 
 
@@ -216,6 +230,11 @@ State* StateRewardR::run(unsigned long time) {
   return state_post_reward_pause;
 }
 
+
+//// StatePostRewardPause
+State* StatePostRewardPause::s_finish() {
+  return state_response_window;
+}
 
 //// Utility functions
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
