@@ -24,8 +24,14 @@ Additionally, you can provide the following:
 #include "chat.h"
 #include "States.h"
 #include "ArduFSM.h"
+#include "Stepper.h"
+#include "Servo.h"
 #include "mpr121.h"
 #include <Wire.h>
+#include "hwconstants.h"
+
+Stepper *stimStepper = 0;
+Servo servo;
 
 // Standard user_setup1() function, run before first communications.
 // This simple protocol doesn't require anything here.
@@ -41,11 +47,11 @@ void user_setup2() {
   Serial.println(" DBG user_setup2");
   
   
-  //~ stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-      //~ PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
-  //~ servo.attach(LINEAR_SERVO);
+  stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
+  servo.attach(LINEAR_SERVO);
   // thresholds for MPR121
-  mpr121_setup(2, 6, 6);
+  mpr121_setup(TOUCH_IRQ, 6, 6);
 }
 
 // Standard user_every_loop() function, run on every loop
