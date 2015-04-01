@@ -21,6 +21,9 @@
 
 //// Unique state id, beginning with 10 to avoid overlap with standard states
 #define STATE_ID_WAIT 10
+#define STATE_ID_WAIT2 11
+#define STATE_ID_WAIT3 12
+#define STATE_ID_WAIT4 13
 
 
 //// Hooks to state variables instantiated in States.cpp.
@@ -31,6 +34,9 @@
 // 3) To use them in the implementations of each state before they have been
 //    instantiated.
 extern State* state_wait;
+extern State* state_wait2;
+extern State* state_wait3;
+extern State* state_wait4;
 
 
 // A simple waiting state
@@ -42,5 +48,31 @@ class StateWait : public TimedState {
     int id() { return STATE_ID_WAIT; }    
 };
 
+// A simple waiting state
+class StateWait2 : public TimedState {
+  protected:
+    State* s_finish();
+  public:
+    StateWait2(long d) : TimedState(d) { };
+    int id() { return STATE_ID_WAIT2; }    
+};
+
+// A simple waiting state
+class StateWait3 : public TimedState {
+  protected:
+    State* s_finish();
+  public:
+    StateWait3(long d) : TimedState(d) { };
+    int id() { return STATE_ID_WAIT3; }    
+};
+
+// A simple waiting state
+class StateWait4 : public TimedState {
+  protected:
+    State* s_finish();
+  public:
+    StateWait4(long d) : TimedState(d) { };
+    int id() { return STATE_ID_WAIT4; }    
+};
 
 #endif // SIMPLETRIALRELEASE_STATES_H_
