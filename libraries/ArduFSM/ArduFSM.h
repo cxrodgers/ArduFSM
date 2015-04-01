@@ -132,7 +132,7 @@ extern State* state_finish_trial;
 void setup();
 
 // Utility function to announce state changes at end of each loop
-void announce_state_change(unsigned long time, State *curent_state,
+void announce_state_change(unsigned long time, State *current_state,
   State *next_state);
 
 
