@@ -30,6 +30,7 @@ State* user_trial_start()
 #include "ArduFSM.h"
 #include "Arduino.h"
 #include "Params.h"
+#include "Actions.h"
 
 
 //// Global variables. These are global because they are used in this
