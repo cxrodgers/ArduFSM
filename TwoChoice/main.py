@@ -41,14 +41,17 @@ params_table['current-value'] = params_table['init_val'].copy()
 ## Get trial types
 if rigname in []:
     trial_types = mainloop.get_trial_types('trial_types_4srvpos')
+    reverse_srvpos = False
 elif rigname == 'L0':
     trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
+    reverse_srvpos = True
 else:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
+    reverse_srvpos = False
 
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
-scheduler = Scheduler.Auto(trial_types=trial_types)
+scheduler = Scheduler.Auto(trial_types=trial_types, reverse_srvpos=reverse_srvpos)
 
 ## Create Chatter
 logfilename = 'out.log'
