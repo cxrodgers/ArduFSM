@@ -343,13 +343,38 @@ class SessionStarter(ForcedAlternation):
         self.picked_trial_types = self.trial_types.ix[
             [closest_left, closest_right]].copy()
 
+class SessionStarterSrvMax(ForcedAlternation):
+    """Scheduler for beginning session with forced alt and argmax srvpos
+    
+    """
+    def __init__(self, trial_types, **kwargs):
+        self.name = 'session starter'
+        self.params = {
+            'FD': 'X',
+            'RPB': 1,
+            }
+        self.trial_types = trial_types
+
+        # For simplicity, slice trial_types
+        # Later, might want to reimplement the choosing rule instead
+        lefts = my.pick_rows(self.trial_types, rewside='left')
+        closest_left = lefts.srvpos.argmax()
+        
+        rights = my.pick_rows(self.trial_types, rewside='right')
+        closest_right = rights.srvpos.argmax()
+        
+        # Because we maintain the indices, plotter will work correctly
+        # Not quite right, we don't currently use indices, but this is a TODO
+        self.picked_trial_types = self.trial_types.ix[
+            [closest_left, closest_right]].copy()
+
 class Auto:
     """Class for automatic training.
     
     Always begins with SessionStarter, then goes random.
     Switches to forced alt automatically based on biases.
     """
-    def __init__(self, trial_types, debug=False, **kwargs):
+    def __init__(self, trial_types, debug=False, reverse_srvpos=False, **kwargs):
         self.name = 'auto'
         self.params = {
             'subsch': 'none',
@@ -365,8 +390,12 @@ class Auto:
             RandomStim(trial_types=trial_types)
         self.sub_schedulers['ForcedSide'] = \
             ForcedSide(trial_types=trial_types, side='right')
-        self.sub_schedulers['SessionStarter'] = \
-            SessionStarter(trial_types=trial_types)
+        if reverse_srvpos:
+            self.sub_schedulers['SessionStarter'] = \
+                SessionStarterSrvMax(trial_types=trial_types)
+        else:
+            self.sub_schedulers['SessionStarter'] = \
+                SessionStarter(trial_types=trial_types)
         
         if debug:
             self.n_trials_session_starter = 2
