@@ -450,7 +450,7 @@ class Auto:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
-        elif np.abs(sideperf_diff) > .3:
+        elif np.abs(sideperf_diff) > .25:
             # Side bias
             self.last_changed_trial = this_trial
             self.params['status'] = 'antiside' + str(this_trial)

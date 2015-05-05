@@ -177,7 +177,7 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 65,
+            'RD_L': 63,
             'RD_R': 30,
             'STPHAL': YES,
             'HALPOS': 150,
@@ -199,7 +199,7 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 25,
+            'RD_L': 23,
             'RD_R': 22,
             'STPHAL': YES,
             'HALPOS': 50,
@@ -237,7 +237,7 @@ def get_rig_specific_licktrain(rigname):
     
     elif rigname == 'L3':
         return {
-            'RD_L': 26,
+            'RD_L': 24,
             'RD_R': 23,
             }  
     
