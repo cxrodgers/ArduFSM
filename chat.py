@@ -1,9 +1,20 @@
+# Adapted for Windows compatibility 
 import serial
 import time
 import datetime
 import os
 import sys
 import errno
+# for Windows compatibility
+import platform
+
+if platform.system() == 'Windows':
+    import win32pipe, win32file, win32event
+    from_user = r'\\.\pipe\ardupipe'
+    serial_port = 'COM4'
+else:
+    from_user = 'TO_DEV'
+    serial_port = '/dev/ttyACM0'
 
 ## From device to user
 def read_from_device(device):
@@ -20,7 +31,6 @@ def write_to_user(buffer, data):
     for line in data:
         buffer.write(line)
     buffer.flush()
-
 
 ## From user to device
 def read_from_user(buffer, buffer_size=1024):
@@ -61,10 +71,76 @@ class Chatter:
     
     Call `main_loop` to iterate over `update` calls until CTRL+C is received.
     """
-    def __init__(self, serial_port='/dev/ttyACM0', from_user='TO_DEV', 
-        to_user=None, to_user_dir=None, serial_timeout=0.01, baud_rate=9600):
+
+    def _create_pipe(self):
+        """
+
+        :rtype : object
+        """
+        if platform.system() == 'Windows':
+            pipe = win32pipe.CreateNamedPipe(
+                self.pipe_path,
+                win32pipe.PIPE_ACCESS_DUPLEX | win32file.FILE_FLAG_OVERLAPPED, # open mode
+                win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_WAIT,  # blocking mode
+                1,  # number of instances
+                1024,  # output buffer size
+                1024,  # input buffer size
+                300,  # client time-out
+                None)  # no security attributes
+
+            ol = win32file.OVERLAPPED()
+            ol.hEvent = win32event.CreateEvent(None, 0, 0, None)
+        else:
+            #try:
+            os.mkfifo(self.pipe_path)
+            #except FileExistsError:
+            #    pass
+
+            pipe, ol = None, None
+
+        return pipe, ol
+
+    def _connect_pipe(self, pipe, ol):
+        """
+
+        :rtype : object
+        """
+        if self.connected:
+            return True, pipe
+
+        if self.connection_started is False:
+            if platform.system() == 'Windows':
+                win32pipe.ConnectNamedPipe(pipe, ol)
+
+            self.connection_started = True
+
+        if platform.system() == 'Windows':
+            r = win32event.WaitForSingleObject(ol.hEvent, 3000)
+            if r == win32event.WAIT_OBJECT_0:
+                self.connected = True
+                self.connection_started = False
+                print 'Connected'
+                return True, pipe
+            elif r == win32event.WAIT_TIMEOUT:
+                print 'Connection attempt timed out'
+                return False, pipe
+            else:
+                print 'Fail to connect'
+                return False, pipe
+        else:
+            try:
+                pipe = os.open(self.pipe_path, os.O_RDONLY | os.O_NONBLOCK)
+            except OSError:
+                return False, None
+            else:
+                self.connected = True
+                self.connection_started = False
+                return True, pipe
+
+    def __init__(self, serial_port='COM4', from_user=r'\\.\pipe\ardupipe', to_user=None, to_user_dir=None,
+        serial_timeout=0.01, baud_rate=9600):
         """Initialize a new Chatter.
-        
+
         `serial_port` : where the device is located
         `from_user` : name of pipe to use to collect user's input
         `to_user` : name of file to print information from the device
@@ -76,11 +152,25 @@ class Chatter:
         # to device
         # Begin by deleting any existing FIFO, which should prevent stale
         # data from coming through.
+
+        print "Entered __init__"
+
         if os.path.exists(from_user):
             os.remove(from_user)
-        os.mkfifo(from_user)
-        self.pipein = os.open(from_user, os.O_RDONLY | os.O_NONBLOCK)
 
+        self.shutdown = True
+        self.connected = False
+        self.connection_started = False
+
+        # pipe_name = from_user
+        self.pipe_path = from_user  #os.path.join(pipe_dir, pipe_name)
+
+        self.shutdown = False
+        pipe, ol = self._create_pipe()
+        connected, self.pipein = self._connect_pipe(pipe, ol)
+        #    os.mkfifo(from_user)  # unix operation only
+        #    self.pipein = os.open(from_user, os.O_RDONLY | os.O_NONBLOCK)
+        
         ## Set up FROM_DEV
         # where to put stuff from the device
         if to_user is None:
@@ -124,7 +214,7 @@ class Chatter:
         * Reads any lines from the devices and writes to output file
         * Optionally echos to stdout
         * Checks whether the last sent command was acknowledged
-        * If it was acknoweledged, then sends top of queued_writes
+        * If it was acknowledged, then sends top of queued_writes
         
         Right now there is a bug in which the Arduino can write text so quickly
         that this function will get stuck at reading from devices. Need some
@@ -204,3 +294,8 @@ def loop_till_interrupt(chatter):
     finally:
         chatter.close()
         print "Closed."
+
+
+# Test this by creating an object of type chatter
+objChatter = Chatter()
+loop_till_interrupt(objChatter)
