@@ -1,27 +1,8 @@
-/* Simple protocol to test the "trial release" functionality. 
+/* Very simple protocol to test freezing problem.
 
-On each trial, the arduino does nothing except listen for chats and
-waits to receive a "RELEASE_TRL" command. Upon this command, it terminates
-the current trial and begins the next one.
-
-This has only the three standard states defined in the ArduFSM library.
-[*] wait_to_start_trial 
-[*] trial_start
-[*] inter_trial_interval
-
-This simple protocol also serves as a template for more complex protocols.
-Every ino file should define the following:
-void user_setup1()
-void user_setup2()
-void user_every_loop()
-State* user_trial_start()
-
-Additionally, you can provide the following:
-* States.h, States.cpp : additional states beyond the standard ones
-* Actions.h, Actions.cpp : asynchronous actions
-* Params.h, Params.cpp : parameters and results variables
+Just creates a stepper object. Often freezes when trying to step it.
 */
-#include "chat.h"
+//#include "chat.h"
 //#include "States.h"
 //~ #include "ArduFSM.h"
 #include "Stepper.h"
@@ -48,7 +29,7 @@ void loop() {
 }
 
 
-\
+
 
 
 int rotate(long n_steps)
