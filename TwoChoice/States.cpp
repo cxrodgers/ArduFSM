@@ -10,7 +10,7 @@
 
 //// Globals, defined in ino.
 extern long sticky_stepper_position;
-extern Stepper* stimStepper;
+extern Stepper stimStepper;
 
 
 //// Accessor methods for static variables for hardware
@@ -263,7 +263,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
   {
     // BLOCKING CALL //
     // Replace this with more iterations of smaller steps
-    stimStepper->step(step_size);
+    stimStepper.step(step_size);
     actual_steps += step_size;
     
     // update sensor and store previous value
@@ -313,7 +313,7 @@ int rotate(long n_steps)
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
-  //stimStepper->step(n_steps);
+  stimStepper.step(n_steps);
 
   // This delay doesn't seem necessary
   //delay(50);

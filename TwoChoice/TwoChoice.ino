@@ -40,7 +40,9 @@ State* user_trial_start()
 long sticky_stepper_position = 0;
 
 // Stepper. We won't assign till we know if it's 2pin or 4pin
-Stepper *stimStepper = 0;
+//Stepper stimStepper;
+Stepper stimStepper(__HWCONSTANTS_H_NUMSTEPS, 
+  TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
 
 
 // Standard user_setup1 function
@@ -86,7 +88,7 @@ void user_setup2() {
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
     
     // Initialize
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+    stimStepper = Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
   }
   else
@@ -98,7 +100,7 @@ void user_setup2() {
     pinMode(PIN_STEPPER4, OUTPUT);
     digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
     
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+    stimStepper = Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
   
@@ -107,7 +109,7 @@ void user_setup2() {
     param_values[tpidx_REL_THRESH]);
 
   // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  stimStepper.setSpeed(param_values[tpidx_STEP_SPEED]);
   
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
