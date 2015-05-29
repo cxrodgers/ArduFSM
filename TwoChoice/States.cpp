@@ -313,7 +313,7 @@ int rotate(long n_steps)
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
-  stimStepper->step(n_steps);
+  //stimStepper->step(n_steps);
 
   // This delay doesn't seem necessary
   //delay(50);
