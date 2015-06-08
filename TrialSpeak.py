@@ -500,7 +500,15 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     # Error check, because get_trial_parameters2 et al assumes well-formed
     # lines
     if len(logfile_lines) != len(pldf):
-        raise ValueError("malformed lines: %r \n..." % logfile_lines[:5])
+        #~ raise ValueError("malformed lines: %r \n..." % logfile_lines[:5])
+        for idx in range(len(logfile_lines)):
+            line = logfile_lines[idx]
+            spline = line.split()
+            try:
+                int(spline[0])
+            except ValueError:
+                logfile_lines[idx] = '0 DBG ' + line
+        pldf = parse_lines_into_df(logfile_lines)
 
     # Find the boundaries between trials in logfile_lines
     trl_start_idxs = my.pick_rows(pldf, 
