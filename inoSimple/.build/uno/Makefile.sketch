@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/inoSimple.cpp : src/inoSimple.ino
+	@mkdir -p .build/uno/src
+	@echo [93msrc/inoSimple.ino[0m
+	@/home/chris/.local/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/inoSimple.cpp
+	@true
+

@@ -1,0 +1,31 @@
+In file included from /usr/share/arduino/hardware/arduino/cores/arduino/Platform.h:9:0,
+                 from /usr/share/arduino/hardware/arduino/cores/arduino/USBCore.cpp:19:
+/usr/lib/avr/include/util/delay.h:95:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed" [-Wcpp]
+ # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+   ^
+In file included from /usr/share/arduino/hardware/arduino/cores/arduino/Platform.h:9:0,
+                 from /usr/share/arduino/hardware/arduino/cores/arduino/HID.cpp:19:
+/usr/lib/avr/include/util/delay.h:95:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed" [-Wcpp]
+ # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+   ^
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp: In function ‘void store_char(unsigned char, ring_buffer*)’:
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:100:20: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+   if (i != buffer->tail) {
+                    ^
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp: In function ‘void __vector_18()’:
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:129:21: warning: unused variable ‘c’ [-Wunused-variable]
+       unsigned char c = UDR0;
+                     ^
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp: In member function ‘void HardwareSerial::begin(long unsigned int, byte)’:
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:370:11: warning: unused variable ‘current_config’ [-Wunused-variable]
+   uint8_t current_config;
+           ^
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp: In member function ‘virtual size_t HardwareSerial::write(uint8_t)’:
+/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:469:27: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+   while (i == _tx_buffer->tail)
+                           ^
+In file included from /usr/share/arduino/hardware/arduino/cores/arduino/Platform.h:9:0,
+                 from /usr/share/arduino/hardware/arduino/cores/arduino/CDC.cpp:19:
+/usr/lib/avr/include/util/delay.h:95:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed" [-Wcpp]
+ # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+   ^
