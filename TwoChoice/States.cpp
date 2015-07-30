@@ -10,10 +10,11 @@ Defines the following:
 */
 
 #include "States.h"
-#include "mpr121.h"
+//#include "mpr121.h"
 #include "Arduino.h"
 #include "hwconstants.h"
 #include "Stepper.h"
+#include "ir_detector.h"
 
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
