@@ -199,7 +199,11 @@ void loop()
   // could put other user-specified every_loop() stuff here
   
   // Poll touch inputs
-  touched = pollTouchInputs();
+  if (time % 1000 == 0) {
+    touched = pollTouchInputs(time, 1);
+  } else {
+    touched = pollTouchInputs(time, 0);
+  }
   
   // announce sticky
   if (touched != sticky_touched)

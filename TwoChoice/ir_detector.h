@@ -8,7 +8,12 @@
 #include "Arduino.h"
 #include "hwconstants.h"
 
-uint16_t pollTouchInputs(void);
+uint16_t pollTouchInputs(unsigned long time, bool debug=0);
 int get_touched_channel(uint16_t touched, unsigned int i);
 
+#define __IR_DETECTOR_H_L_THRESH 100
+#define __IR_DETECTOR_H_R_THRESH 100
+
+#define __IR_DETECTOR_H_BUFFER_SZ 10
+#define __IR_DETECTOR_H_UPDATE_T 400
 #endif
