@@ -130,6 +130,9 @@ void StateResponseWindow::loop()
 
 void StateResponseWindow::s_finish()
 {
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
   {
@@ -185,6 +188,10 @@ void StateWaitForServoMove::s_setup()
 {
   my_linServo.write(param_values[tpidx_SRVPOS]);
   //~ next_state = ROTATE_STEPPER1;   
+  
+  // Turn on opto
+  // This should go in s_loop()
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
 }
 
 void StateWaitForServoMove::s_finish()

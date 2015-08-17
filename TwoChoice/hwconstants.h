@@ -28,6 +28,9 @@
 // light
 #define __HWCONSTANTS_H_HOUSE_LIGHT 5
 
+// Opto
+#define __HWCONSTANTS_H_OPTO 3
+
 // Servo
 #define LINEAR_SERVO 4
 
