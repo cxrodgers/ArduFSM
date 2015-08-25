@@ -11,7 +11,7 @@
 uint16_t pollTouchInputs(unsigned long time, bool debug=0);
 int get_touched_channel(uint16_t touched, unsigned int i);
 
-#define __IR_DETECTOR_H_L_THRESH 50
+#define __IR_DETECTOR_H_L_THRESH 100
 #define __IR_DETECTOR_H_R_THRESH 50
 
 #define __IR_DETECTOR_H_BUFFER_SZ 10
