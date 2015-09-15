@@ -235,6 +235,11 @@ void loop()
 
     //// TRIAL_START. Same for all protocols.
     case TRIAL_START:
+      // turn the backlight off
+      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
+      delay(25);
+      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);    
+    
       // Set up the trial based on received trial parameters
       Serial.print(time);
       Serial.println(" TRL_START");
@@ -343,11 +348,6 @@ void loop()
     case INTER_TRIAL_INTERVAL:
       // turn the light on
       digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-
-      // turn the backlight off
-      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
-      delay(50);
-      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
 
       // Move servo back
       linServo.write(param_values[tpidx_SRV_FAR]);
