@@ -61,6 +61,7 @@ uint16_t pollTouchInputs(unsigned long time, bool debug)
   // New values
   int l_val = analogRead(__HWCONSTANTS_H_IR_L_PIN);
   int r_val = analogRead(__HWCONSTANTS_H_IR_R_PIN);
+  int ltemp = 0;
   
   // Return value
   uint16_t touched = 0;
@@ -99,6 +100,11 @@ uint16_t pollTouchInputs(unsigned long time, bool debug)
     }  
     r_mean = r_mean / __IR_DETECTOR_H_BUFFER_SZ;
   }
+
+  // Normalize
+  ltemp = l_val - (r_val - r_mean);
+  r_val = r_val - (l_val - l_mean);
+  l_val = ltemp;
   
   // Debug
   if (debug) {
