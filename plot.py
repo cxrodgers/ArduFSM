@@ -392,6 +392,122 @@ class PlotterByStimNumber(Plotter):
             res.append(side + ' %d' % sn)        
         return res
 
+class LickPlotter():
+    """Plots licks by time"""
+    def __init__(self):
+        self.handles = {}
+    
+    def init_handles(self):
+        self.handles['f'], self.handles['axa'] = plt.subplots(2, 1)
+        self.handles['l_c'], = self.handles['axa'][0].plot([], [], color='b')
+        self.handles['l_m'], = self.handles['axa'][0].plot([], [], color='g')
+        self.handles['l_x'], = self.handles['axa'][0].plot([], [], color='r')
+        self.handles['l_tch'], = self.handles['axa'][0].plot([], [], 
+            color='b', marker='.', ls='none')
+        self.handles['l_tch3'], = self.handles['axa'][0].plot([], [], 
+            color='k', marker='.', ls='none')
+
+        self.handles['r_c'], = self.handles['axa'][1].plot([], [], color='b')
+        self.handles['r_m'], = self.handles['axa'][1].plot([], [], color='g')
+        self.handles['r_x'], = self.handles['axa'][1].plot([], [], color='r')
+        self.handles['r_tch'], = self.handles['axa'][1].plot([], [], 
+            color='r', marker='.', ls='none')
+        self.handles['r_tch3'], = self.handles['axa'][1].plot([], [], 
+            color='k', marker='.', ls='none')
+
+        plt.show()
+    
+    def update(self, logfile_lines):
+        # Extract licks
+        l_rec_l = []
+        lick_lines = filter(lambda l: 'DBG L:' in l, logfile_lines)
+        for line in lick_lines:
+            c, m, x = line.split('=')[1:4]
+            c = int(c.split(';')[0])
+            m = int(m.split(';')[0])    
+            x = int(x.split('.')[0])
+            l_rec_l.append({'c': c, 'm': m, 'x': x, 'time': int(line.split(' ')[0])})
+        try:
+            l_resdf = pandas.DataFrame.from_records(l_rec_l).set_index('time')
+        except KeyError:
+            l_resdf = None
+
+        # Extract licks
+        r_rec_l = []
+        lick_lines = filter(lambda l: 'DBG R:' in l, logfile_lines)
+        for line in lick_lines:
+            c, m, x = line.split('=')[1:4]
+            c = int(c.split(';')[0])
+            m = int(m.split(';')[0])    
+            x = int(x.split('.')[0])
+            r_rec_l.append({'c': c, 'm': m, 'x': x, 'time': int(line.split(' ')[0])})
+        try:
+            r_resdf = pandas.DataFrame.from_records(r_rec_l).set_index('time')
+        except KeyError:
+            r_resdf = None
+
+        # Extact touches
+        tch_rec_l = []
+        lick_lines = filter(lambda l: 'TCH' in l, logfile_lines)
+        for line in lick_lines:
+            tch_type = int(line.split()[2])
+            if tch_type == 0:
+                continue
+            else:
+                tch_rec_l.append({'time': int(line.split()[0]), 'tch': tch_type})
+        try:
+            tch_resdf = pandas.DataFrame.from_records(tch_rec_l).set_index('time')
+        except KeyError:
+            tch_resdf = None
+
+        # Plot left values
+        if l_resdf is not None:
+            self.handles['l_m'].set_xdata(l_resdf.index)
+            self.handles['l_m'].set_ydata(l_resdf['m'])
+            self.handles['l_c'].set_xdata(l_resdf.index)
+            self.handles['l_c'].set_ydata(l_resdf['c'])
+            self.handles['l_x'].set_xdata(l_resdf.index)
+            self.handles['l_x'].set_ydata(l_resdf['x'])
+            self.handles['axa'][0].set_xlim(
+                (l_resdf.index.max() - 90000, l_resdf.index.max()))
+            self.handles['axa'][0].set_ylim((0, 1024))
+
+        # Plot left touches
+        if tch_resdf is not None:
+            msk = tch_resdf == 1
+            self.handles['l_tch'].set_xdata(tch_resdf[msk].dropna().index)
+            self.handles['l_tch'].set_ydata(
+                200 * np.ones_like(tch_resdf[msk].dropna().values))
+            msk = tch_resdf == 3
+            self.handles['l_tch3'].set_xdata(tch_resdf[msk].dropna().index)
+            self.handles['l_tch3'].set_ydata(
+                100 * np.ones_like(tch_resdf[msk].dropna().values))
+
+        # Plot right values
+        if r_resdf is not None:
+            self.handles['r_m'].set_xdata(r_resdf.index)
+            self.handles['r_m'].set_ydata(r_resdf['m'])
+            self.handles['r_c'].set_xdata(r_resdf.index)
+            self.handles['r_c'].set_ydata(r_resdf['c'])
+            self.handles['r_x'].set_xdata(r_resdf.index)
+            self.handles['r_x'].set_ydata(r_resdf['x'])
+            self.handles['axa'][1].set_xlim(
+                (r_resdf.index.max() - 90000, r_resdf.index.max()))
+            self.handles['axa'][1].set_ylim((0, 1024))
+
+        # Plot right touches
+        if tch_resdf is not None:
+            msk = tch_resdf == 1
+            self.handles['r_tch'].set_xdata(tch_resdf[msk].dropna().index)
+            self.handles['r_tch'].set_ydata(
+                200 * np.ones_like(tch_resdf[msk].dropna().values))
+            msk = tch_resdf == 3
+            self.handles['r_tch3'].set_xdata(tch_resdf[msk].dropna().index)
+            self.handles['r_tch3'].set_ydata(
+                100 * np.ones_like(tch_resdf[msk].dropna().values))
+        
+        plt.show()
+        plt.draw()
 
 class PlotterWithServoThrow(Plotter):
     """Object encapsulating the logic and parameters to plot trials by throw."""

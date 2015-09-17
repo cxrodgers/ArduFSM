@@ -89,13 +89,16 @@ if RUN_UI:
     finally:
         ui.close()
 
+
 ## Main loop
 final_message = None
 try:
     ## Initialize GUI
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
-        plotter.init_handles()
+        plotter.init_handles()        
+        plotter2 = ArduFSM.plot.LickPlotter()
+        plotter2.init_handles()
         last_updated_trial = 0
     
     while True:
@@ -137,7 +140,10 @@ try:
                 # don't understand why these need to be here
                 plt.show()
                 plt.draw()
-
+            
+            plotter2.update(logfile_lines)
+            plt.show()
+            plt.draw()
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
