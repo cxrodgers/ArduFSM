@@ -27,6 +27,7 @@
 
 // light
 #define __HWCONSTANTS_H_HOUSE_LIGHT 3
+#define __HWCONSTANTS_H_BACK_LIGHT 12
 
 // Servo
 #define LINEAR_SERVO 13
