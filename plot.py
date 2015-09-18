@@ -398,7 +398,8 @@ class LickPlotter():
         self.handles = {}
     
     def init_handles(self):
-        self.handles['f'], self.handles['axa'] = plt.subplots(2, 1)
+        self.handles['f'], self.handles['axa'] = plt.subplots(2, 1,
+            figsize=(3, 6))
         self.handles['l_c'], = self.handles['axa'][0].plot([], [], color='b')
         self.handles['l_m'], = self.handles['axa'][0].plot([], [], color='g')
         self.handles['l_x'], = self.handles['axa'][0].plot([], [], color='r')
@@ -426,7 +427,8 @@ class LickPlotter():
             c = int(c.split(';')[0])
             m = int(m.split(';')[0])    
             x = int(x.split('.')[0])
-            l_rec_l.append({'c': c, 'm': m, 'x': x, 'time': int(line.split(' ')[0])})
+            l_rec_l.append({'c': c, 'm': m, 'x': x, 
+                'time': int(line.split(' ')[0]) / 1000.})
         try:
             l_resdf = pandas.DataFrame.from_records(l_rec_l).set_index('time')
         except KeyError:
@@ -440,7 +442,8 @@ class LickPlotter():
             c = int(c.split(';')[0])
             m = int(m.split(';')[0])    
             x = int(x.split('.')[0])
-            r_rec_l.append({'c': c, 'm': m, 'x': x, 'time': int(line.split(' ')[0])})
+            r_rec_l.append({'c': c, 'm': m, 'x': x, 
+                'time': int(line.split(' ')[0]) / 1000.})
         try:
             r_resdf = pandas.DataFrame.from_records(r_rec_l).set_index('time')
         except KeyError:
@@ -454,7 +457,8 @@ class LickPlotter():
             if tch_type == 0:
                 continue
             else:
-                tch_rec_l.append({'time': int(line.split()[0]), 'tch': tch_type})
+                tch_rec_l.append({'time': int(line.split()[0]) / 1000., 
+                    'tch': tch_type})
         try:
             tch_resdf = pandas.DataFrame.from_records(tch_rec_l).set_index('time')
         except KeyError:
@@ -469,19 +473,24 @@ class LickPlotter():
             self.handles['l_x'].set_xdata(l_resdf.index)
             self.handles['l_x'].set_ydata(l_resdf['x'])
             self.handles['axa'][0].set_xlim(
-                (l_resdf.index.max() - 90000, l_resdf.index.max()))
-            self.handles['axa'][0].set_ylim((0, 1024))
+                (l_resdf.index.max() - 10, l_resdf.index.max()))
+            #self.handles['axa'][0].set_ylim((0, 1024))
+            self.handles['axa'][0].set_ylim((
+                l_resdf.loc[l_resdf.index[-1], 'x'] - 100,
+                l_resdf.loc[l_resdf.index[-1], 'x'] + 200))
+            
 
         # Plot left touches
         if tch_resdf is not None:
+            yval = np.mean(self.handles['axa'][0].get_ylim())
             msk = tch_resdf == 1
             self.handles['l_tch'].set_xdata(tch_resdf[msk].dropna().index)
             self.handles['l_tch'].set_ydata(
-                200 * np.ones_like(tch_resdf[msk].dropna().values))
-            msk = tch_resdf == 3
-            self.handles['l_tch3'].set_xdata(tch_resdf[msk].dropna().index)
-            self.handles['l_tch3'].set_ydata(
-                100 * np.ones_like(tch_resdf[msk].dropna().values))
+                yval * np.ones_like(tch_resdf[msk].dropna().values))
+            #~ msk = tch_resdf == 3
+            #~ self.handles['l_tch3'].set_xdata(tch_resdf[msk].dropna().index)
+            #~ self.handles['l_tch3'].set_ydata(
+                #~ 100 * np.ones_like(tch_resdf[msk].dropna().values))
 
         # Plot right values
         if r_resdf is not None:
@@ -492,19 +501,23 @@ class LickPlotter():
             self.handles['r_x'].set_xdata(r_resdf.index)
             self.handles['r_x'].set_ydata(r_resdf['x'])
             self.handles['axa'][1].set_xlim(
-                (r_resdf.index.max() - 90000, r_resdf.index.max()))
-            self.handles['axa'][1].set_ylim((0, 1024))
+                (r_resdf.index.max() - 10, r_resdf.index.max()))
+            #self.handles['axa'][1].set_ylim((0, 1024))
+            self.handles['axa'][1].set_ylim((
+                r_resdf.loc[r_resdf.index[-1], 'x'] - 200,
+                r_resdf.loc[r_resdf.index[-1], 'x'] + 400))
 
         # Plot right touches
         if tch_resdf is not None:
-            msk = tch_resdf == 1
+            yval = np.mean(self.handles['axa'][0].get_ylim())
+            msk = tch_resdf == 2
             self.handles['r_tch'].set_xdata(tch_resdf[msk].dropna().index)
             self.handles['r_tch'].set_ydata(
-                200 * np.ones_like(tch_resdf[msk].dropna().values))
-            msk = tch_resdf == 3
-            self.handles['r_tch3'].set_xdata(tch_resdf[msk].dropna().index)
-            self.handles['r_tch3'].set_ydata(
-                100 * np.ones_like(tch_resdf[msk].dropna().values))
+                yval * np.ones_like(tch_resdf[msk].dropna().values))
+            #~ msk = tch_resdf == 3
+            #~ self.handles['r_tch3'].set_xdata(tch_resdf[msk].dropna().index)
+            #~ self.handles['r_tch3'].set_ydata(
+                #~ 100 * np.ones_like(tch_resdf[msk].dropna().values))
         
         plt.show()
         plt.draw()
