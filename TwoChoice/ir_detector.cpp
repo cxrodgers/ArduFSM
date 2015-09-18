@@ -4,6 +4,10 @@
 #include "ir_detector.h"
 #include "Arduino.h"
 
+// Just to get thresholds
+#include "States.h"
+extern long param_values[N_TRIAL_PARAMS];
+
 
 int get_touched_channel(uint16_t touched, unsigned int i)
 {
@@ -137,9 +141,9 @@ uint16_t pollTouchInputs(unsigned long time, bool debug)
     r_min = r_val;
   
   // Check whether each fell by THRESH from the mean
-  if (l_val < l_mean - __IR_DETECTOR_H_L_THRESH)
+  if (l_val < l_mean - param_values[tpidx_TOU_THRESH]) //__IR_DETECTOR_H_L_THRESH)
     touched += 1;
-  if (r_val < r_mean - __IR_DETECTOR_H_R_THRESH)
+  if (r_val < r_mean - param_values[tpidx_REL_THRESH]) //__IR_DETECTOR_H_R_THRESH)
     touched += 2;
   
   return touched;
