@@ -14,6 +14,6 @@ int get_touched_channel(uint16_t touched, unsigned int i);
 #define __IR_DETECTOR_H_L_THRESH 60
 #define __IR_DETECTOR_H_R_THRESH 60
 
-#define __IR_DETECTOR_H_BUFFER_SZ 10
+#define __IR_DETECTOR_H_BUFFER_SZ 20
 #define __IR_DETECTOR_H_UPDATE_T 400
 #endif
