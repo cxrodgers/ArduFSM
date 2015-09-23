@@ -73,13 +73,13 @@ uint16_t pollTouchInputs(unsigned long time, bool debug)
   // Init the buffers
   if (!l_buffer_init) {
     for (int i=0; i<__IR_DETECTOR_H_BUFFER_SZ; i++) {
-      l_buffer[i] = 0;
+      l_buffer[i] = 512;
     }
     l_buffer_init = 1;
   }
   if (!r_buffer_init) {
     for (int i=0; i<__IR_DETECTOR_H_BUFFER_SZ; i++) {
-      r_buffer[i] = 0;
+      r_buffer[i] = 512;
     }
     r_buffer_init = 1;
   }
