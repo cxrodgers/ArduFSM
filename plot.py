@@ -247,8 +247,8 @@ class Plotter(object):
         line.set_ydata([np.mean(ax.get_yticks())] * 2)
         
         ## PLOTTING finalize
-        plt.show()
-        plt.draw()    
+        #~ plt.show()
+        #~ plt.draw()    
 
     def form_string_rewards(self, splines, translated_trial_matrix):
         """Form a string with the number of rewards on each side"""
@@ -415,6 +415,11 @@ class LickPlotter():
             color='r', marker='.', ls='none')
         self.handles['r_tch3'], = self.handles['axa'][1].plot([], [], 
             color='k', marker='.', ls='none')
+        
+        self.handles['f'].subplots_adjust(left=.2)
+        
+        self.handles['axa'][0].grid()
+        self.handles['axa'][1].grid()
 
         plt.show()
     
@@ -476,9 +481,8 @@ class LickPlotter():
                 (l_resdf.index.max() - 10, l_resdf.index.max()))
             #self.handles['axa'][0].set_ylim((0, 1024))
             self.handles['axa'][0].set_ylim((
-                l_resdf.loc[l_resdf.index[-1], 'x'] - 100,
-                l_resdf.loc[l_resdf.index[-1], 'x'] + 200))
-            
+                l_resdf.loc[l_resdf.index[-1], 'x'] - 400,
+                l_resdf.loc[l_resdf.index[-1], 'x'] + 600))
 
         # Plot left touches
         if tch_resdf is not None:
@@ -504,8 +508,8 @@ class LickPlotter():
                 (r_resdf.index.max() - 10, r_resdf.index.max()))
             #self.handles['axa'][1].set_ylim((0, 1024))
             self.handles['axa'][1].set_ylim((
-                r_resdf.loc[r_resdf.index[-1], 'x'] - 200,
-                r_resdf.loc[r_resdf.index[-1], 'x'] + 400))
+                r_resdf.loc[r_resdf.index[-1], 'x'] - 400,
+                r_resdf.loc[r_resdf.index[-1], 'x'] + 600))
 
         # Plot right touches
         if tch_resdf is not None:
@@ -519,8 +523,8 @@ class LickPlotter():
             #~ self.handles['r_tch3'].set_ydata(
                 #~ 100 * np.ones_like(tch_resdf[msk].dropna().values))
         
-        plt.show()
-        plt.draw()
+        #~ plt.show()
+        #~ plt.draw()
 
 class PlotterWithServoThrow(Plotter):
     """Object encapsulating the logic and parameters to plot trials by throw."""

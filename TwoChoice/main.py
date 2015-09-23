@@ -138,8 +138,8 @@ try:
                 last_updated_trial = len(translated_trial_matrix)
                 
                 # don't understand why these need to be here
-                plt.show()
-                plt.draw()
+                #~ plt.show()
+                #~ plt.draw()
             
             plotter2.update(logfile_lines)
             plt.show()
