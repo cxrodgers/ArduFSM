@@ -513,7 +513,7 @@ class LickPlotter():
 
         # Plot right touches
         if tch_resdf is not None:
-            yval = np.mean(self.handles['axa'][0].get_ylim())
+            yval = np.mean(self.handles['axa'][1].get_ylim())
             msk = tch_resdf == 2
             self.handles['r_tch'].set_xdata(tch_resdf[msk].dropna().index)
             self.handles['r_tch'].set_ydata(
