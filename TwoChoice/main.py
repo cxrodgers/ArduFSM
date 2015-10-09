@@ -39,9 +39,12 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
-if rigname in []:
-    trial_types = mainloop.get_trial_types('trial_types_4srvpos')
+if rigname in ['L2', 'L3']:
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos_95pd')
     reverse_srvpos = False
+elif rigname == 'L1':
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos_80pd')
+    reverse_srvpos = False    
 elif rigname == 'L0':
     trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
     reverse_srvpos = True
