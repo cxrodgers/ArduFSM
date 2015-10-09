@@ -22,17 +22,21 @@
 
 // Rewards
 #define L_REWARD_VALVE 4
-#define R_REWARD_VALVE 5
+#define R_REWARD_VALVE 9
 #define TOUCH_IRQ 2
 
 // light
 #define __HWCONSTANTS_H_HOUSE_LIGHT 3
+#define __HWCONSTANTS_H_BACK_LIGHT 12
 
 // Servo
 #define LINEAR_SERVO 13
 
 //// ANALOG
 #define __HWCONSTANTS_H_HALL 0
+
+#define __HWCONSTANTS_H_IR_L_PIN 3
+#define __HWCONSTANTS_H_IR_R_PIN 4
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
