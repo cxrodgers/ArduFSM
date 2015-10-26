@@ -29,6 +29,8 @@ import scipy.stats
 #from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 from TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 
+class TrialTypesError:
+    pass
 
 import TrialSpeak, TrialMatrix
 from TrialSpeak import YES, NO
@@ -460,7 +462,7 @@ class PlotterWithServoThrow(Plotter):
             # error-check and reduce to single index
             if len(pick_idxs) == 0:
                 # no match, use the first trial type
-                1/0
+                raise TrialTypesError
                 warn_no_matches.append(idx)
                 pick_idx = 0
             elif len(pick_idxs) > 1:
