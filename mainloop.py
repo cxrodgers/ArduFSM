@@ -188,8 +188,8 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 23,
-            'RD_R': 21,
+            'RD_L': 21,
+            'RD_R': 26,
             'STPHAL': YES,
             'HALPOS': 50,
             }
