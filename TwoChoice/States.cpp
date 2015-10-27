@@ -29,14 +29,14 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT", "STPHAL", "HALPOS",
+  "TOUT", "RELT", "STPHAL", "HALPOS", "DIRDEL",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
   0, 1900, 4500, 45000, 500,
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
-  6, 3, 0, 50
+  6, 3, 0, 50, 0,
   };
 
 // Whether to report on each trial  
@@ -49,7 +49,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
-  0, 0, 0, 0
+  0, 0, 0, 0, 1,
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -186,6 +186,28 @@ void StateWaitForServoMove::s_setup()
 {
   my_linServo.write(param_values[tpidx_SRVPOS]);
   //~ next_state = ROTATE_STEPPER1;   
+}
+
+void StateWaitForServoMove::loop()
+{
+  if ((param_values[tpidx_DIRECT_DELIVERY] == __TRIAL_SPEAK_NO) ||
+      (direct_delivery_delivered == 1)) {
+    return;
+  }
+  
+  if ((millis() - timer) > -500) {
+    if (param_values[tpidx_REWSIDE] == LEFT) {
+      digitalWrite(L_REWARD_VALVE, HIGH);
+      delay(param_values[tpidx_REWARD_DUR_L]);
+      digitalWrite(L_REWARD_VALVE, LOW); 
+    }
+    else if (param_values[tpidx_REWSIDE] == RIGHT) {
+      digitalWrite(R_REWARD_VALVE, HIGH);
+      delay(param_values[tpidx_REWARD_DUR_R]);
+      digitalWrite(R_REWARD_VALVE, LOW); 
+    }    
+    direct_delivery_delivered = 1;
+  }
 }
 
 void StateWaitForServoMove::s_finish()
