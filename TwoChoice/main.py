@@ -99,6 +99,13 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
+        if rigname == 'L1':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1000)
+        elif rigname == 'L2':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
+        elif rigname == 'L3':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
+        
         last_updated_trial = 0
     
     while True:
