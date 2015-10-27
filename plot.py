@@ -421,6 +421,12 @@ class LickPlotter():
         self.handles['axa'][0].grid()
         self.handles['axa'][1].grid()
 
+        # Try to move, this is backend-dependent
+        try:
+            self.handles['f'].canvas.manager.window.wm_geometry("+600+500")
+        except AttributeError:
+            print "cannot move window"
+
         plt.show()
     
     def update(self, logfile_lines):

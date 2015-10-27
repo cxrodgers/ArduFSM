@@ -97,6 +97,10 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()        
+        
+        # Try to move
+        plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+600+0")
+        
         plotter2 = ArduFSM.plot.LickPlotter()
         plotter2.init_handles()
         last_updated_trial = 0
