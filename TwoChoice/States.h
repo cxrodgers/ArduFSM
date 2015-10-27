@@ -52,7 +52,7 @@ into States.cpp.
 // And we can argue about how these two categories map onto the categories above.
 //
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 24
+#define N_TRIAL_PARAMS 25
 #define tpidx_STPPOS 0 // reqd
 #define tpidx_MRT 1 // latch
 #define tpidx_REWSIDE 2 // reqd
@@ -77,6 +77,7 @@ into States.cpp.
 #define tpidx_REL_THRESH 21 // init-only
 #define tpidx_STP_HALL 22
 #define tpidx_STP_POSITIVE_STPPOS 23 
+#define tpidx_DIRECT_DELIVERY 24
 
 //// Global trial results structure. Can be set by user-defined states. 
 // Will be reported during mandatory INTER_TRIAL_INTERVAL state.
@@ -190,8 +191,10 @@ class StateErrorTimeout : public TimedState {
 class StateWaitForServoMove : public TimedState {
   protected:
     Servo my_linServo;
+    bool direct_delivery_delivered = 0;
     void s_setup();
     void s_finish();
+    void loop();
   
   public:
     void update(Servo linServo);
