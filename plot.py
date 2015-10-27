@@ -57,6 +57,8 @@ def count_rewards(splines):
         'right auto' : 'EV R_R',
         'left manual' : 'EV AAR_L',
         'right manual' : 'EV AAR_R',
+        'left direct' : 'EV DDR_L',
+        'right direct' : 'EV DDR_R',
         }
     evname2list = dict([(evname, []) for evname in evname2token])
 
@@ -260,9 +262,9 @@ class Plotter(object):
         # Stringify
         s = 'Rewards (auto/total): L=%d/%d R=%d/%d' % (
             d['left auto'].sum(), 
-            d['left auto'].sum() + d['left manual'].sum(),
+            d['left auto'].sum() + d['left manual'].sum() + d['left direct'].sum(),
             d['right auto'].sum(), 
-            d['right auto'].sum() + d['right manual'].sum(),
+            d['right auto'].sum() + d['right manual'].sum() + d['right direct'].sum(),
             )
         
         return s

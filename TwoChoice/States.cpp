@@ -189,18 +189,24 @@ void StateWaitForServoMove::s_setup()
 
 void StateWaitForServoMove::loop()
 {
+  unsigned long time;
   if ((param_values[tpidx_DIRECT_DELIVERY] == __TRIAL_SPEAK_NO) ||
       (direct_delivery_delivered == 1)) {
     return;
   }
   
-  if ((millis() - timer) > -500) {
+  time = millis();
+  if ((time - timer) > -500) {
     if (param_values[tpidx_REWSIDE] == LEFT) {
+      Serial.print(time);
+      Serial.println(" EV DDR_L");
       digitalWrite(L_REWARD_VALVE, HIGH);
       delay(param_values[tpidx_REWARD_DUR_L]);
       digitalWrite(L_REWARD_VALVE, LOW); 
     }
     else if (param_values[tpidx_REWSIDE] == RIGHT) {
+      Serial.print(time);
+      Serial.println(" EV DDR_R");      
       digitalWrite(R_REWARD_VALVE, HIGH);
       delay(param_values[tpidx_REWARD_DUR_R]);
       digitalWrite(R_REWARD_VALVE, LOW); 
