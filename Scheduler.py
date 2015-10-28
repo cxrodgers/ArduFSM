@@ -31,7 +31,7 @@ import my
 from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
-n_dd_trials = 3
+n_dd_trials = 4
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
