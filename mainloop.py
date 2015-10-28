@@ -168,7 +168,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 90,
-            'RD_R': 110,
+            'RD_R': 100,
             'STPHAL': NO,
             'HALPOS': 50,
             }
