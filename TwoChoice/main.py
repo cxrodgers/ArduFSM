@@ -105,6 +105,8 @@ try:
             plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
         elif rigname == 'L3':
             plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
+        elif rigname == 'L0':
+            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
         
         last_updated_trial = 0
     
