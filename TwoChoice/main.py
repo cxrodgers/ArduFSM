@@ -38,16 +38,27 @@ params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
-## Get trial types
-if rigname in []:
-    trial_types = mainloop.get_trial_types('trial_types_4srvpos')
-    reverse_srvpos = False
-elif rigname == 'L0':
+## Choose stim set based on mouse and rig
+if rigname != 'L0':
+    while True:
+        mouse_name = raw_input("Enter mouse name: ")
+        mouse_name = mouse_name.upper().strip()
+        reverse_srvpos = False
+        if mouse_name in ['KF58', 'KM54', 'KF57', 'KM53']:
+            trial_types = mainloop.get_trial_types('trial_types_1srvpos')
+        elif mouse_name in ['KM52']:
+            trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
+        elif mouse_name in ['KM51', 'KF30', 'KF37', 'KF42', 'KM38']:
+            trial_types = mainloop.get_trial_types('trial_types_3srvpos_80pd')
+        elif mouse_name == '':
+            # Default
+            trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
+        else:
+            continue
+        break
+else:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
     reverse_srvpos = True
-else:
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos')
-    reverse_srvpos = False
 
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
@@ -96,6 +107,15 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
+        if rigname == 'L1':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1000)
+        elif rigname == 'L2':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
+        elif rigname == 'L3':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
+        elif rigname == 'L0':
+            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        
         last_updated_trial = 0
     
     while True:

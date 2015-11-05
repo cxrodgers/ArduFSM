@@ -70,6 +70,7 @@ def get_params_table():
         ('RELT',    6,        0, 0, 1, 1, 1),
         ('STPHAL',  MD,       0, 0, 0, 1, 1),
         ('HALPOS',  MD,       0, 0, 0, 1, 1),
+        ('DIRDEL',  NO,       1, 1, 0, 0, 0),
         ],
         columns=('name', 'init_val', 'required_ET', 'reported_ET', 
             'ui-accessible', 'rig-dependent', 'send_on_init'),
@@ -148,6 +149,7 @@ def get_serial_port(rigname):
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
+        'L5': '/dev/ttyACM3',
         }
     
     try:
@@ -166,8 +168,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 19,
-            'RD_R': 43,
+            'RD_L': 90,
+            'RD_R': 110,
             'STPHAL': NO,
             'HALPOS': 50,
             }
@@ -177,7 +179,7 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 63,
+            'RD_L': 60,
             'RD_R': 31,
             'STPHAL': YES,
             'HALPOS': 150,
@@ -188,8 +190,8 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': NO,
             'SRVTT': 2000,
-            'RD_L': 19,
-            'RD_R': 17,
+            'RD_L': 21,
+            'RD_R': 26,
             'STPHAL': YES,
             'HALPOS': 50,
             }
@@ -199,11 +201,22 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 23,
-            'RD_R': 21,
+            'RD_L': 17,
+            'RD_R': 25,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
+            
+    elif rigname == 'L5':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVTT': 2000,
+            'RD_L': 17,
+            'RD_R': 25,
+            'STPHAL': NO,
+            'HALPOS': 50,
+            }              
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
@@ -225,20 +238,20 @@ def get_rig_specific_licktrain(rigname):
     """
     if rigname == 'L1':
         return {
-            'RD_L': 63,
+            'RD_L': 60,
             'RD_R': 31,
             }
     
     elif rigname == 'L2':
         return {
-            'RD_L': 18,
-            'RD_R': 17,
+            'RD_L': 23,
+            'RD_R': 21,
             }
     
     elif rigname == 'L3':
         return {
-            'RD_L': 23,
-            'RD_R': 21,
+            'RD_L': 16,
+            'RD_R': 25,
             }  
     
     else:

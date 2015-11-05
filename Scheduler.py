@@ -31,6 +31,8 @@ import my
 from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
+n_dd_trials = 4
+
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
         self.name = 'forced alternation'
@@ -44,6 +46,7 @@ class ForcedAlternation:
         """Given trial matrix so far, generate params for next"""
         res = {}
         res['ISRND'] = NO
+        res['DIRDEL'] = TrialSpeak.NO
         
         if len(trial_matrix) == 0:
             # First trial, so pick at random from trial_types
@@ -93,6 +96,14 @@ class ForcedAlternation:
             
             res['STPPOS'] = self.trial_types['stppos'][idx]
             res['SRVPOS'] = self.trial_types['srvpos'][idx]
+            
+            # if the last three trials were all forced this way, direct deliver
+            if len(trial_matrix) > n_dd_trials:
+                if (
+                    np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
+                    np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
+                    np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
+                    res['DIRDEL'] = TrialSpeak.YES
 
         
         # Untranslate the rewside
@@ -200,6 +211,7 @@ class RandomStim:
         res['STPPOS'] = self.trial_types['stppos'][idx]
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
         res['ISRND'] = YES
+        res['DIRDEL'] = TrialSpeak.NO
         
         # Save current side for display
         self.params['side'] = res['RWSD']
@@ -300,6 +312,15 @@ class ForcedSide:
         res['STPPOS'] = self.trial_types['stppos'][idx]
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
         res['ISRND'] = NO
+        res['DIRDEL'] = TrialSpeak.NO
+
+        # if the last three trials were all forced this way, direct deliver
+        if len(trial_matrix) > n_dd_trials:
+            if (
+                np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
+                np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
+                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
+                res['DIRDEL'] = TrialSpeak.YES
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -479,7 +500,7 @@ class Auto:
             self.last_changed_trial = this_trial
             self.params['status'] = 'antistay' + str(this_trial)
             self.current_sub_scheduler = self.sub_schedulers['ForcedAlternation']
-        elif np.abs(sideperf_diff) > .25:
+        elif np.abs(sideperf_diff) > .2:
             # Side bias
             self.last_changed_trial = this_trial
             self.params['status'] = 'antiside' + str(this_trial)
