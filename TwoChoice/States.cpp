@@ -78,11 +78,17 @@ void StateResponseWindow::loop()
   int current_response;
   bool licking_l;
   bool licking_r;
+  unsigned long time = millis();
   
   // get the licking state 
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
   
+  // Turn off laser if we've been in the state for long enough
+  if ((time - (timer - duration)) > 2000) {
+    digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  }
+    
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -135,7 +141,7 @@ void StateResponseWindow::loop()
 void StateResponseWindow::s_finish()
 {
   // Turn off laser, if it was on
-  digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   
   // If response is still not set, mark as spoiled
   if (results_values[tridx_RESPONSE] == 0)
@@ -177,6 +183,9 @@ void StateErrorTimeout::s_finish()
 
 void StateErrorTimeout::s_setup()
 {
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  
   my_linServo.write(param_values[tpidx_SRV_FAR]);
 }
 
@@ -192,22 +201,25 @@ void StateWaitForServoMove::s_setup()
 {
   my_linServo.write(param_values[tpidx_SRVPOS]);
   //~ next_state = ROTATE_STEPPER1;   
-  
-  // Turn on opto
-  // This should go in s_loop()
-  if (param_values[tpidx_OPTO] == 3)
-    digitalWrite(__HWCONSTANTS_H_OPTO, 1);
 }
 
 void StateWaitForServoMove::loop()
 {
-  unsigned long time;
+  unsigned long time = millis();
+
+  // First set opto
+  if (
+    (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
+    ((time - timer) > -1000)) {
+    digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  }
+  
+  // Now set direct delivery  
   if ((param_values[tpidx_DIRECT_DELIVERY] == __TRIAL_SPEAK_NO) ||
       (direct_delivery_delivered == 1)) {
     return;
   }
   
-  time = millis();
   if ((time - timer) > -500) {
     if (param_values[tpidx_REWSIDE] == LEFT) {
       Serial.print(time);
@@ -235,6 +247,9 @@ void StateWaitForServoMove::s_finish()
 //// Inter-trial interval
 void StateInterTrialInterval::s_setup()
 {
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+    
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
   {

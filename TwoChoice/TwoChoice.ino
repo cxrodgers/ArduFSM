@@ -122,6 +122,10 @@ void setup()
     // Make sure it's off    
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
     
+    // Opto (collides with one of the 4-pin setups)
+    pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
+    digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
+    
     // Initialize
     stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
