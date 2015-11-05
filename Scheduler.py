@@ -32,6 +32,7 @@ from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
 n_dd_trials = 4
+N_OPTO_TRIALS = 4
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -47,6 +48,7 @@ class ForcedAlternation:
         res = {}
         res['ISRND'] = NO
         res['DIRDEL'] = TrialSpeak.NO
+        res['OPTO'] = NO
         
         if len(trial_matrix) == 0:
             # First trial, so pick at random from trial_types
@@ -104,7 +106,10 @@ class ForcedAlternation:
                     np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
                     np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
                     res['DIRDEL'] = TrialSpeak.YES
-
+            
+            # Opto on every Nth trial
+            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
+                res['OPTO'] = YES
         
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -212,6 +217,7 @@ class RandomStim:
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
         res['ISRND'] = YES
         res['DIRDEL'] = TrialSpeak.NO
+        res['OPTO'] = NO
         
         # Save current side for display
         self.params['side'] = res['RWSD']
@@ -313,6 +319,7 @@ class ForcedSide:
         res['SRVPOS'] = self.trial_types['srvpos'][idx]
         res['ISRND'] = NO
         res['DIRDEL'] = TrialSpeak.NO
+        res['OPTO'] = NO
 
         # if the last three trials were all forced this way, direct deliver
         if len(trial_matrix) > n_dd_trials:
@@ -321,6 +328,10 @@ class ForcedSide:
                 np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
                 np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
                 res['DIRDEL'] = TrialSpeak.YES
+        
+        # Opto on every Nth trial
+            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
+                res['OPTO'] = YES
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
