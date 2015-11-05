@@ -71,6 +71,7 @@ def get_params_table():
         ('STPHAL',  MD,       0, 0, 0, 1, 1),
         ('HALPOS',  MD,       0, 0, 0, 1, 1),
         ('DIRDEL',  NO,       1, 1, 0, 0, 0),
+        ('OPTO',    NO,       1, 1, 0, 0, 0),
         ],
         columns=('name', 'init_val', 'required_ET', 'reported_ET', 
             'ui-accessible', 'rig-dependent', 'send_on_init'),

@@ -29,6 +29,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
   "TOUT", "RELT", "STPHAL", "HALPOS", "DIRDEL",
+  "OPTO",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
@@ -36,6 +37,7 @@ long param_values[N_TRIAL_PARAMS] = {
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
   6, 3, 0, 50, 0,
+  0,
   };
 
 // Whether to report on each trial  
@@ -49,6 +51,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
   0, 0, 0, 0, 1,
+  1,
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -191,7 +194,8 @@ void StateWaitForServoMove::s_setup()
   
   // Turn on opto
   // This should go in s_loop()
-  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  if (param_values[tpidx_OPTO] == 3)
+    digitalWrite(__HWCONSTANTS_H_OPTO, 1);
 }
 
 void StateWaitForServoMove::loop()
