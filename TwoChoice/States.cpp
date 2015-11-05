@@ -227,28 +227,6 @@ void StateWaitForServoMove::loop()
   }
 }
 
-void StateWaitForServoMove::loop()
-{
-  if ((param_values[tpidx_DIRECT_DELIVERY] == __TRIAL_SPEAK_NO) ||
-      (direct_delivery_delivered == 1)) {
-    return;
-  }
-  
-  if ((millis() - timer) > -500) {
-    if (param_values[tpidx_REWSIDE] == LEFT) {
-      digitalWrite(L_REWARD_VALVE, HIGH);
-      delay(param_values[tpidx_REWARD_DUR_L]);
-      digitalWrite(L_REWARD_VALVE, LOW); 
-    }
-    else if (param_values[tpidx_REWSIDE] == RIGHT) {
-      digitalWrite(R_REWARD_VALVE, HIGH);
-      delay(param_values[tpidx_REWARD_DUR_R]);
-      digitalWrite(R_REWARD_VALVE, LOW); 
-    }    
-    direct_delivery_delivered = 1;
-  }
-}
-
 void StateWaitForServoMove::s_finish()
 {
   next_state = RESPONSE_WINDOW;   
