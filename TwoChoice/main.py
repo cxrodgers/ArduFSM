@@ -100,22 +100,20 @@ if RUN_UI:
     finally:
         ui.close()
 
+
 ## Main loop
 final_message = None
 try:
     ## Initialize GUI
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
-        plotter.init_handles()
-        if rigname == 'L1':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1000)
-        elif rigname == 'L2':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
-        elif rigname == 'L3':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
-        elif rigname == 'L0':
-            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        plotter.init_handles()        
         
+        # Try to move
+        plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+600+0")
+        
+        plotter2 = ArduFSM.plot.LickPlotter()
+        plotter2.init_handles()
         last_updated_trial = 0
     
     while True:
@@ -155,9 +153,12 @@ try:
                 last_updated_trial = len(translated_trial_matrix)
                 
                 # don't understand why these need to be here
-                plt.show()
-                plt.draw()
-
+                #~ plt.show()
+                #~ plt.draw()
+            
+            plotter2.update(logfile_lines)
+            plt.show()
+            plt.draw()
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"

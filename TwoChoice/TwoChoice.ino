@@ -14,12 +14,13 @@ Here are the things that the user should have to change for each protocol:
 */
 #include "chat.h"
 #include "hwconstants.h"
-#include "mpr121.h"
-#include <Wire.h> // also for mpr121
+//#include "mpr121.h"
+//#include <Wire.h> // also for mpr121
 #include <Servo.h>
 #include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
+#include "ir_detector.h"
 
 // Make this true to generate random responses for debugging
 #define FAKE_RESPONDER 0
@@ -76,7 +77,7 @@ void setup()
   // MPR121 touch sensor setup
   pinMode(TOUCH_IRQ, INPUT);
   digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
-  Wire.begin();
+  //Wire.begin();
   
   // output pins
   pinMode(L_REWARD_VALVE, OUTPUT);
@@ -139,8 +140,8 @@ void setup()
   }
   
   // thresholds for MPR121
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
+  //mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+  //  param_values[tpidx_REL_THRESH]);
 
   // Set the speed of the stepper
   stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
@@ -200,7 +201,11 @@ void loop()
   // could put other user-specified every_loop() stuff here
   
   // Poll touch inputs
-  touched = pollTouchInputs();
+  if (time % 500 == 0) {
+    touched = pollTouchInputs(time, 1);
+  } else {
+    touched = pollTouchInputs(time, 0);
+  }
   
   // announce sticky
   if (touched != sticky_touched)
@@ -551,8 +556,8 @@ void asynch_action_set_thresh()
   unsigned long time = millis();
   Serial.print(time);
   Serial.println(" EV AAST");
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
+  //mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+  //  param_values[tpidx_REL_THRESH]);
 }
 
 void asynch_action_light_on()
