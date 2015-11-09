@@ -218,6 +218,11 @@ class RandomStim:
         res['ISRND'] = YES
         res['DIRDEL'] = TrialSpeak.NO
         res['OPTO'] = NO
+
+        # Opto on every Nth trial
+        if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
+            res['OPTO'] = YES
+        
         
         # Save current side for display
         self.params['side'] = res['RWSD']
