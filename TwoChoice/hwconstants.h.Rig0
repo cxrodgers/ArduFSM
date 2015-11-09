@@ -22,7 +22,7 @@
 
 // Rewards
 #define L_REWARD_VALVE 4
-#define R_REWARD_VALVE 9
+#define R_REWARD_VALVE 5
 #define TOUCH_IRQ 2
 
 // light
