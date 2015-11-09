@@ -39,7 +39,7 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Choose stim set based on mouse and rig
-if rigname != 'L0':
+if rigname not in ['L0', 'L5']:
     while True:
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
