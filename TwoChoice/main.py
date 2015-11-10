@@ -44,8 +44,10 @@ if rigname not in ['L0', 'L5']:
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
         reverse_srvpos = False
-        if mouse_name in ['KF58', 'KM54', 'KF57', 'KM53', 'KM52', 'KF60',
-            'KF61', 'KF62', 'KM51']:
+        
+        if mouse_name in ['KM54', 'KF57', 'KF58', 'KF60', 'KF62']:
+            trial_types = mainloop.get_trial_types('trial_types_CCL_1srvpos')
+        elif mouse_name in ['KM51', 'KM53', 'KM52', 'KF61',]:
             trial_types = mainloop.get_trial_types('trial_types_1srvpos')
         elif mouse_name in []:
             trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
