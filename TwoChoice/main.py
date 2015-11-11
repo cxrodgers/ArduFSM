@@ -57,7 +57,7 @@ if rigname != 'L0':
             continue
         break
 else:
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
+    trial_types = mainloop.get_trial_types('trial_types_1srvpos_r')
     reverse_srvpos = True
 
 ## Initialize the scheduler
