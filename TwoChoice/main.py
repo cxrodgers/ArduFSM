@@ -39,15 +39,17 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Choose stim set based on mouse and rig
-if rigname not in ['L0', 'L5']:
+if rigname not in ['L0', 'L5', 'L6']:
     while True:
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
         reverse_srvpos = False
         
-        if mouse_name in ['KM54', 'KF57', 'KF58', 'KF60', 'KF62']:
+        if mouse_name in ['KM54', 'KF57', 'KF60', 'KF62', 'KM63', 'KM64', 'KM65']:
+            # "reversed" contingencies
             trial_types = mainloop.get_trial_types('trial_types_CCL_1srvpos')
-        elif mouse_name in ['KM51', 'KM53', 'KM52', 'KF61',]:
+        elif mouse_name in ['KM53', 'KM52', 'KF61',]:
+            # "normal" contingencies
             trial_types = mainloop.get_trial_types('trial_types_1srvpos')
         elif mouse_name in []:
             trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
