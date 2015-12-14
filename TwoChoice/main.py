@@ -38,6 +38,17 @@ params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
+## Upload
+if raw_input('Reupload protocol [y/N]?').upper() == 'Y':
+    if rigname in ['L0', 'L1', 'L2', 'L3']:
+        protocol_name = 'TwoChoice'
+    elif rigname in ['L5', 'L6']:
+        protocol_name = 'TwoChoice_L5'
+    os.system('arduino --board arduino:avr:uno --port %s \
+        --pref sketchbook.path=/home/mouse/dev/ArduFSM \
+        --upload ~/dev/ArduFSM/%s/%s.ino' % (
+        serial_port, protocol_name, protocol_name))
+
 ## Choose stim set based on mouse and rig
 if rigname not in ['L0', 'L5', 'L6']:
     while True:
@@ -118,6 +129,11 @@ try:
             plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
         elif rigname == 'L3':
             plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
+        elif rigname == 'L5':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 100)
+        elif rigname == 'L6':
+            plotter.graphics_handles['f'].canvas.manager.window.move(600, 500)
+            
         elif rigname == 'L0':
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
         
