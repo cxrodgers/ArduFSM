@@ -214,8 +214,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 400,
-            'RD_R': 400,
+            'RD_L': 100,
+            'RD_R': 100,
             'STPHAL': NO,
             'HALPOS': 50,
             }              
@@ -226,8 +226,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 400,
-            'RD_R': 400,
+            'RD_L': 200,
+            'RD_R': 200,
             'STPHAL': NO,
             'HALPOS': 50,
             }     
