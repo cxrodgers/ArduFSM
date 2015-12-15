@@ -33,6 +33,9 @@ rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
 #~ serial_port = '/dev/ttyACM0'
 
+if not os.path.exists(serial_port):
+    raise OSError("serial port %s does not exist" % serial_port)
+
 ## Get params
 params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
@@ -50,7 +53,7 @@ if raw_input('Reupload protocol [y/N]?').upper() == 'Y':
         serial_port, protocol_name, protocol_name))
 
 ## Choose stim set based on mouse and rig
-if rigname not in ['L0', 'L5', 'L6']:
+if rigname not in ['L0']:
     while True:
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
