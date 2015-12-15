@@ -52,15 +52,9 @@ if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
         --upload ~/dev/ArduFSM/%s/%s.ino' % (
         serial_port, protocol_name, protocol_name))
 
-## The closest one is reversed on some rigs
-if rigname in ['L0', 'L5', 'L6']:
-    reverse_srvpos = True
-else:
-    reverse_srvpos = False
-
 ## Choose stim set based on mouse and rig
 if rigname == 'L0':
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos')
 else:
     while True:
         mouse_name = raw_input("Enter mouse name: ")
@@ -69,20 +63,30 @@ else:
         
         if mouse_name in ['KM54', 'KF57', 'KF60', 'KF62', 'KM63', 'KM64', 'KM65']:
             # "reversed" contingencies
-            trial_types = mainloop.get_trial_types('trial_types_CCL_1srvpos')
+            trial_types_name = 'trial_types_CCL_1srvpos'
         elif mouse_name in ['KM53', 'KM52', 'KF61',]:
             # "normal" contingencies
-            trial_types = mainloop.get_trial_types('trial_types_1srvpos')
+            trial_types_name = 'trial_types_1srvpos'
         elif mouse_name in []:
-            trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
+            trial_types_name = 'trial_types_2srvpos_80pd'
         elif mouse_name in ['KF30', 'KF37', 'KF42', 'KM38']:
-            trial_types = mainloop.get_trial_types('trial_types_3srvpos_80pd')
+            trial_types_name = 'trial_types_3srvpos_80pd'
         elif mouse_name == '':
             # Default
-            trial_types = mainloop.get_trial_types('trial_types_2srvpos_80pd')
+            trial_types_name = 'trial_types_2srvpos_80pd'
         else:
             continue
         break
+
+## The closest one is reversed on some rigs
+if rigname in ['L0', 'L5', 'L6']:
+    reverse_srvpos = True
+    trial_types_name = trial_types_name + '_r'
+else:
+    reverse_srvpos = False
+
+## Now actually load the trial type
+trial_types = mainloop.get_trial_types(trial_types_name)
 
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
