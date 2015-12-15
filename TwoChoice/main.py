@@ -124,15 +124,15 @@ try:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
         if rigname == 'L1':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1000)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
         elif rigname == 'L2':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1350)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
         elif rigname == 'L3':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 1700)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1800)
         elif rigname == 'L5':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 100)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 100)
         elif rigname == 'L6':
-            plotter.graphics_handles['f'].canvas.manager.window.move(600, 500)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 500)
             
         elif rigname == 'L0':
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
