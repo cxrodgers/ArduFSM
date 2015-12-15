@@ -42,18 +42,26 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
-if raw_input('Reupload protocol [y/N]?').upper() == 'Y':
-    if rigname in ['L0', 'L1', 'L2', 'L3']:
+if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+    if rigname in ['L0']:
         protocol_name = 'TwoChoice'
-    elif rigname in ['L5', 'L6']:
-        protocol_name = 'TwoChoice_L5'
+    else:
+        protocol_name = 'TwoChoice_%s' % rigname
     os.system('arduino --board arduino:avr:uno --port %s \
         --pref sketchbook.path=/home/mouse/dev/ArduFSM \
         --upload ~/dev/ArduFSM/%s/%s.ino' % (
         serial_port, protocol_name, protocol_name))
 
+## The closest one is reversed on some rigs
+if rigname in ['L0', 'L5', 'L6']:
+    reverse_srvpos = True
+else:
+    reverse_srvpos = False
+
 ## Choose stim set based on mouse and rig
-if rigname not in ['L0']:
+if rigname == 'L0':
+    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
+else:
     while True:
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
@@ -75,9 +83,6 @@ if rigname not in ['L0']:
         else:
             continue
         break
-else:
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
-    reverse_srvpos = True
 
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
