@@ -215,7 +215,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 100,
-            'RD_R': 100,
+            'RD_R': 60,
             'STPHAL': NO,
             'HALPOS': 50,
             }              
@@ -226,8 +226,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 200,
-            'RD_R': 200,
+            'RD_L': 40,
+            'RD_R': 40,
             'STPHAL': NO,
             'HALPOS': 50,
             }     
@@ -286,7 +286,7 @@ def assign_rig_specific_params_licktrain(rigname, params_table):
     d = get_rig_specific_licktrain(rigname)
     for param_name, param_value in d.items():
         try:
-            params_table['init_val'][param_name] = param_value
+            params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
             raise ValueError("cannot find param named %s" % param_name)
     return params_table
