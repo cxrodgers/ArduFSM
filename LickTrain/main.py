@@ -10,11 +10,13 @@ import matplotlib.pyplot as plt
 
 # Ardu imports
 import ArduFSM
-import TrialSpeak, TrialMatrix
-import trial_setter_ui
-import Scheduler
-import trial_setter
-import mainloop
+import ArduFSM.chat
+import ArduFSM.plot
+from ArduFSM import TrialSpeak, TrialMatrix
+from ArduFSM import trial_setter_ui
+from ArduFSM import Scheduler
+from ArduFSM import trial_setter
+from ArduFSM import mainloop
 
 
 ## Find out what rig we're in using the current directory
@@ -27,6 +29,18 @@ params_table = mainloop.get_params_table_licktrain()
 params_table = mainloop.assign_rig_specific_params_licktrain(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
+## Upload
+if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+    if rigname in ['L5', 'L6']:
+        raise ValueError("LickTrain not supported in rig", rigname)
+    else:
+        protocol_name = 'LickTrain'
+
+    os.system('arduino --board arduino:avr:uno --port %s \
+        --pref sketchbook.path=/home/mouse/dev/ArduFSM \
+        --upload ~/dev/ArduFSM/%s/%s.ino' % (
+        serial_port, protocol_name, protocol_name))
+
 ## Get trial types
 trial_types = mainloop.get_trial_types('trial_types_licktrain')
 
@@ -35,7 +49,7 @@ scheduler = Scheduler.ForcedAlternationLickTrain(trial_types=trial_types)
 
 ## Create Chatter
 logfilename = 'out.log'
-#logfilename = None # autodate
+logfilename = None # autodate
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
@@ -74,8 +88,23 @@ final_message = None
 try:
     ## Initialize GUI
     if RUN_GUI:
-        plotter = ArduFSM.PlotterWithServoThrow(trial_types)
+        plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
+
+        if rigname == 'L1':
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
+        elif rigname == 'L2':
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
+        elif rigname == 'L3':
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1800)
+        elif rigname == 'L5':
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 100)
+        elif rigname == 'L6':
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 500)
+            
+        elif rigname == 'L0':
+            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        
         last_updated_trial = 0
     
     while True:
@@ -89,7 +118,7 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        translated_trial_matrix = ts_obj.update(splines)
+        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
         
         ## Update UI
         if RUN_UI:
