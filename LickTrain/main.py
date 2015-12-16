@@ -32,7 +32,8 @@ params_table['current-value'] = params_table['init_val'].copy()
 ## Upload
 if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
     if rigname in ['L5', 'L6']:
-        raise ValueError("LickTrain not supported in rig", rigname)
+        protocol_name = 'LickTrain_%s' % rigname
+        #~ raise ValueError("LickTrain not supported in rig", rigname)
     else:
         protocol_name = 'LickTrain'
 

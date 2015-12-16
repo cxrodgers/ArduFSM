@@ -267,6 +267,18 @@ def get_rig_specific_licktrain(rigname):
             'RD_L': 16,
             'RD_R': 25,
             }  
+
+    elif rigname == 'L5':
+        return {
+            'RD_L': 100,
+            'RD_R': 60,
+            }  
+    
+    elif rigname == 'L6':
+        return {
+            'RD_L': 40,
+            'RD_R': 40,
+            }  
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
