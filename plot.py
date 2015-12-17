@@ -689,7 +689,7 @@ def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
         
         if typnum in typ2perf:
             nhits, ntots = typ2perf[typnum]
-            tick_label += ' Unforced:%03d/%03d' % (nhits, ntots)
+            tick_label += ' Unf:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
                 tick_label += '=%0.2f' % (float(nhits) / ntots)
             tick_label += '.'
