@@ -57,11 +57,14 @@ if rigname == 'L0':
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
 else:
     while True:
+
         mouse_name = raw_input("Enter mouse name: ")
         mouse_name = mouse_name.upper().strip()
         reverse_srvpos = False
         
-        if mouse_name in ['KM54', 'KF57', 'KF60', 'KF62', 'KM63', 'KM64', 'KM65']:
+        if mouse_name in ['KM54', 'KF57', 'KF60', 'KF62', 
+            'KM63', 'KM64', 'KM65',
+            'KF66', 'KF67', 'KF68']:
             # "reversed" contingencies
             trial_types_name = 'trial_types_CCL_1srvpos'
         elif mouse_name in ['KM53', 'KM52', 'KF61',]:
