@@ -105,6 +105,8 @@ def parse_lines_into_df(lines):
         rec_l.append(sp_line)
     
     # DataFrame it and convert string times to integer
+    if len(rec_l) == 0:
+        raise ValueError("cannot extract any lines")
     df = pandas.DataFrame(rec_l, columns=['time', 'command', 'argument'])
     df['time'] = df['time'].astype(np.int)
     return df
