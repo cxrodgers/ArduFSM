@@ -85,7 +85,7 @@ void StateResponseWindow::loop()
   set_licking_variables(licking_l, licking_r);
   
   // Turn off laser if we've been in the state for long enough
-  if ((time - (timer - duration)) > 2000) {
+  if ((time - (timer - duration)) > 4000) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   }
     
