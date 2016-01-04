@@ -151,6 +151,7 @@ def get_serial_port(rigname):
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
         'L5': '/dev/ttyACM3',
+        'L6': '/dev/ttyACM4',
         }
     
     try:
@@ -181,7 +182,7 @@ def get_rig_specific(rigname):
             '2PSTP': NO,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 31,
+            'RD_R': 33,
             'STPHAL': YES,
             'HALPOS': 150,
             }
@@ -192,7 +193,7 @@ def get_rig_specific(rigname):
             '2PSTP': NO,
             'SRVTT': 2000,
             'RD_L': 21,
-            'RD_R': 26,
+            'RD_R': 30,
             'STPHAL': YES,
             'HALPOS': 50,
             }
@@ -202,8 +203,8 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 17,
-            'RD_R': 25,
+            'RD_L': 21,
+            'RD_R': 27,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
@@ -212,12 +213,25 @@ def get_rig_specific(rigname):
         return {
             'STPSPD': 30,
             '2PSTP': YES,
+            'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 17,
-            'RD_R': 25,
-            'STPHAL': NO,
+            'RD_L': 60,
+            'RD_R': 45,
+            'STPHAL': YES,
             'HALPOS': 50,
             }              
+
+    elif rigname == 'L6':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 50,
+            'RD_R': 50,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            }     
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
@@ -254,6 +268,18 @@ def get_rig_specific_licktrain(rigname):
             'RD_L': 16,
             'RD_R': 25,
             }  
+
+    elif rigname == 'L5':
+        return {
+            'RD_L': 100,
+            'RD_R': 60,
+            }  
+    
+    elif rigname == 'L6':
+        return {
+            'RD_L': 40,
+            'RD_R': 40,
+            }  
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
@@ -273,7 +299,7 @@ def assign_rig_specific_params_licktrain(rigname, params_table):
     d = get_rig_specific_licktrain(rigname)
     for param_name, param_value in d.items():
         try:
-            params_table['init_val'][param_name] = param_value
+            params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
             raise ValueError("cannot find param named %s" % param_name)
     return params_table
