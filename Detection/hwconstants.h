@@ -7,12 +7,13 @@
 #define enablePin 7
 #define startPin 2
 #define optoPin 13
-#define leverPin 9
 #define rewPin 5
 #define speakerPin 11
 
 // Analog
+// leverPin used to be DIO9
 #define hallPin 1
+#define leverPin 0
 
 // Other constants
 #define stepsPerRevolution 200
