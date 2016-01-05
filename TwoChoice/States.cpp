@@ -130,12 +130,23 @@ void StateResponseWindow::loop()
 
 void StateResponseWindow::s_finish()
 {
-  // If response is still not set, mark as spoiled
+  // If response is still not set, mark as a nogo response
   if (results_values[tridx_RESPONSE] == 0)
   {
+    // The response was nogo
     results_values[tridx_RESPONSE] = NOGO;
-    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
-    next_state = INTER_TRIAL_INTERVAL;
+    
+    // The outcome depends on whether this was a nogo trial
+    if (param_values[tpidx_REWSIDE] == NOGO) {
+      // Correctly did nothing on a NOGO trial
+      results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    } else {
+      // Was supposed to go left or right; instead did nothing
+      results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    }
+
+  // In any case the trial is over
+  next_state = INTER_TRIAL_INTERVAL;
   }
 }
 
