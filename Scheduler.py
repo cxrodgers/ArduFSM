@@ -219,7 +219,7 @@ class RandomStim:
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
-        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        res['RWSD'] = {'left': 1, 'right': 2, 'nogo': 3}[res['RWSD']]
         
         return res
 
@@ -284,7 +284,7 @@ class ForcedSide:
         """Initialize a new ForcedSide scheduler.
         
         Chooses randomly from rows in 'trial_types', for which rewside=side.
-        Side should be in {'left', 'right'}
+        Side should be in {'left', 'right', 'nogo'}
         """
         self.name = 'forced side'
         self.params = kwargs
@@ -325,7 +325,7 @@ class ForcedSide:
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
-        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        res['RWSD'] = {'left': 1, 'right': 2, 'nogo': 3}[res['RWSD']]
         
         return res
 

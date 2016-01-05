@@ -201,7 +201,7 @@ def translate_trial_matrix(trial_matrix):
             nanval='curr')
     if 'rewside' in trial_matrix:
         trial_matrix['rewside'] = my_replace(trial_matrix['rewside'], {
-            LEFT: 'left', RIGHT: 'right'})
+            LEFT: 'left', RIGHT: 'right', NOGO: 'nogo'})
     if 'isrnd' in trial_matrix:
         assert trial_matrix['isrnd'].isin([YES, NO]).all()
         trial_matrix['isrnd'] = (trial_matrix['isrnd'] == YES)
