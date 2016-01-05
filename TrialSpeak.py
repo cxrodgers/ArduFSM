@@ -84,6 +84,8 @@ def read_lines_from_file(filename):
 def parse_lines_into_df(lines):
     """Parse every line into time, command, and argument.
     
+    Consider replacing this with read_logfile_into_df
+    
     In trial speak, each line has the same format: the time in milliseconds,
     space, a string command, space, an optional argument. This function parses
     each line into those three components and returns as a dataframe.
@@ -116,6 +118,9 @@ def parse_lines_into_df_split_by_trial(lines, verbose=False):
     
     We drop everything before the first TRL_START token.
     If there is no TRL_START token, return None.
+    
+    This can be slow if each trial has to be processed separately.
+    Consider replacing this with read_logfile_into_df
     """
     # Parse
     df = parse_lines_into_df(lines)
@@ -464,6 +469,11 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     always_insert=('resp', 'outc')):
     """Parse out the parameters and outcomes from the lines in the logfile
     
+    This was written to be a more optimized version of 
+    make_trials_matrix_from_logfile_lines and is used in trial_setter.
+    Should combine this with TrialMatrix.make_trial_matrix_from_logfile_lines
+    and just make one thing that does this function.
+    
     For each trial, the following parameters are extracted:
         trial_start : time in seconds at which TRL_START was issued
         trial_released: time in seconds at which trial was released
@@ -550,6 +560,12 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
 
 def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
     """Read logfile into a DataFrame
+    
+    Something like this should probably be the preferred way to read the 
+    lines into a structured data frame.
+    
+    Use get_commands_from_parsed_lines to parse the arguments, eg,
+    converting to numbers.
     
     Each line in the file will be a row in the data frame.
     Each line is separated by whitespace into the different columns.
