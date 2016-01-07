@@ -26,12 +26,16 @@ def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
     """
     # Read
     logfile_lines = TrialSpeak.read_lines_from_file(log_filename)
-    
+        
     # Spline
     lines_split_by_trial = TrialSpeak.split_by_trial(logfile_lines)
     
     # Make matrix
     trial_matrix = make_trials_info_from_splines(lines_split_by_trial)
+    
+    # This would be faster and I think identical:
+    #~ trial_matrix = ArduFSM.TrialSpeak.make_trials_matrix_from_logfile_lines2(
+        #~ logfile_lines)    
     
     # Translate and/or numericate
     if translate:
