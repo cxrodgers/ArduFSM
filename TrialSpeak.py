@@ -306,6 +306,10 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
     show_warnings=True, error_on_multi=False, command='ST_CHG'):
     """Return time that state changed from state0 to state1
     
+    Probably better to replace code using this with a combination of
+    ArduFSM.TrialSpeak.read_logfile_into_df
+    ArduFSM.TrialSpeak.get_commands_from_parsed_lines
+    
     parsed_df_by_trial : result of parse_lines_into_df_split_by_trial
         (May be more efficient to rewrite this to operate on the whole thing?)
     state0 and state1 : any argument that pick_rows can work on, so
@@ -621,35 +625,77 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
             rdf['trial'] = np.searchsorted(np.asarray(trl_start_idxs), 
                 np.asarray(rdf.index), side='right') - 1        
     
+    # Error check
+    # Very commonly the ACK TRL_RELEASED, AAR_L, and AAR_R commands
+    # are out of order. So ignore this for now.
+    # Somewhat commonly, there is a missing first digit of the time, for
+    # some reason.
+    rrdf = rdf[
+        ~rdf.command.isin(['DBG', 'ACK']) &
+        ~rdf.arg0.isin(['AAR_L', 'AAR_R'])
+        ]
+    unsorted_times = rrdf['time'].values
+    bad_args = np.where(np.diff(unsorted_times) < 0)[0]
+    if len(bad_args) > 0:
+        first_bad_arg = bad_args[0]
+        print "bad args"
+        pre_bad_arg = np.max([first_bad_arg - 2, 0])
+        post_bad_arg = np.min([first_bad_arg + 2, len(rrdf)])
+        bad_rows = rrdf.ix[rrdf.index[pre_bad_arg]:rrdf.index[post_bad_arg]]
+        print bad_rows
+        raise ValueError("unsorted times in logfile, starting at line %d" %
+            bad_args[0])
+    
     return rdf
     
-def get_commands_from_parsed_lines(parsed_lines, command):
+def get_commands_from_parsed_lines(parsed_lines, command,
+    arg2dtype=None):
     """Return only those lines that match "command" and set dtypes.
     
-    For instance, for ST_CHG, we keep two numeric arguments.
+    parsed_lines : result of read_logfile_into_df
+    command : 'ST_CHG', 'ST_CHG2', 'TCH', etc.
+        This is used to select rows from parsed_lines. For known arguments,
+        we can also use this to set arg2dtype.
+    arg2dtype : dict explaining which args to keep and what dtype to convert
+        e.g., {'arg0': np.int, 'arg1': np.float}
+    
+    Returns:
+        DataFrame with one row for each matching command, and just the
+        requested columns. We always include 'time', 'command', and
+        'trial' if available
+    
+    Can use something like this to group the result by trial and arg0:
+    tt2licks = lick_times.groupby(['trial', 'arg0']).groups
+    for (trial, lick_type) in tt2licks:
+        tt2licks[(trial, lick_type)] = \
+            ldf.loc[tt2licks[(trial, lick_type)], 'time'].values / 1000.    
+    
+    See BeWatch.misc for other examples of task-specific logic
     """
     # Pick
     res = my.pick_rows(parsed_lines, command=command)
     
     # Decide which columns to keep and how to coerce
     if command == 'ST_CHG2':
-        keep_args = ['arg0', 'arg1']
-        arg_dtypes = [np.int, np.int]
+        if arg2dtype is None:
+            arg2dtype = {'arg0': np.int, 'arg1': np.int}
     elif command == 'ST_CHG':
-        keep_args = ['arg0', 'arg1']
-        arg_dtypes = [np.int, np.int]
-    else:
-        # Keep all args?
-        1/0
+        if arg2dtype is None:
+            arg2dtype = {'arg0': np.int, 'arg1': np.int}
+    elif command == 'TCH':
+        arg2dtype = {'arg0': np.int}
+    
+    if arg2dtype is None:
+        raise ValueError("must provide arg2dtype")
     
     # Keep only the columns we want
-    keep_cols = ['time', 'command'] + keep_args
+    keep_cols = ['time', 'command'] + sorted(arg2dtype.keys())
     if 'trial' in res.columns:
         keep_cols.append('trial')    
     res = res[keep_cols]
 
     # Coerce dtypes
-    for argname, dtyp in zip(keep_args, arg_dtypes):
+    for argname, dtyp in arg2dtype.items():
         try:
             res[argname] = res[argname].astype(dtyp)
         except ValueError:
