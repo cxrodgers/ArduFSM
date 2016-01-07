@@ -55,48 +55,55 @@ if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
     # Should look for programmer is not responding in output and warn user
     # to plug/unplug arduino
 
-## Choose stim set based on mouse and rig
-if rigname == 'L0':
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos')
-else:
-    while True:
-
-        mouse_name = raw_input("Enter mouse name: ")
-        mouse_name = mouse_name.upper().strip()
-        reverse_srvpos = False
-        
-        if mouse_name in ['KM54', 'KF57', 'KF60', 'KF62', 
-            'KM63', 'KM64', 'KM65',
-            'KF66', 'KF67', 'KF68']:
-            # "reversed" contingencies
-            trial_types_name = 'trial_types_CCL_1srvpos'
-        elif mouse_name in ['KM53', 'KM52', 'KF61',]:
-            # "normal" contingencies
-            trial_types_name = 'trial_types_1srvpos'
-        elif mouse_name in []:
-            trial_types_name = 'trial_types_2srvpos_80pd'
-        elif mouse_name in ['KF30', 'KF37', 'KF42', 'KM38']:
-            trial_types_name = 'trial_types_3srvpos_80pd'
-        elif mouse_name == '':
-            # Default
-            trial_types_name = 'trial_types_2srvpos_80pd'
-        else:
-            continue
-        break
-
-## The closest one is reversed on some rigs
+## Set parameters
+# Get a rig parameter
 if rigname in ['L0', 'L5', 'L6']:
     reverse_srvpos = True
-    trial_types_name = trial_types_name + '_r'
 else:
     reverse_srvpos = False
+
+# Set the trial types and scheduler based on the mouse name
+mouse_parameters_df = pandas.DataFrame.from_records([
+    ('default', 'trial_types_2srvpos_80pd', Scheduler.Auto,),
+    ('KM38', 'trial_types_3srvpos_80pd', Scheduler.Auto,),
+    ('KM52', 'trial_types_2srvpos_80pd', Scheduler.ForcedAlternation,),
+    ('KF60', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
+    ('KF61', 'trial_types_1srvpos', Scheduler.ForcedAlternation,),
+    ('KF62', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
+    ('KM63', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
+    ('KM64', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
+    ('KM65', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
+    ('KF69', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
+    ('KF70', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
+    ('KF71', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
+    ], columns=('mouse', 'trial_types', 'scheduler'),
+    ).set_index('mouse')
+
+# Get the mouse name
+while True:
+    # Get the mosue name (default is blank, continue if not in index)
+    mouse_name = raw_input("Enter mouse name: ")
+    mouse_name = mouse_name.upper().strip()
+    if mouse_name == '':
+        mouse_name = 'default'
+    if mouse_name not in mouse_parameters_df.index:
+        continue
+    
+    # Get the trial types (optionally reversing by rig)
+    trial_types_name = mouse_parameters_df.loc[mouse_name, 'trial_types']
+    if reverse_srvpos:
+        trial_types_name = trial_types_name + '_r'
+    
+    # Get the scheduler
+    scheduler_obj = mouse_parameters_df.loc[mouse_name, 'scheduler']
+    break
 
 ## Now actually load the trial type
 trial_types = mainloop.get_trial_types(trial_types_name)
 
 ## Initialize the scheduler
-scheduler = Scheduler.SessionStarter(trial_types=trial_types)
-scheduler = Scheduler.Auto(trial_types=trial_types, reverse_srvpos=reverse_srvpos)
+# Do all scheduler objects accept reverse_srvpos?
+scheduler = scheduler_obj(trial_types=trial_types, reverse_srvpos=reverse_srvpos)
 
 ## Create Chatter
 logfilename = 'out.log'
