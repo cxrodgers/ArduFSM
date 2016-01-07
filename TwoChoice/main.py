@@ -73,9 +73,9 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KM63', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
     ('KM64', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
     ('KM65', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KF69', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
-    ('KF70', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
-    ('KF71', 'trial_types_gng_1srvpos', Scheduler.RandomStim,),
+    ('KF69', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
+    ('KF70', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
+    ('KF71', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
     ], columns=('mouse', 'trial_types', 'scheduler'),
     ).set_index('mouse')
 
