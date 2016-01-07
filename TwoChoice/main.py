@@ -64,19 +64,31 @@ else:
 
 # Set the trial types and scheduler based on the mouse name
 mouse_parameters_df = pandas.DataFrame.from_records([
-    ('default', 'trial_types_2srvpos_80pd', Scheduler.Auto,),
-    ('KM38', 'trial_types_3srvpos_80pd', Scheduler.Auto,),
-    ('KM52', 'trial_types_2srvpos_80pd', Scheduler.ForcedAlternation,),
-    ('KF60', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KF61', 'trial_types_1srvpos', Scheduler.ForcedAlternation,),
-    ('KF62', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KM63', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KM64', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KM65', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,),
-    ('KF69', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
-    ('KF70', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
-    ('KF71', 'trial_types_1srvpos_gng', Scheduler.RandomStim,),
-    ], columns=('mouse', 'trial_types', 'scheduler'),
+    ('default', 'trial_types_2srvpos_80pd', Scheduler.Auto,
+        trial_setter_ui.UI),
+    ('KM38', 'trial_types_3srvpos_80pd', Scheduler.Auto,
+        trial_setter_ui.UI),
+    ('KM52', 'trial_types_2srvpos_80pd', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KF60', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KF61', 'trial_types_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KF62', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KM63', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KM64', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KM65', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation,
+        trial_setter_ui.UI),
+    ('KF69', 'trial_types_1srvpos_gng', Scheduler.RandomStim,
+        trial_setter_ui.UI_GNG),
+    ('KF70', 'trial_types_1srvpos_gng', Scheduler.RandomStim,
+        trial_setter_ui.UI_GNG),
+    ('KF71', 'trial_types_1srvpos_gng', Scheduler.RandomStim, 
+        trial_setter_ui.UI_GNG),
+    ], columns=('mouse', 'trial_types', 'scheduler', 'ui'),
     ).set_index('mouse')
 
 # Get the mouse name
@@ -96,10 +108,24 @@ while True:
     
     # Get the scheduler
     scheduler_obj = mouse_parameters_df.loc[mouse_name, 'scheduler']
+    
+    # Get the ui
+    ui_obj = mouse_parameters_df.loc[mouse_name, 'ui']
     break
 
 ## Now actually load the trial type
 trial_types = mainloop.get_trial_types(trial_types_name)
+
+## Hack: change params table defaults
+# change RWIN for GNG
+if 'gng' in trial_types_name:
+    params_table.loc['RWIN', 'init_val'] = 3000
+    params_table.loc['RWIN', 'current-value'] = 3000
+
+# lower TO for newest mice
+if mouse_name in ['KF69', 'KF70', 'KF71']:
+    params_table.loc['TO', 'init_val'] = 500
+    params_table.loc['TO', 'current'] = 500
 
 ## Initialize the scheduler
 # Do all scheduler objects accept reverse_srvpos?
@@ -122,7 +148,7 @@ RUN_UI = True
 RUN_GUI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
-    ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
+    ui = ui_obj(timeout=100, chatter=chatter, 
         logfilename=logfilename,
         ts_obj=ts_obj)
 
