@@ -151,6 +151,8 @@ def get_serial_port(rigname):
         'L3': '/dev/ttyACM2', 
         'L5': '/dev/ttyACM3',
         'L6': '/dev/ttyACM4',
+        'L7': '/dev/ttyACM5',
+        'L8': '/dev/ttyACM6',
         }
     
     try:
@@ -231,7 +233,30 @@ def get_rig_specific(rigname):
             'STPHAL': YES,
             'HALPOS': 50,
             }     
-    
+
+    elif rigname == 'L7':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 60,
+            'RD_R': 50,
+            'STPHAL': NO,
+            'HALPOS': 50,
+            }  
+
+    elif rigname == 'L8':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 60,
+            'RD_R': 50,
+            'STPHAL': NO,
+            'HALPOS': 50,
+            }              
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
 
