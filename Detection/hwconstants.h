@@ -13,7 +13,7 @@
 // Analog
 // leverPin used to be DIO9
 #define hallPin 1
-#define leverPin 0
+#define leverPin 9
 
 // Other constants
 #define stepsPerRevolution 200

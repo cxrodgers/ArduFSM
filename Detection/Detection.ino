@@ -62,7 +62,7 @@ void setup() {
   pinMode(startPin, OUTPUT);
   pinMode(optoPin, OUTPUT);
   pinMode(enablePin, OUTPUT); //enable for motor
-  //pinMode(leverPin, INPUT);
+  pinMode(leverPin, INPUT);
   pinMode(rewPin, OUTPUT);
   pinMode(speakerPin, OUTPUT);
   stimStepper.setSpeed(80); 
@@ -102,7 +102,7 @@ void loop(){
 //    // check for lever presses during this round when no stimulus is present
 //    levState = digitalRead(leverPin);
     
-  leverState = analogRead(leverPin) < 512; //digitalRead(leverPin);
+  leverState = digitalRead(leverPin);
   if (leverState == HIGH){
     if(prevLevState == 0) { // if previously not pressed --as in beginning of session
       levPressTime = millis();
@@ -172,7 +172,7 @@ void loop(){
       digitalWrite(enablePin, HIGH);
       delay(100);
       hallSensValue = analogRead(hallPin);
-      leverState = analogRead(leverPin) < 512; //digitalRead(leverPin);
+      leverState = digitalRead(leverPin);
       if (leverState == HIGH) { // if lever is pressed for defined amount of time
         while (hallSensValue < hallThresh){ //rotate motor until it hits the hall effect sensor
           stimStepper.step(-1);
@@ -193,7 +193,7 @@ void loop(){
       while (elapTime <= stimDuration){
         time = millis();
         elapTime = time - trigTime;
-        leverState = analogRead(leverPin) < 512; //digitalRead(leverPin); 
+        leverState = digitalRead(leverPin); 
           if (leverState == HIGH) { // if the lever is pressed start checking for lever lifts.
            startLevLiftCheck = 1;
           }           
@@ -256,7 +256,7 @@ void loop(){
        while (elapTime <= stimDuration) {
          time = millis();
          elapTime = time - trigTime; 
-         leverState = analogRead(leverPin) < 512; //digitalRead(leverPin);
+         leverState = digitalRead(leverPin);
          if (leverState == HIGH){ // if the lever is pressed start checking for lever lifts.
            startLevLiftCheck = 1;
          }
