@@ -308,6 +308,7 @@ except:
 
 finally:
     if SHOW_WEBCAM:
+        wc.stop()
         wc.cleanup()
     chatter.close()
     print "chatter closed"
