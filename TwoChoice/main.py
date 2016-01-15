@@ -26,7 +26,6 @@ from ArduFSM import Scheduler
 from ArduFSM import trial_setter
 from ArduFSM import mainloop
 
-
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
@@ -36,6 +35,42 @@ serial_port = mainloop.get_serial_port(rigname)
 if not os.path.exists(serial_port):
     raise OSError("serial port %s does not exist" % serial_port)
 
+## Get webcam params
+SHOW_WEBCAM = True
+if rigname == 'L0':
+    SHOW_WEBCAM = False
+    video_device = '/dev/video0'
+    video_filename = '/dev/null'
+elif rigname == 'L1':
+    video_device = '/dev/video0'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L1-auto.mkv'))
+    video_window_position = 1225, 0
+elif rigname == 'L2':
+    video_device = '/dev/video1'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L2-auto.mkv'))
+    video_window_position = 1225, 400
+elif rigname == 'L3':
+    video_device = '/dev/video2'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L3-auto.mkv'))
+    video_window_position = 1225, 800
+elif rigname == 'L5':
+    video_device = '/dev/video3'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L5-auto.mkv'))
+    video_window_position = 1225, 1050
+elif rigname == 'L6':
+    video_device = '/dev/video4'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L6-auto.mkv'))
+    video_window_position = 1225, 1450
+elif rigname == 'L7':
+    video_device = '/dev/video5'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L7-auto.mkv'))
+    video_window_position = 1225, 1850
+elif rigname == 'L8':
+    video_device = '/dev/video6'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/L8-auto.mkv'))
+    video_window_position = 725, 1850
+#~ video_filename = '/dev/null'
+    
 ## Get params
 params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
@@ -57,7 +92,7 @@ if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
 
 ## Set parameters
 # Get a rig parameter
-if rigname in ['L0', 'L5', 'L6']:
+if rigname in ['L0', 'L5', 'L6', 'L7', 'L8']:
     reverse_srvpos = True
 else:
     reverse_srvpos = False
@@ -138,6 +173,11 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
 
+## Reset video filename
+date_s = os.path.split(logfilename)[1].split('.')[1]
+video_filename = os.path.join(os.path.expanduser('~/Videos'), 
+    '%s-%s.mkv' % (rigname, date_s))
+
 ## Trial setter
 ts_obj = trial_setter.TrialSetter(chatter=chatter, 
     params_table=params_table,
@@ -170,6 +210,16 @@ if RUN_UI:
 ## Main loop
 final_message = None
 try:
+    ## Initialize webcam
+    if SHOW_WEBCAM:
+        window_title = os.path.split(video_filename)[1]
+        wc = my.video.WebcamController(device=video_device, 
+            output_filename=video_filename,
+            window_title=window_title)
+        wc.start()
+    else:
+        wc = None
+    
     ## Initialize GUI
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
@@ -189,6 +239,14 @@ try:
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
         
         last_updated_trial = 0
+    
+    # Move the webcam window once it appears
+    if SHOW_WEBCAM:
+        cmd = 'xdotool search --name %s windowmove %d %d' % (
+            window_title, video_window_position[0], video_window_position[1])
+        while os.system(cmd) != 0:
+            print "Waiting for webcam window"
+            time.sleep(.5)
     
     while True:
         ## Chat updates
@@ -249,6 +307,8 @@ except:
     raise
 
 finally:
+    if SHOW_WEBCAM:
+        wc.cleanup()
     chatter.close()
     print "chatter closed"
     
