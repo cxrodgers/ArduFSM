@@ -118,6 +118,14 @@ class UIActionTaker:
         
         return 'schedule changed'
 
+    def force_alt_gng(self, **kwargs):
+        """Change to a forced alternation schedule"""
+        self.ui.ts_obj.scheduler = Scheduler.ForcedAlternationGNG(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            **kwargs)        
+        
+        return 'schedule changed'
+
     def force_l(self, **kwargs):
         """Change to a Forced L schedule"""
         self.ui.ts_obj.scheduler = Scheduler.ForcedSide(
@@ -447,6 +455,7 @@ class UI_GNG(UI):
             ('X', 'force X', self.ui_action_taker.force_x),
             ('N', 'force nogo', self.ui_action_taker.force_n),
             ('G', 'force go/R', self.ui_action_taker.force_r),
+            ('A', 'force alt', self.ui_action_taker.force_alt_gng),
             ]        
 
 #~ class LINES:
