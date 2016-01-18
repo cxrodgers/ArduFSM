@@ -188,7 +188,7 @@ RUN_UI = True
 RUN_GUI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
-    ui = ui_obj(timeout=100, chatter=chatter, 
+    ui = ui_obj(timeout=200, chatter=chatter, 
         logfilename=logfilename,
         ts_obj=ts_obj)
 
@@ -213,10 +213,15 @@ try:
     ## Initialize webcam
     if SHOW_WEBCAM:
         window_title = os.path.split(video_filename)[1]
-        wc = my.video.WebcamController(device=video_device, 
-            output_filename=video_filename,
-            window_title=window_title)
-        wc.start()
+        try:
+            wc = my.video.WebcamController(device=video_device, 
+                output_filename=video_filename,
+                window_title=window_title)
+            wc.start()
+        except IOError:
+            print "cannot find webcam at port", video_device
+            wc = None
+            SHOW_WEBCAM = False
     else:
         wc = None
     
