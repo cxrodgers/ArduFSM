@@ -389,10 +389,16 @@ class ForcedSide:
 
         # if the last three trials were all forced this way, direct deliver
         if len(trial_matrix) > n_dd_trials:
-            if (
+            force_on_2afc = (
                 np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
                 np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
-                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
+                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error'))
+            force_on_gng = (
+                np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
+                np.all(trial_matrix['rewside'].values[-n_dd_trials:] == 'right') and
+                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'spoil'))
+                
+            if force_on_2afc or force_on_gng:
                 res['DIRDEL'] = TrialSpeak.YES
             
         # Untranslate the rewside
