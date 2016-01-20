@@ -93,15 +93,15 @@ try:
         plotter.init_handles()
 
         if rigname == 'L1':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 0)
         elif rigname == 'L2':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 400)
         elif rigname == 'L3':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1800)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 800)
         elif rigname == 'L5':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 100)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
         elif rigname == 'L6':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 500)
+            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
             
         elif rigname == 'L0':
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
