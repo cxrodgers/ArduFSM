@@ -111,7 +111,7 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, {},),
     ('KF62', 'trial_types_CCL_1srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
-    ('KM63', 'trial_types_CCL_1srvpos', Scheduler.Auto, {},
+    ('KM63', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
     ('KM64', 'trial_types_CCL_1srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
