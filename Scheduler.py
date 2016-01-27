@@ -209,7 +209,8 @@ class ForcedAlternationLickTrain:
         res = {}
         
         if len(trial_matrix) == 0:
-            idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            idx = np.where(self.trial_types.rewside == 'right')[0][0]
+            #~ idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
             res['RWSD'] = self.trial_types['rewside'][idx]
         
         else:    
@@ -222,7 +223,7 @@ class ForcedAlternationLickTrain:
             
             # Set side to left by default, and otherwise forced alt
             if len(trial_matrix) < 2:
-                res['RWSD'] = 'left'
+                res['RWSD'] = 'right'
             else:
                 # Get last trial
                 last_trial = trial_matrix.irow(-1)
