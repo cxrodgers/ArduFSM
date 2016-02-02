@@ -29,6 +29,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
   "TOUT", "RELT", "STPHAL", "HALPOS", "DIRDEL",
+  "ANTIC",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
@@ -36,6 +37,7 @@ long param_values[N_TRIAL_PARAMS] = {
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
   6, 3, 0, 50, 0,
+  0,
   };
 
 // Whether to report on each trial  
@@ -49,6 +51,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
   0, 0, 0, 0, 1,
+  0,
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -113,8 +116,10 @@ void StateResponseWindow::loop()
   }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
   { // Hit on right
-    next_state = REWARD_R;
-    my_rewards_this_trial++;
+    if (param_values[tpidx_ANTICIP] == __TRIAL_SPEAK_NO) {
+      next_state = REWARD_R;
+      my_rewards_this_trial++;
+    }
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
   else if (param_values[tpidx_TERMINATE_ON_ERR] == __TRIAL_SPEAK_NO)
@@ -123,7 +128,9 @@ void StateResponseWindow::loop()
   }
   else
   { // Error made, TOE is true
-    next_state = ERROR;
+    if (param_values[tpidx_ANTICIP] == __TRIAL_SPEAK_NO) {
+      next_state = ERROR;
+    }
 
     // The type of error depends on whether it's gonogo or 2AFC
     if (param_values[tpidx_REWSIDE] == NOGO) {
@@ -163,7 +170,11 @@ void StateResponseWindow::s_finish()
     }
 
   // In any case the trial is over
-  next_state = INTER_TRIAL_INTERVAL;
+  if ((param_values[tpidx_ANTICIP] == __TRIAL_SPEAK_YES) && 
+    (param_values[tpidx_REWSIDE] == RIGHT)) {
+    next_state = REWARD_R;
+  } else {
+    next_state = INTER_TRIAL_INTERVAL;
   }
 }
 
@@ -440,7 +451,11 @@ int rotate(long n_steps)
 //// Post-reward state
 void StatePostRewardPause::s_finish()
 {
-  next_state = RESPONSE_WINDOW;
+  if (param_values[tpidx_ANTICIP] == __TRIAL_SPEAK_YES) {
+    next_state = INTER_TRIAL_INTERVAL;
+  } else {
+    next_state = RESPONSE_WINDOW;
+  }
 }
 
 // The reward states use delay because they need to be millisecond-precise
