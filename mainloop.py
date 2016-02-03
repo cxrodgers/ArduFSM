@@ -253,7 +253,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 600,
+            'RD_R': 150,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
@@ -302,7 +302,7 @@ def get_rig_specific_licktrain(rigname):
     elif rigname == 'B2':
         return {
             'RD_L': 60,
-            'RD_R': 600,
+            'RD_R': 150,
             }              
 
     elif rigname == 'B3':
