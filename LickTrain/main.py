@@ -70,11 +70,7 @@ params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
 if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
-    if rigname in ['L5', 'L6']:
-        protocol_name = 'LickTrain_%s' % rigname
-        #~ raise ValueError("LickTrain not supported in rig", rigname)
-    else:
-        protocol_name = 'LickTrain'
+    protocol_name = 'LickTrain_%s' % rigname
 
     os.system('arduino --board arduino:avr:uno --port %s \
         --pref sketchbook.path=/home/mouse/dev/ArduFSM \
