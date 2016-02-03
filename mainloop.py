@@ -292,14 +292,26 @@ def get_rig_specific_licktrain(rigname):
             'RD_L': 16,
             'RD_R': 25,
             }  
+    
+    elif rigname == 'B1':
+        return {
+            'RD_L': 60,
+            'RD_R': 50,
+            }  
 
-    elif rigname == 'L5':
+    elif rigname == 'B2':
+        return {
+            'RD_L': 60,
+            'RD_R': 600,
+            }              
+
+    elif rigname == 'B3':
         return {
             'RD_L': 100,
             'RD_R': 60,
             }  
     
-    elif rigname == 'L6':
+    elif rigname == 'B4':
         return {
             'RD_L': 40,
             'RD_R': 40,
