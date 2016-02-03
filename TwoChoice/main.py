@@ -53,22 +53,27 @@ elif rigname == 'L3':
     video_device = '/dev/video2'
     video_filename = os.path.join(os.path.expanduser('~/Videos/L3-auto.mkv'))
     video_window_position = 1225, 800
-elif rigname == 'L5':
+elif rigname == 'B1':
+    video_device = '/dev/video0'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/B1-auto.mkv'))
+    video_window_position = 1225, 0
+    gui_window_position = 500, 0    
+elif rigname == 'B2':
+    video_device = '/dev/video1'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/B2-auto.mkv'))
+    video_window_position = 1225, 260
+    gui_window_position = 500, 260    
+elif rigname == 'B3':
+    video_device = '/dev/video2'
+    video_filename = os.path.join(os.path.expanduser('~/Videos/B3-auto.mkv'))
+    video_window_position = 1225, 520
+    gui_window_position = 500, 520    
+elif rigname == 'B4':
     video_device = '/dev/video3'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L5-auto.mkv'))
-    video_window_position = 1225, 1050
-elif rigname == 'L6':
-    video_device = '/dev/video4'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L6-auto.mkv'))
-    video_window_position = 1225, 1450
-elif rigname == 'L7':
-    video_device = '/dev/video5'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L7-auto.mkv'))
-    video_window_position = 1225, 1850
-elif rigname == 'L8':
-    video_device = '/dev/video6'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L8-auto.mkv'))
-    video_window_position = 725, 1850
+    video_filename = os.path.join(os.path.expanduser('~/Videos/B4-auto.mkv'))
+    video_window_position = 1225, 780
+    gui_window_position = 500, 780    
+
 #~ video_filename = '/dev/null'
     
 ## Get params
@@ -92,7 +97,7 @@ if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
 
 ## Set parameters
 # Get a rig parameter
-if rigname in ['L0', 'L5', 'L6', 'L7', 'L8']:
+if rigname in ['L0', 'B1', 'B2', 'B3', 'B4']:
     reverse_srvpos = True
 else:
     reverse_srvpos = False
@@ -229,19 +234,11 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
-        if rigname == 'L1':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 0)
-        elif rigname == 'L2':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 400)
-        elif rigname == 'L3':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 800)
-        elif rigname == 'L5':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
-        elif rigname == 'L6':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
-            
-        elif rigname == 'L0':
+        if rigname == 'L0':
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        else:
+            plotter.graphics_handles['f'].canvas.manager.window.move(
+                gui_window_position[0], gui_window_position[1])
         
         last_updated_trial = 0
     

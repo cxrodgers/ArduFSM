@@ -149,10 +149,10 @@ def get_serial_port(rigname):
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
-        'L5': '/dev/ttyACM3',
-        'L6': '/dev/ttyACM4',
-        'L7': '/dev/ttyACM5',
-        'L8': '/dev/ttyACM6',
+        'B1': '/dev/ttyACM0',
+        'B2': '/dev/ttyACM1',
+        'B3': '/dev/ttyACM2',
+        'B4': '/dev/ttyACM3',
         }
     
     try:
@@ -210,7 +210,7 @@ def get_rig_specific(rigname):
             'HALPOS': 50,
             }  
             
-    elif rigname == 'L5':
+    elif rigname == 'B3':
         return {
             'STPSPD': 30,
             '2PSTP': YES,
@@ -222,7 +222,7 @@ def get_rig_specific(rigname):
             'HALPOS': 50,
             }              
 
-    elif rigname == 'L6':
+    elif rigname == 'B4':
         return {
             'STPSPD': 30,
             '2PSTP': YES,
@@ -234,7 +234,7 @@ def get_rig_specific(rigname):
             'HALPOS': 50,
             }     
 
-    elif rigname == 'L7':
+    elif rigname == 'B1':
         return {
             'STPSPD': 30,
             '2PSTP': YES,
@@ -242,11 +242,11 @@ def get_rig_specific(rigname):
             'SRVTT': 2000,
             'RD_L': 60,
             'RD_R': 50,
-            'STPHAL': NO,
+            'STPHAL': YES,
             'HALPOS': 50,
             }  
 
-    elif rigname == 'L8':
+    elif rigname == 'B2':
         return {
             'STPSPD': 30,
             '2PSTP': YES,
@@ -254,7 +254,7 @@ def get_rig_specific(rigname):
             'SRVTT': 2000,
             'RD_L': 60,
             'RD_R': 50,
-            'STPHAL': NO,
+            'STPHAL': YES,
             'HALPOS': 50,
             }              
     else:
