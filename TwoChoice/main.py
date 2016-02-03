@@ -56,23 +56,23 @@ elif rigname == 'L3':
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_filename = os.path.join(os.path.expanduser('~/Videos/B1-auto.mkv'))
-    video_window_position = 1225, 0
-    gui_window_position = 500, 0    
+    video_window_position = 1150, 0
+    gui_window_position = 425, 0    
 elif rigname == 'B2':
     video_device = '/dev/video1'
     video_filename = os.path.join(os.path.expanduser('~/Videos/B2-auto.mkv'))
-    video_window_position = 1225, 260
-    gui_window_position = 500, 260    
+    video_window_position = 1150, 260
+    gui_window_position = 425, 260    
 elif rigname == 'B3':
     video_device = '/dev/video2'
     video_filename = os.path.join(os.path.expanduser('~/Videos/B3-auto.mkv'))
-    video_window_position = 1225, 520
-    gui_window_position = 500, 520    
+    video_window_position = 1150, 520
+    gui_window_position = 425, 520    
 elif rigname == 'B4':
     video_device = '/dev/video3'
     video_filename = os.path.join(os.path.expanduser('~/Videos/B4-auto.mkv'))
-    video_window_position = 1225, 780
-    gui_window_position = 500, 780    
+    video_window_position = 1150, 780
+    gui_window_position = 425, 780    
 
 #~ video_filename = '/dev/null'
     
