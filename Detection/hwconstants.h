@@ -10,6 +10,8 @@
 #define rewPin 5
 #define speakerPin 11
 
+#define __HWCONSTANTS_H_BACK_LIGHT 12
+
 // Analog
 // leverPin used to be DIO9
 #define hallPin 1

@@ -65,6 +65,8 @@ void setup() {
   pinMode(leverPin, INPUT);
   pinMode(rewPin, OUTPUT);
   pinMode(speakerPin, OUTPUT);
+  pinMode(__HWCONSTANTS_H_BACK_LIGHT, OUTPUT);
+  digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
   stimStepper.setSpeed(80); 
   Serial.begin(9600);    // initialize serial for output to Processing sketch
   randomSeed(analogRead(2));
@@ -294,8 +296,14 @@ void loop(){
      }// END else 
      
      //endTime = millis(); 
-    
+     
      delay(ITI); //inter-trial interval    
+
+     // Pulse the back light
+     digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
+     delay(25);
+     digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);   
+     
    } 
     // END of if (levPressDur > levPresThresh)
 } // END of loop
