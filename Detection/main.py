@@ -7,6 +7,7 @@ import my
 import time
 import curses
 import matplotlib.pyplot as plt
+import shutil
 
 # Ardu imports. Because this is an example script that will be run in another
 # directory, don't assume we can import TrialSpeak et al directly
@@ -133,6 +134,23 @@ finally:
     
     if final_message is not None:
         print final_message
+
+
+## Save
+filename = chatter.ofi.name
     
+# Get mouse name
+print "Filename:", filename
+mousename = raw_input("Enter mouse name: ")
+mousename = mousename.strip()
+
+# Copy the file
+if mousename != '':
+    new_filename = filename + '.' + mousename
+    assert not os.path.exists(new_filename)
+    shutil.copyfile(filename, new_filename)  
+    print "Saved file as", new_filename
+else:
+    print "no mouse name entered"
 
 
