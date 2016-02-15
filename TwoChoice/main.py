@@ -134,7 +134,7 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, 
         {'TO': 3000},
         ),        
-    ('KF73', 'trial_types_CCL_1srvpos', Scheduler.ForcedAlternation, {},
+    ('KF73', 'trial_types_CCL_1srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 3000},
         ),        
@@ -259,6 +259,7 @@ try:
         cmd = 'xdotool search --name %s windowmove %d %d' % (
             window_title, video_window_position[0], video_window_position[1])
         while os.system(cmd) != 0:
+            # Should test here if it's been too long and then give up
             print "Waiting for webcam window"
             time.sleep(.5)
     
