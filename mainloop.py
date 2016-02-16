@@ -217,7 +217,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 65,
-            'RD_R': 53,
+            'RD_R': 60,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
@@ -229,7 +229,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 50,
-            'RD_R': 140,
+            'RD_R': 160,
             'STPHAL': YES,
             'HALPOS': 50,
             }     
@@ -241,7 +241,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 70,
-            'RD_R': 50,
+            'RD_R': 55,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
@@ -253,7 +253,7 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 60,
+            'RD_R': 65,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
