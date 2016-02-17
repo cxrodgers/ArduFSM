@@ -387,6 +387,8 @@ void punish() {
 } // END of punish function
 
 void cueTone() {  
+  // Bug, this overlaps with the global used for elapsed trial time
+  // But elapTime is overwritten in reward() and punish() so it's okay
   trigTime = millis();  
    if (rew == 1) {  // if its a reward tone
     while ((time-trigTime) < rewToneDur) {
