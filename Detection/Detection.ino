@@ -334,6 +334,8 @@ void loop(){
      delay(ITI); //inter-trial interval    
 
      // Pulse the back light
+     Serial.println("end of trial");
+     Serial.println(millis());
      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
      delay(25);
      digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);   
