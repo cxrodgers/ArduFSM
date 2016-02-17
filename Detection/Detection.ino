@@ -9,10 +9,10 @@ To be used with optostim.
 
 
 // constants that frequently change:
-const int rewSolDur = 35; //how long solenoid valve should open to deliver water reward
-const int stimCW = 20;
-const int stimCCW = -20;
-int rewStimFreq = 60;
+const int rewSolDur = 35 ; //how long solenoid valve should open to deliver water reward
+const int stimCW = 50;
+const int stimCCW = -50;
+int rewStimFreq = 50;
 int ITI = 1000;
 int stimDuration = 1500; // how long stimulus should be available for sampling
 const int optoStartTime = 00000; // how long to wait before starting laser trials
@@ -220,17 +220,23 @@ void loop(){
            startLevLiftCheck = 1;
           }           
           if (startLevLiftCheck == 1) {
-                // see how long animal lifts his paw off the lever during stim presentation
+            // see how long animal lifts his paw off the lever during stim presentation
             if (leverState == LOW) {   
+              // Lever is up
               if (prevLevState == 1) {
+                // Lever was previously down and just went up
+                // Store lever lift time as now
                 levLiftTime = millis();
                 prevLevState = 0;
               }
               else {
+                // Lever was already up and is still up
+                // Recalculate duration
                 levLiftDur = millis() - levLiftTime;
               }
             }
             else {
+              // Lever is down
               prevLevState = 1;
               levLiftDur = 0;
             }
@@ -241,25 +247,24 @@ void loop(){
                  digitalWrite(optoPin, LOW);
                  digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
               reward(); /////////////////// call reward function and print REWARD!!!!!
-              }
-            }  // end IF for levPressDur > 100 (REWARD sequence)
+            }
+          }  // end IF for levPressDur > 100 (REWARD sequence)
          
-       } // end WHILE elapTime <= stimDur (check for lever lifts)
-           digitalWrite(optoPin, LOW);
-           digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
-           
-           
+      } // end WHILE elapTime <= stimDur (check for lever lifts)
+      digitalWrite(optoPin, LOW);
+      digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
+      
+      
       // MOVE STIM BACK
       stimStepper.step(stimCW); // 042110: now using Stepper library for stim control (+ is clockwise)
       delay(200);
       digitalWrite(enablePin, LOW);
-        
-//         
-//    
-         prevLevState = 0;   // reset state variable to allow for consecutive triggers
-         //prevType = 1; // for stimCount to promote alternation
-         
+
+      prevLevState = 0;   // reset state variable to allow for consecutive triggers
+      //prevType = 1; // for stimCount to promote alternation
      } // END of if stimType = 1 (rewarded trial)
+     
+     
      //////////////////////////////////catch trials
      
      else{
@@ -275,6 +280,14 @@ void loop(){
        elapTime = 0;
        prevLevState = 0;
        levPressDur = 0;
+       
+       // bug here where startLevLiftCheck is not set to zero, so uses
+       // its previous value
+       // Thus, if the animal lifted his paw while the motor is moving,
+       // it will not count as a release on GO trials, but it may count
+       // as a release on NOGO trials (if startLevLiftCheck was still set to
+       // 1 from the previous trial).
+       
        while (elapTime <= stimDuration) {
          time = millis();
          elapTime = time - trigTime; 
@@ -315,6 +328,7 @@ void loop(){
        prevLevState = 0;  //reset state variable for consecutive triggers
      }// END else 
      
+    
      //endTime = millis(); 
      
      delay(ITI); //inter-trial interval    
