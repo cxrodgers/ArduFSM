@@ -148,6 +148,7 @@ def get_serial_port(rigname):
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
+        'L4': '/dev/ttyACM0',
         }
     
     try:
@@ -204,6 +205,32 @@ def get_rig_specific(rigname):
             'STPHAL': YES,
             'HALPOS': 50,
             }  
+
+    elif rigname == 'L4':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVTT': 50,
+            'RD_L': 30,
+            'RD_R': 30,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            'TO': 10,
+            'RWIN': 2000,
+            'ITI': 4000,
+            }  
+            
+    elif rigname == 'GA1':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 19,
+            'RD_R': 43,
+            'STPHAL': NO,
+            'HALPOS': 50,
+            }
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
@@ -240,6 +267,18 @@ def get_rig_specific_licktrain(rigname):
             'RD_L': 16,
             'RD_R': 25,
             }  
+
+    elif rigname == 'L4':
+        return {
+            'RD_L': 30,
+            'RD_R': 30,
+            }  
+            
+    elif rigname == 'GA1':
+        return {
+            'RD_L': 30,
+            'RD_R': 30,
+        }
     
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)

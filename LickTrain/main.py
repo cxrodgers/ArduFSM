@@ -10,17 +10,20 @@ import matplotlib.pyplot as plt
 
 # Ardu imports
 import ArduFSM
-import TrialSpeak, TrialMatrix
-import trial_setter_ui
-import Scheduler
-import trial_setter
-import mainloop
+import ArduFSM.chat
+import ArduFSM.plot
+from ArduFSM import TrialSpeak, TrialMatrix
+from ArduFSM import trial_setter_ui
+from ArduFSM import Scheduler
+from ArduFSM import trial_setter
+from ArduFSM import mainloop
 
 
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
+#~ serial_port = '/dev/ttyACM3'
 
 ## Get params
 params_table = mainloop.get_params_table_licktrain()
@@ -28,14 +31,14 @@ params_table = mainloop.assign_rig_specific_params_licktrain(rigname, params_tab
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Get trial types
-trial_types = mainloop.get_trial_types('trial_types_licktrain')
+trial_types = mainloop.get_trial_types('trial_types_licktrain_left')
 
 ## Initialize the scheduler
 scheduler = Scheduler.ForcedAlternationLickTrain(trial_types=trial_types)
 
 ## Create Chatter
 logfilename = 'out.log'
-#logfilename = None # autodate
+logfilename = None # autodate
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
@@ -74,7 +77,7 @@ final_message = None
 try:
     ## Initialize GUI
     if RUN_GUI:
-        plotter = ArduFSM.PlotterWithServoThrow(trial_types)
+        plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
         last_updated_trial = 0
     
@@ -89,7 +92,7 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        translated_trial_matrix = ts_obj.update(splines)
+        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
         
         ## Update UI
         if RUN_UI:
@@ -138,6 +141,3 @@ finally:
     
     if final_message is not None:
         print final_message
-    
-
-

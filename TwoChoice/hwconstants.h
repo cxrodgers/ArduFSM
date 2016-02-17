@@ -9,9 +9,9 @@
 //// DIGITAL
 
 // Two-pin mode
-#define TWOPIN_ENABLE_STEPPER 11
-#define TWOPIN_STEPPER_1 12
-#define TWOPIN_STEPPER_2 13
+#define TWOPIN_ENABLE_STEPPER 7
+#define TWOPIN_STEPPER_1 6
+#define TWOPIN_STEPPER_2 8
 
 // Four-pin mode
 #define ENABLE_STEPPER 12
@@ -21,15 +21,15 @@
 #define PIN_STEPPER4 11
 
 // Rewards
-#define L_REWARD_VALVE 6
-#define R_REWARD_VALVE 7
+#define L_REWARD_VALVE 4
+#define R_REWARD_VALVE 5
 #define TOUCH_IRQ 2
 
 // light
-#define __HWCONSTANTS_H_HOUSE_LIGHT 5
+#define __HWCONSTANTS_H_HOUSE_LIGHT 3
 
 // Servo
-#define LINEAR_SERVO 4
+#define LINEAR_SERVO 13
 
 //// ANALOG
 #define __HWCONSTANTS_H_HALL 0

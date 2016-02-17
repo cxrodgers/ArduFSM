@@ -269,7 +269,7 @@ void loop()
       state_error_timeout = StateErrorTimeout(
         param_values[tpidx_ERROR_TIMEOUT], linServo);
     
-      next_state = ROTATE_STEPPER1;
+      next_state = ROTATE_STEPPER2;
       break;
     
     

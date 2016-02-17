@@ -79,13 +79,13 @@ void StateResponseWindow::loop()
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
   
-  // transition if max rewards reached
-  if (my_rewards_this_trial >= param_values[tpidx_MRT])
-  {
-    next_state = INTER_TRIAL_INTERVAL;
-    flag_stop = 1;
-    return;
-  }
+  //~ // transition if max rewards reached
+  //~ if (my_rewards_this_trial >= param_values[tpidx_MRT])
+  //~ {
+    //~ next_state = INTER_TRIAL_INTERVAL;
+    //~ flag_stop = 1;
+    //~ return;
+  //~ }
 
   // Do nothing if both or neither are being licked.
   // Otherwise, assign current_response.
@@ -107,13 +107,13 @@ void StateResponseWindow::loop()
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == LEFT) && (param_values[tpidx_REWSIDE] == LEFT))
   { // Hit on left
-    next_state = REWARD_L;
+    //next_state = REWARD_L;
     my_rewards_this_trial++;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
   else if ((current_response == RIGHT) && (param_values[tpidx_REWSIDE] == RIGHT))
   { // Hit on right
-    next_state = REWARD_R;
+    //next_state = REWARD_R;
     my_rewards_this_trial++;
     results_values[tridx_OUTCOME] = OUTCOME_HIT;
   }
@@ -123,7 +123,7 @@ void StateResponseWindow::loop()
   }
   else
   { // Error made, TOE is true
-    next_state = ERROR;
+    //next_state = ERROR;
     results_values[tridx_OUTCOME] = OUTCOME_ERROR;
   }
 }
@@ -135,6 +135,16 @@ void StateResponseWindow::s_finish()
   {
     results_values[tridx_RESPONSE] = NOGO;
     results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+  }
+  
+  //rotate(25);
+  
+  // Send to reward state if this was a rewarded trial
+  if (param_values[tpidx_REWSIDE] == LEFT) {
+    next_state = REWARD_L;
+  }
+  // Otherwise send to inter trial interval
+  else {
     next_state = INTER_TRIAL_INTERVAL;
   }
 }
@@ -195,6 +205,8 @@ void StateWaitForServoMove::s_finish()
 //// Inter-trial interval
 void StateInterTrialInterval::s_setup()
 {
+  rotate(25); //rotate into gap between stimuli (so CS removed)
+ 
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
   {
@@ -204,6 +216,7 @@ void StateInterTrialInterval::s_setup()
     Serial.print(" ");
     Serial.println(results_values[i]);
   }
+  
 }
 
 void StateInterTrialInterval::s_finish()
@@ -252,8 +265,28 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
     
   // Take a shorter negative rotation, if available
   // For instance, to go from 0 to 150, it's better to go -50
-  if (remaining_rotation > 100)
+  //if (remaining_rotation > 100)
+  //  remaining_rotation -= 200;
+  
+  // First ensure that remaining rotation is positive
+  if (remaining_rotation < 0) {
+    remaining_rotation += 200;
+  }
+  
+  // Now flip a coin and rotate the other direction 50% of the time
+  if (random(0, 2) == 0) {
     remaining_rotation -= 200;
+  }
+  
+  // If not rotating at all, rotate a full circle
+  if (remaining_rotation == 0) {
+    if (random(0, 2) == 0) {
+      remaining_rotation = 200;
+    }
+    else {
+      remaining_rotation = -200;
+    }
+  }
   
   // convoluted way to determine step_size
   if (remaining_rotation < 0)
@@ -262,10 +295,46 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // Perform the rotation
   if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
   {
-    if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
-      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
-    else
-      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+    if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS]) {
+      // We are trying to rotate to the positive magnet
+      if (remaining_rotation == 200) {
+        // We are rotating a full circle
+        // Rotate most of the way manually and then finish to sensor
+        rotate(150);
+        actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+      } else if (remaining_rotation == -200) {
+        // Full negative circle
+        rotate(-150);
+        actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+      } else {
+        // Something other than a full circle
+        actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+      }
+    }
+    
+    else if (param_values[tpidx_STPPOS] == 50) {
+      // We are trying to rotate to the negative magnet
+      if (remaining_rotation == 200) {
+        // We are rotating a full circle
+        // Rotate most of the way manually and then finish to sensor
+        rotate(150);
+        actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+      } else if (remaining_rotation == -200) {
+        // Full negative circle
+        rotate(-150);
+        actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+      } else {
+        // Something other than a full circle
+        actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+      }
+    }
+    
+    else {
+      // We are rotating to a non-magnet position
+      rotate(remaining_rotation);
+      actual_steps = remaining_rotation;
+    }
+    
     if (actual_steps != remaining_rotation)
     {
       Serial.print(millis());
@@ -384,7 +453,7 @@ int rotate(long n_steps)
 //// Post-reward state
 void StatePostRewardPause::s_finish()
 {
-  next_state = RESPONSE_WINDOW;
+  next_state = INTER_TRIAL_INTERVAL;
 }
 
 // The reward states use delay because they need to be millisecond-precise
@@ -393,7 +462,7 @@ int state_reward_l(STATE_TYPE& next_state)
   digitalWrite(L_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_L]);
   digitalWrite(L_REWARD_VALVE, LOW); 
-  next_state = POST_REWARD_PAUSE;
+  next_state = INTER_TRIAL_INTERVAL;
   return 0;  
 }
 int state_reward_r(STATE_TYPE& next_state)
@@ -401,6 +470,6 @@ int state_reward_r(STATE_TYPE& next_state)
   digitalWrite(R_REWARD_VALVE, HIGH);
   delay(param_values[tpidx_REWARD_DUR_R]);
   digitalWrite(R_REWARD_VALVE, LOW); 
-  next_state = POST_REWARD_PAUSE;
+  next_state = INTER_TRIAL_INTERVAL;
   return 0;  
 }

@@ -45,6 +45,9 @@ if rigname in []:
 elif rigname == 'L0':
     trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
     reverse_srvpos = True
+elif rigname == 'L4':
+    trial_types = mainloop.get_trial_types('trial_types_4stppos')
+    reverse_srvpos = False    
 else:
     trial_types = mainloop.get_trial_types('trial_types_3srvpos')
     reverse_srvpos = False
@@ -52,6 +55,7 @@ else:
 ## Initialize the scheduler
 scheduler = Scheduler.SessionStarter(trial_types=trial_types)
 scheduler = Scheduler.Auto(trial_types=trial_types, reverse_srvpos=reverse_srvpos)
+scheduler = Scheduler.RandomStim(trial_types=trial_types)
 
 ## Create Chatter
 logfilename = 'out.log'
