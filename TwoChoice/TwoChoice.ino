@@ -93,6 +93,7 @@ void setup()
 
   // attach servo
   linServo.attach(LINEAR_SERVO);
+  //linServo.write(1850); // move close for measuring
 
   
   //// Run communications until we've received all setup info
