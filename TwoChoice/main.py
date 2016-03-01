@@ -104,11 +104,11 @@ else:
 
 # Set the trial types and scheduler based on the mouse name
 mouse_parameters_df = pandas.DataFrame.from_records([
-    ('default', 'trial_types_2srvpos_80pd', Scheduler.Auto, {},
+    ('default', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
     ('KF60', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
-    ('KF61', 'trial_types_2srvpos', Scheduler.Auto, {},
+    ('KF61', 'trial_types_2srvpos_80pd', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
     ('KF62', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
