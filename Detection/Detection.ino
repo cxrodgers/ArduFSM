@@ -195,7 +195,7 @@ void loop(){
       delay(100);
       hallSensValue = analogRead(hallPin);
       leverState = digitalRead(leverPin);
-      if (leverState == HIGH) { // if lever is pressed for defined amount of time
+      //~ if (leverState == HIGH) { // if lever is pressed for defined amount of time
         while (hallSensValue < hallThresh){ //rotate motor until it hits the hall effect sensor
           stimStepper.step(-1);
           delay(1);
@@ -203,7 +203,7 @@ void loop(){
           //delay(stimHoldDelay); // hold in position for short period 
   
         } // END of while
-      } //END of IF lever press check
+      //~ } //END of IF lever press check
       delay(100);
       
       elapTime = 0;
