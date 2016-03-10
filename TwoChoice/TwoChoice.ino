@@ -238,7 +238,7 @@ void loop()
     case TRIAL_START:
       // turn the backlight off
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
-      delay(66);
+      delay(133);
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);    
     
       // Set up the trial based on received trial parameters
