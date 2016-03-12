@@ -306,7 +306,8 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
     show_warnings=True, error_on_multi=False, command='ST_CHG'):
     """Return time that state changed from state0 to state1
     
-    Probably better to replace code using this with a combination of
+    This should be replaced with identify_state_change_times_new, which
+    uses a combination of
     ArduFSM.TrialSpeak.read_logfile_into_df
     ArduFSM.TrialSpeak.get_commands_from_parsed_lines
     
@@ -359,13 +360,56 @@ def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
     
     return np.array(res, dtype=np.float) / 1000.0
 
-def identify_servo_retract_times(parsed_df_by_trial):
+def identify_state_change_times_new(behavior_filename, state0=None, state1=None,
+    error_on_multi=False, command='ST_CHG'):
+    """Return time that state changed from state0 to state1 on each trial
+    
+    This is the most current way to do this.
+    Uses read_logfile_into_df to read the file
+    and get_commands_from_parsed_lines to parse the lines
+    and then parses the states in the resulting dataframe.
+    
+    If multiple times are found for a trial, only the first is returned.
+    If no times are found for a trial, there will be no entry for that trial
+    in the returned data.
+    
+    Returns: pandas Series indexed by trial with the state change time
+        for each trial. The values will be a number of milliseconds
+        as an integer.
+    """
+    # Get the state change times
+    logfile_df = read_logfile_into_df(behavior_filename)
+    state_change_cmds = get_commands_from_parsed_lines(
+        logfile_df, 'ST_CHG2')
+    
+    # Drop any from trial "-1"
+    state_change_cmds = state_change_cmds[state_change_cmds.trial != -1]
+    
+    # Get the ones corresponding to servo retract
+    state_change_cmds = my.pick_rows(state_change_cmds, 
+        arg0=state0, arg1=state1)
+    
+    # Group by trial
+    gobj = state_change_cmds.groupby('trial')
+
+    # Error check
+    if error_on_multi:
+        if (gobj.apply(len) != 1).any():
+            raise ValueError("non-unique state change on some trials")
+    
+    # Take the first from each trial
+    time_by_trial = gobj.first()
+    
+    return time_by_trial['time']
+    
+def identify_servo_retract_times(behavior_filename):
     """Identify transition to 13 or 14.
     
     On error trials we get one of each, so take the first one
     """
-    return identify_state_change_times(parsed_df_by_trial, None, [13, 14], 
-        show_warnings=False)
+    return identify_state_change_times_new(behavior_filename, 
+        state0=None, state1=[13, 14], 
+        error_on_multi=False)
 
 ## Writing functions
 def command_set_parameter(param_name, param_value):
