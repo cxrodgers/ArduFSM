@@ -109,19 +109,19 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF74', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+    ('KF74', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
+    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 100},
         ),        
-    ('KF76', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
+    ('KF76', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 100},
         ),        
-    ('KF77', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
+    ('KF77', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 100},
         ),        
@@ -175,7 +175,7 @@ logfilename = chatter.ofi.name
 
 ## Reset video filename
 date_s = os.path.split(logfilename)[1].split('.')[1]
-video_filename = os.path.join(os.path.expanduser('~/compressed_eye'), 
+video_filename = os.path.join(os.path.expanduser('~/Videos'), 
     '%s-%s.mkv' % (rigname, date_s))
 
 ## Trial setter
