@@ -505,7 +505,7 @@ class Auto:
             self.n_trials_recent_win = 10
             self.n_trials_recent_random_thresh = 2
         else:
-            self.n_trials_session_starter = 8
+            self.n_trials_session_starter = 0
             self.n_trials_forced_alt = 45
             self.n_trials_sticky = 6
             self.n_trials_recent_win = 32
