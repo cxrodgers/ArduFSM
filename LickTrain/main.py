@@ -30,38 +30,24 @@ if rigname == 'L0':
     SHOW_WEBCAM = False
     video_device = '/dev/video0'
     video_filename = '/dev/null'
-elif rigname == 'L1':
-    video_device = '/dev/video0'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L1-auto.mkv'))
-    video_window_position = 1225, 0
-elif rigname == 'L2':
-    video_device = '/dev/video1'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L2-auto.mkv'))
-    video_window_position = 1225, 400
-elif rigname == 'L3':
-    video_device = '/dev/video2'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/L3-auto.mkv'))
-    video_window_position = 1225, 800
 elif rigname == 'B1':
     video_device = '/dev/video0'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/B1-auto.mkv'))
     video_window_position = 1150, 0
     gui_window_position = 425, 0    
 elif rigname == 'B2':
     video_device = '/dev/video1'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/B2-auto.mkv'))
     video_window_position = 1150, 260
     gui_window_position = 425, 260    
 elif rigname == 'B3':
     video_device = '/dev/video2'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/B3-auto.mkv'))
     video_window_position = 1150, 520
     gui_window_position = 425, 520    
 elif rigname == 'B4':
     video_device = '/dev/video3'
-    video_filename = os.path.join(os.path.expanduser('~/Videos/B4-auto.mkv'))
     video_window_position = 1150, 780
     gui_window_position = 425, 780    
+
+video_filename = None
 
 ## Get params
 params_table = mainloop.get_params_table_licktrain()
@@ -124,7 +110,7 @@ final_message = None
 try:
     ## Initialize webcam
     if SHOW_WEBCAM:
-        window_title = os.path.split(video_filename)[1]
+        window_title = rigname + '_licktrain'
         try:
             wc = my.video.WebcamController(device=video_device, 
                 output_filename=video_filename,
