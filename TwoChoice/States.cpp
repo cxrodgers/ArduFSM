@@ -318,10 +318,17 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // Perform the rotation
   if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
   {
+    // Rotate to sensor if available, otherwise regular rotation
     if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
       actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
-    else
+    else if (param_values[tpidx_STPPOS] == 
+            ((param_values[tpidx_STP_POSITIVE_STPPOS] + 100) % 200))
       actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+    else {
+      // no sensor available
+      rotate(remaining_rotation);
+    }
+    
     if (actual_steps != remaining_rotation)
     {
       Serial.print(millis());

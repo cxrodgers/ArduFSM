@@ -87,7 +87,7 @@ else:
 
 # Set the trial types and scheduler based on the mouse name
 mouse_parameters_df = pandas.DataFrame.from_records([
-    ('default', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+    ('default', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
     ('KF60', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
@@ -257,10 +257,12 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        try:
-            translated_trial_matrix = ts_obj.update(splines, logfile_lines)
-        except ValueError:
-            raise ValueError("cannot get any lines; try reuploading protocol")
+        # This try/except is no good because it conflates actual
+        # ValueError like sending a zero
+        #~ try:
+        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
+        #~ except ValueError:
+            #~ raise ValueError("cannot get any lines; try reuploading protocol")
         
         ## Meta-scheduler
         # Not sure how to handle this yet. Probably should be an object
