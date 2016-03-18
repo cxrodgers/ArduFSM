@@ -4,6 +4,7 @@ import datetime
 import os
 import sys
 import errno
+import platform
 
 ## From device to user
 def read_from_device(device):
@@ -26,19 +27,40 @@ def write_to_user(buffer, data):
 def read_from_user(buffer, buffer_size=1024):
     """Read what the user wrote and returns it
     
-    `buffer`: a named pipe
+    `buffer`: a named pipe (on Unix-based systems) or file (on Windows-based systems)
     """
-    try:
-        data = os.read(buffer, buffer_size)
-    except OSError as err:
-        # Test whether this is the expected error
-        if (err.errno == errno.EAGAIN or 
-            err.errno == errno.EWOULDBLOCK):
-            # Expected error when nothing arrives
-            data = None
-        else:
-            # Unexpected error
-            raise
+    #Implementation of this function will depend on the OS...
+    platformName = platform.system()
+    #... for UNIX-based systems:
+    if platformName.find('Windows',0) == -1:
+        print('This is not Windows??')
+        try:
+            data = os.read(buffer, buffer_size)
+        except OSError as err:
+            # Test whether this is the expected error
+            if (err.errno == errno.EAGAIN or 
+                err.errno == errno.EWOULDBLOCK):
+                # Expected error when nothing arrives
+                data = None
+            else:
+                # Unexpected error
+                raise
+    #... for Windows:
+    else:
+        try:
+            file = open(buffer.name, 'r')
+            data = file.read()
+            file = open(buffer.name, 'w') #this line (with the 'w' flag)should overwrite self.pipein after it's read from to prevent stale text from persisting
+        except OSError as err:
+            # Test whether this is the expected error
+            if (err.errno == errno.EAGAIN or 
+                err.errno == errno.EWOULDBLOCK):
+                # Expected error when nothing arrives
+                data = None
+            else:
+                # Unexpected error
+                raise
+
     
     return data
 
@@ -72,14 +94,20 @@ class Chatter:
             If `to_user_dir` is not None, puts in that directory
         """
         ## Set up TO_DEV
-        # Read from this pipe whenever something writes to it, and send
-        # to device
-        # Begin by deleting any existing FIFO, which should prevent stale
-        # data from coming through.
-        if os.path.exists(from_user):
-            os.remove(from_user)
-        os.mkfifo(from_user)
-        self.pipein = os.open(from_user, os.O_RDONLY | os.O_NONBLOCK)
+        platformName = platform.system() #Implementation will depend on OS...
+        #...for Unix-based operating systems:
+        if platformName.find('Windows',0) == -1:
+            # Read from this pipe whenever something writes to it, and send
+            # to device
+            # Begin by deleting any existing FIFO or file, which should prevent stale
+            # data from coming through.
+            if os.path.exists(from_user):
+                os.remove(from_user)
+            os.mkfifo(from_user)
+            self.pipein = os.open(from_user, os.O_RDONLY | os.O_NONBLOCK)
+        #...for Windows:
+        else:
+            self.pipein = open(from_user, 'w') #opening the file with the 'w' flag will create a new file and overwrite any existing file named 'TO_DEV'
 
         ## Set up FROM_DEV
         # where to put stuff from the device
@@ -134,10 +162,14 @@ class Chatter:
         
         # Read any new text from the user and send to device
         self.new_user_text = read_from_user(self.pipein)
+        print('new_user_text = ' + self.new_user_text)
         write_to_device(self.ser, self.new_user_text)
         
         # Read any new lines from the device and send to user
         self.new_device_lines = read_from_device(self.ser)
+        print('new_device_lines = ')
+        for line in self.new_device_lines:
+            print(line)
         write_to_user(self.ofi, self.new_device_lines)
         
         # Echo
@@ -198,9 +230,9 @@ def loop_till_interrupt(chatter):
 
     ## Clean endings
     except KeyboardInterrupt:
-        print "Keyboard interrupt received"
+        print ("Keyboard interrupt received")
     except:
         raise
     finally:
         chatter.close()
-        print "Closed."
+        print ("Closed.")
