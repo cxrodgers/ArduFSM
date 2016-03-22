@@ -89,8 +89,11 @@ class Chatter:
             if to_user_dir is not None:
                 to_user = os.path.join(
                     os.path.realpath(to_user_dir), to_user)
-        self.ofi = file(to_user, 'w')
-
+        if sys.version_info<=(3,1):
+            self.ofi = file(to_user, 'w')
+        else:
+            self.ofi = open(to_user, 'w')
+            
         ## Set up device
         # 0 means return whatever is available immediately
         # otherwise, wait for specified time
