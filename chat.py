@@ -45,6 +45,8 @@ def read_from_user(buffer, buffer_size=1024):
 def write_to_device(device, data):
     # I suspect this fails silently if the arduino's buffer is full
     if data is not None:
+        if sys.version_info>=(3,1):
+            data = bytes(data, 'UTF-8')
         device.write(data)
 
 
