@@ -403,12 +403,12 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     }
 
     // test if peak found
-    if (positive_peak && (sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
+    if (positive_peak && (prev_sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
     {
         // Positive peak: sensor is high, but decreasing
         keep_going = 0;
     }
-    else if (!positive_peak && (sensor < (512 - __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) > 2))
+    else if (!positive_peak && (prev_sensor < (512 - __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) > 2))
     {
         // Negative peak: sensor is low, but increasing
         keep_going = 0;
