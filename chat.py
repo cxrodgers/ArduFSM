@@ -167,10 +167,13 @@ class Chatter:
         
         # Read any new lines from the device and send to user
         self.new_device_lines = read_from_device(self.ser)
-        #print('new_device_lines = ') #DK 160319 here for debugging
+        """
+	#DK 160319 here for debugging
+	print('new_device_lines = ') 
         for line in self.new_device_lines:
             print(line)
-        write_to_user(self.ofi, self.new_device_lines)
+        """
+	write_to_user(self.ofi, self.new_device_lines)
         
         # Echo
         if echo_to_stdout:
