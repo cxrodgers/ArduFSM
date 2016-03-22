@@ -320,11 +320,21 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   {
     // Rotate to sensor if available, otherwise regular rotation
     if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
-      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS], 1);
+    
     else if (param_values[tpidx_STPPOS] == 
             ((param_values[tpidx_STP_POSITIVE_STPPOS] + 100) % 200))
-      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
-    else {
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 1);
+    
+    else if (param_values[tpidx_STPPOS] == 199) {
+      // Rotate to positive reading on second sensor
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 2);    
+    
+    } else if (param_values[tpidx_STPPOS] == 100) {
+      // Rotate to negative reading on second sensor
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS], 2);
+    
+    } else {
       // no sensor available
       rotate(remaining_rotation);
     }
@@ -347,17 +357,25 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
 }
   
 
-int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
+int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
+  int hall_sensor_id)
 { /* Rotate to a position where the Hall effect sensor detects a peak.
   
   step_size : typically 1 or -1, the number of steps to use between checks
   positive_peak : whether to stop when a positive or negative peak detected
   set_position : will set "sticky_stepper_position" to this afterwards
+  hall_sensor_id : 1 or 2, depending on which hall sensor to read
   */
   bool keep_going = 1;
-  int sensor = analogRead(__HWCONSTANTS_H_HALL);
+  int sensor;
   int prev_sensor = sensor;
   int actual_steps = 0;
+  
+  if (hall_sensor_id == 1) {
+    sensor = analogRead(__HWCONSTANTS_H_HALL1);
+  } else if (hall_sensor_id == 2) {
+    sensor = analogRead(__HWCONSTANTS_H_HALL2);
+  }
   
   // Enable the stepper according to the type of setup
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
@@ -378,20 +396,35 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
     
     // update sensor and store previous value
     prev_sensor = sensor;
-    sensor = analogRead(__HWCONSTANTS_H_HALL);
+    if (hall_sensor_id == 1) {
+      sensor = analogRead(__HWCONSTANTS_H_HALL1);
+    } else if (hall_sensor_id == 2) {
+      sensor = analogRead(__HWCONSTANTS_H_HALL2);
+    }
 
     // test if peak found
-    if (positive_peak && (sensor > 520) && ((sensor - prev_sensor) < -2))
+    if (positive_peak && (sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
     {
         // Positive peak: sensor is high, but decreasing
         keep_going = 0;
     }
-    else if (!positive_peak && (sensor < 504) && ((sensor - prev_sensor) > 2))
+    else if (!positive_peak && (sensor < (512 - __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) > 2))
     {
         // Negative peak: sensor is low, but increasing
         keep_going = 0;
     }
   }
+  
+  //~ // Undo the last step
+  //~ delay(50);
+  //~ stimStepper->step(-step_size);
+  //~ delay(50);
+  //~ actual_steps -= step_size;
+  
+  Serial.print("0 DBG PK ");
+  Serial.print(prev_sensor);
+  Serial.print(" ");
+  Serial.println(sensor);
   
   // update to specified position
   sticky_stepper_position = set_position;
