@@ -2,14 +2,14 @@ import chat
 
 portNum = 3
 serialPort = 'COM' + str(portNum)
-testMessage = 'test test test\n'
+testMessage = 'test test test'
 
 #Create chatter object
 chtr = chat.Chatter(serialPort)
  
 #Write the test message to the Chatter object's pipein
 f = open(chtr.pipein.name, 'w')
-f.write(testMessage)
+f.write(testMessage + '\n')
 f.close()
  
 #The next 4 lines replicate the Chatter.update() function 

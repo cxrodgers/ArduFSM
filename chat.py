@@ -162,12 +162,12 @@ class Chatter:
         
         # Read any new text from the user and send to device
         self.new_user_text = read_from_user(self.pipein)
-        print('new_user_text = ' + self.new_user_text)
+        #print('new_user_text = ' + self.new_user_text) #DK 160319 here for debugging
         write_to_device(self.ser, self.new_user_text)
         
         # Read any new lines from the device and send to user
         self.new_device_lines = read_from_device(self.ser)
-        print('new_device_lines = ')
+        #print('new_device_lines = ') #DK 160319 here for debugging
         for line in self.new_device_lines:
             print(line)
         write_to_user(self.ofi, self.new_device_lines)
