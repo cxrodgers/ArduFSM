@@ -18,6 +18,8 @@ def write_to_user(buffer, data):
     """
     # No matter what, pipe new_lines to savefile here
     for line in data:
+        if sys.version_info>=(3,1):
+            line = str(line)
         buffer.write(line)
     buffer.flush()
 
