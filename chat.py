@@ -173,7 +173,7 @@ class Chatter:
         for line in self.new_device_lines:
             print(line)
         """
-    write_to_user(self.ofi, self.new_device_lines)
+        write_to_user(self.ofi, self.new_device_lines)
         
         # Echo
         if echo_to_stdout:
