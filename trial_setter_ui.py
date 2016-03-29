@@ -1,9 +1,12 @@
 """Module for generating and interacting with the user."""
+#from unicurses import *
 import curses
-import numpy as np
-import os.path, shutil
+import os.path
+import shutil
+
 import TrialSpeak
 import Scheduler
+
 
 HEADINGS = """
 Actions                |          Parameters         |        Scheduler
