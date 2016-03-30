@@ -121,6 +121,79 @@ class ForcedAlternation:
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
 
+class ForcedAlternationGNG(ForcedAlternation):
+    """Forced Alternation scheduler for go nogo"""
+    def generate_trial_params(self, trial_matrix):
+        """Given trial matrix so far, generate params for next"""
+        res = {}
+        res['ISRND'] = NO
+        res['DIRDEL'] = TrialSpeak.NO
+        
+        if len(trial_matrix) == 0:
+            # First trial, so pick at random from trial_types
+            if hasattr(self, 'picked_trial_types'):
+                idx = self.trial_types.index[np.random.randint(0, len(self.picked_trial_types))]
+            else:
+                idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            res['RWSD'] = self.trial_types['rewside'][idx]
+            res['STPPOS'] = self.trial_types['stppos'][idx]
+            res['SRVPOS'] = self.trial_types['srvpos'][idx]
+        
+        else:    
+            # Not the first trial
+            # First check that the last trial hasn't been released
+            assert trial_matrix['release_time'].isnull().irow(-1)
+            
+            # But that it has been responded
+            assert not trial_matrix['choice'].isnull().irow(-1)
+            
+            # Set side to left by default, and otherwise forced alt
+            if len(trial_matrix) < 2:
+                res['RWSD'] = 'right'
+            else:
+                # Get last trial
+                last_trial = trial_matrix.irow(-1)
+                if last_trial['choice'] == last_trial['rewside']:
+                    res['RWSD'] = {'nogo': 'right', 'right':'nogo'}[last_trial['rewside']]
+                else:
+                    res['RWSD'] = last_trial['rewside']
+            
+            # Update the stored force dir
+            self.params['FD'] = res['RWSD']
+            
+            # ugly hack to get Session Starter working
+            if hasattr(self, 'picked_trial_types'):
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.picked_trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0                
+            else:
+                # Choose from trials from the forced side
+                sub_trial_types = my.pick_rows(self.trial_types, 
+                    rewside=res['RWSD'])
+                assert len(sub_trial_types) > 0
+            
+            idx = sub_trial_types.index[np.random.randint(0, len(sub_trial_types))]
+            
+            res['STPPOS'] = self.trial_types['stppos'][idx]
+            res['SRVPOS'] = self.trial_types['srvpos'][idx]
+            
+            # if the last three trials were all NOGO-on-GO errors, direct deliver
+            if len(trial_matrix) > n_dd_trials:
+                if (
+                    np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
+                    np.all(trial_matrix['rewside'].values[-n_dd_trials:] == 'right') and
+                    np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'spoil')):
+                    res['DIRDEL'] = TrialSpeak.YES
+
+        
+        # Untranslate the rewside
+        # This should be done more consistently, eg, use real phrases above here
+        # and only untranslate at this point.
+        res['RWSD'] = {'left': 1, 'right': 2, 'nogo': 3}[res['RWSD']]
+        
+        return res    
+
 
 class ForcedAlternationLickTrain:
     def __init__(self, trial_types, **kwargs):
@@ -136,7 +209,8 @@ class ForcedAlternationLickTrain:
         res = {}
         
         if len(trial_matrix) == 0:
-            idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
+            idx = np.where(self.trial_types.rewside == 'right')[0][0]
+            #~ idx = self.trial_types.index[np.random.randint(0, len(self.trial_types))]
             res['RWSD'] = self.trial_types['rewside'][idx]
         
         else:    
@@ -149,7 +223,7 @@ class ForcedAlternationLickTrain:
             
             # Set side to left by default, and otherwise forced alt
             if len(trial_matrix) < 2:
-                res['RWSD'] = 'left'
+                res['RWSD'] = 'right'
             else:
                 # Get last trial
                 last_trial = trial_matrix.irow(-1)
@@ -219,7 +293,7 @@ class RandomStim:
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
-        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        res['RWSD'] = {'left': 1, 'right': 2, 'nogo': 3}[res['RWSD']]
         
         return res
 
@@ -284,7 +358,7 @@ class ForcedSide:
         """Initialize a new ForcedSide scheduler.
         
         Chooses randomly from rows in 'trial_types', for which rewside=side.
-        Side should be in {'left', 'right'}
+        Side should be in {'left', 'right', 'nogo'}
         """
         self.name = 'forced side'
         self.params = kwargs
@@ -316,16 +390,22 @@ class ForcedSide:
 
         # if the last three trials were all forced this way, direct deliver
         if len(trial_matrix) > n_dd_trials:
-            if (
+            force_on_2afc = (
                 np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
                 np.all(trial_matrix['rewside'].values[-n_dd_trials:] == res['RWSD']) and
-                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
+                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error'))
+            force_on_gng = (
+                np.all(~trial_matrix['isrnd'].values[-n_dd_trials:]) and
+                np.all(trial_matrix['rewside'].values[-n_dd_trials:] == 'right') and
+                np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'spoil'))
+                
+            if force_on_2afc or force_on_gng:
                 res['DIRDEL'] = TrialSpeak.YES
             
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
-        res['RWSD'] = {'left': 1, 'right': 2}[res['RWSD']]
+        res['RWSD'] = {'left': 1, 'right': 2, 'nogo': 3}[res['RWSD']]
         
         return res
 

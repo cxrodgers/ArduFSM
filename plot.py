@@ -96,7 +96,7 @@ class Plotter(object):
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(9, 3.25))
+        f, ax = plt.subplots(1, 1, figsize=(9, 2.4))
         f.subplots_adjust(left=.45, right=.95, top=.75)
         
         # Make handles to each outcome

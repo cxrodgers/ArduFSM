@@ -21,8 +21,8 @@
 #define PIN_STEPPER4 11
 
 // Rewards
-#define L_REWARD_VALVE 4
-#define R_REWARD_VALVE 5
+#define L_REWARD_VALVE 5
+#define R_REWARD_VALVE 4
 #define TOUCH_IRQ 2
 
 // light

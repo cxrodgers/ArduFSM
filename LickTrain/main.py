@@ -24,6 +24,31 @@ this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
 
+## Get webcam params
+SHOW_WEBCAM = True
+if rigname == 'L0':
+    SHOW_WEBCAM = False
+    video_device = '/dev/video0'
+    video_filename = '/dev/null'
+elif rigname == 'B1':
+    video_device = '/dev/video0'
+    video_window_position = 1150, 0
+    gui_window_position = 425, 0    
+elif rigname == 'B2':
+    video_device = '/dev/video1'
+    video_window_position = 1150, 260
+    gui_window_position = 425, 260    
+elif rigname == 'B3':
+    video_device = '/dev/video2'
+    video_window_position = 1150, 520
+    gui_window_position = 425, 520    
+elif rigname == 'B4':
+    video_device = '/dev/video3'
+    video_window_position = 1150, 780
+    gui_window_position = 425, 780    
+
+video_filename = None
+
 ## Get params
 params_table = mainloop.get_params_table_licktrain()
 params_table = mainloop.assign_rig_specific_params_licktrain(rigname, params_table)
@@ -31,11 +56,7 @@ params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
 if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
-    if rigname in ['L5', 'L6']:
-        protocol_name = 'LickTrain_%s' % rigname
-        #~ raise ValueError("LickTrain not supported in rig", rigname)
-    else:
-        protocol_name = 'LickTrain'
+    protocol_name = 'LickTrain_%s' % rigname
 
     os.system('arduino --board arduino:avr:uno --port %s \
         --pref sketchbook.path=/home/mouse/dev/ArduFSM \
@@ -87,26 +108,41 @@ if RUN_UI:
 ## Main loop
 final_message = None
 try:
+    ## Initialize webcam
+    if SHOW_WEBCAM:
+        window_title = rigname + '_licktrain'
+        try:
+            wc = my.video.WebcamController(device=video_device, 
+                output_filename=video_filename,
+                window_title=window_title)
+            wc.start()
+        except IOError:
+            print "cannot find webcam at port", video_device
+            wc = None
+            SHOW_WEBCAM = False
+    else:
+        wc = None
+        
     ## Initialize GUI
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
 
-        if rigname == 'L1':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1000)
-        elif rigname == 'L2':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1400)
-        elif rigname == 'L3':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 1800)
-        elif rigname == 'L5':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 100)
-        elif rigname == 'L6':
-            plotter.graphics_handles['f'].canvas.manager.window.move(500, 500)
-            
-        elif rigname == 'L0':
+        if rigname == 'L0':
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        else:
+            plotter.graphics_handles['f'].canvas.manager.window.move(
+                gui_window_position[0], gui_window_position[1])
         
         last_updated_trial = 0
+    
+    # Move the webcam window once it appears
+    if SHOW_WEBCAM:
+        cmd = 'xdotool search --name %s windowmove %d %d' % (
+            window_title, video_window_position[0], video_window_position[1])
+        while os.system(cmd) != 0:
+            print "Waiting for webcam window"
+            time.sleep(.5)
     
     while True:
         ## Chat updates

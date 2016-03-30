@@ -124,18 +124,46 @@ void StateResponseWindow::loop()
   else
   { // Error made, TOE is true
     next_state = ERROR;
-    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+
+    // The type of error depends on whether it's gonogo or 2AFC
+    if (param_values[tpidx_REWSIDE] == NOGO) {
+      // Response should have been nogo, so he made a false positive or a spoil
+      if (current_response == RIGHT) {
+        // Licked when he shouldn't have done anything
+        results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+      } else {
+        // Licked the wrong pipe
+        results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+      }
+    } else {
+      // 2AFC task, so it's an error for licking the wrong way
+      results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+    }
   }
 }
 
 void StateResponseWindow::s_finish()
 {
-  // If response is still not set, mark as spoiled
+  // If response is still not set, mark as a nogo response
   if (results_values[tridx_RESPONSE] == 0)
   {
+    // The response was nogo
     results_values[tridx_RESPONSE] = NOGO;
-    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
-    next_state = INTER_TRIAL_INTERVAL;
+    
+    // Outcome depends on what he was supposed to do
+    if (param_values[tpidx_REWSIDE] == NOGO) {
+      // Correctly did nothing on a NOGO trial
+      results_values[tridx_OUTCOME] = OUTCOME_HIT;
+    } else {
+      // If this is a 2AFC task, then this is a spoil.
+      // If this is a gonogo task, then this is a miss.
+      // No way to tell which is which right now, so just call it a spoil
+      // regardless.
+      results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    }
+
+  // In any case the trial is over
+  next_state = INTER_TRIAL_INTERVAL;
   }
 }
 

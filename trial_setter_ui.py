@@ -118,6 +118,14 @@ class UIActionTaker:
         
         return 'schedule changed'
 
+    def force_alt_gng(self, **kwargs):
+        """Change to a forced alternation schedule"""
+        self.ui.ts_obj.scheduler = Scheduler.ForcedAlternationGNG(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            **kwargs)        
+        
+        return 'schedule changed'
+
     def force_l(self, **kwargs):
         """Change to a Forced L schedule"""
         self.ui.ts_obj.scheduler = Scheduler.ForcedSide(
@@ -130,6 +138,12 @@ class UIActionTaker:
             trial_types=self.ui.ts_obj.scheduler.trial_types,
             side='right', **kwargs)        
 
+    def force_n(self, **kwargs):
+        """Change to a Forced NOGO schedule"""
+        self.ui.ts_obj.scheduler = Scheduler.ForcedSide(
+            trial_types=self.ui.ts_obj.scheduler.trial_types,
+            side='nogo', **kwargs)      
+
     def schedule_auto(self, **kwargs):
         """Change to auto scheduler"""
         self.ui.ts_obj.scheduler = Scheduler.Auto(
@@ -137,7 +151,7 @@ class UIActionTaker:
             **kwargs)        
 
 
-class UI:
+class UI(object):
     def __init__(self, chatter, logfilename, ts_obj, timeout=1000):
         """Create new UI object.
         
@@ -417,7 +431,32 @@ class UI:
             self.safe_print(line.strip(), row, col=0, max_width=40)
     
     
+class UI_GNG(UI):
+    """Derived class for go/nogo tasks.
     
+    Remove ability to auto-schedule, alternate, or force left.
+    Add ability to force nogo.
+    """
+    def __init__(self, *args, **kwargs):
+        super(UI_GNG, self).__init__(*args, **kwargs)
+
+        self.ui_actions = [
+            ('H', 'house light', self.ui_action_taker.ui_action_house_light_on),
+            ('L', 'reward L', self.ui_action_taker.ui_action_reward_l),
+            ('R', 'reward R', self.ui_action_taker.ui_action_reward_r),
+            ('W', 'reward current', self.ui_action_taker.ui_action_reward_current),    
+            ('Q', 'save + quit', self.ui_action_taker.ui_action_save),
+            ('P', 'set param', self.ui_action_taker.set_param),
+            ('T', 'touch thresh', self.ui_action_taker.ui_action_threshold),
+            ]
+        
+        # Dispatch table for schedulers
+        self.ui_schedulers = [
+            ('X', 'force X', self.ui_action_taker.force_x),
+            ('N', 'force nogo', self.ui_action_taker.force_n),
+            ('G', 'force go/R', self.ui_action_taker.force_r),
+            ('A', 'force alt', self.ui_action_taker.force_alt_gng),
+            ]        
 
 #~ class LINES:
     #~ pass

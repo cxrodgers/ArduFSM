@@ -53,7 +53,7 @@ def get_params_table():
         ('RD_L',    MD,       0, 0, 1, 1, 1),
         ('RD_R',    MD,       0, 0, 1, 1, 1),
         ('ITI',     50,       0, 0, 1, 0, 1),
-        ('PSW',     1,        0, 0, 1, 0, 0),
+        ('PSW',     1,        0, 0, 0, 0, 0),
         ('TO',      6000,     0, 0, 1, 0, 1),       
         ('TOE',     YES,      0, 0, 1, 0, 1),
         ('MRT',     1,        0, 0, 1, 0, 1),
@@ -64,7 +64,7 @@ def get_params_table():
         ('STPIP',   50,       0, 0, 0, 1, 1),
         ('SRVFAR',  1900,     0, 0, 0, 1, 1),
         ('SRVTT',   MD,       0, 0, 0, 1, 1),
-        ('RWIN',    45000,    0, 0, 0, 0, 1),
+        ('RWIN',    45000,    0, 0, 1, 0, 1),
         ('IRI',     500,      0, 0, 0, 0, 0),    
         ('TOUT',    6,        0, 0, 1, 1, 1),
         ('RELT',    6,        0, 0, 1, 1, 1),
@@ -149,8 +149,10 @@ def get_serial_port(rigname):
         'L1': '/dev/ttyACM0', 
         'L2': '/dev/ttyACM1', 
         'L3': '/dev/ttyACM2', 
-        'L5': '/dev/ttyACM3',
-        'L6': '/dev/ttyACM4',
+        'B1': '/dev/ttyACM0',
+        'B2': '/dev/ttyACM1',
+        'B3': '/dev/ttyACM2',
+        'B4': '/dev/ttyACM3',
         }
     
     try:
@@ -181,7 +183,7 @@ def get_rig_specific(rigname):
             '2PSTP': NO,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 33,
+            'RD_R': 50,
             'STPHAL': YES,
             'HALPOS': 150,
             }
@@ -202,36 +204,59 @@ def get_rig_specific(rigname):
             'STPSPD': 30,
             '2PSTP': YES,
             'SRVTT': 2000,
-            'RD_L': 21,
-            'RD_R': 27,
+            'RD_L': 25,
+            'RD_R': 26,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
             
-    elif rigname == 'L5':
+    elif rigname == 'B3':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 80,
+            'RD_R': 75,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            }              
+
+    elif rigname == 'B4':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 55,
+            'RD_R': 220,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            }     
+
+    elif rigname == 'B1':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 70,
+            'RD_R': 55,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            }  
+
+    elif rigname == 'B2':
         return {
             'STPSPD': 30,
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 45,
+            'RD_R': 70,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
-
-    elif rigname == 'L6':
-        return {
-            'STPSPD': 30,
-            '2PSTP': YES,
-            'SRVFAR' : 1100,
-            'SRVTT': 2000,
-            'RD_L': 50,
-            'RD_R': 50,
-            'STPHAL': YES,
-            'HALPOS': 50,
-            }     
-    
     else:
         raise ValueError("cannot find rig-specific for %s" % rigname)
 
@@ -267,17 +292,29 @@ def get_rig_specific_licktrain(rigname):
             'RD_L': 16,
             'RD_R': 25,
             }  
-
-    elif rigname == 'L5':
+    
+    elif rigname == 'B1':
         return {
-            'RD_L': 100,
+            'RD_L': 70,
+            'RD_R': 55,
+            }  
+
+    elif rigname == 'B2':
+        return {
+            'RD_L': 60,
+            'RD_R': 65,
+            }              
+
+    elif rigname == 'B3':
+        return {
+            'RD_L': 65,
             'RD_R': 60,
             }  
     
-    elif rigname == 'L6':
+    elif rigname == 'B4':
         return {
-            'RD_L': 40,
-            'RD_R': 40,
+            'RD_L': 50,
+            'RD_R': 160,
             }  
     
     else:
