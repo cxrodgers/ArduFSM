@@ -38,9 +38,10 @@ if not os.path.exists(serial_port):
 ## Get webcam params
 SHOW_WEBCAM = True
 if rigname == 'L0':
-    SHOW_WEBCAM = False
-    video_device = '/dev/video0'
-    video_filename = '/dev/null'
+    #~ SHOW_WEBCAM = False
+    video_device = '/dev/video1'
+    video_window_position = 1150, 0
+    #~ video_filename = '/dev/null'
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_window_position = 1150, 0
