@@ -66,14 +66,14 @@ params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
 if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
-    if rigname in ['L0']:
-        protocol_name = 'TwoChoice'
-    else:
-        protocol_name = 'TwoChoice_%s' % rigname
+    protocol_name = 'TwoChoice_%s' % rigname
+    sketchbook_path = os.path.expanduser('~/dev/ArduFSM')
+    
     os.system('arduino --board arduino:avr:uno --port %s \
-        --pref sketchbook.path=/home/mouse/dev/ArduFSM \
+        --pref sketchbook.path=%s \
         --upload ~/dev/ArduFSM/%s/%s.ino' % (
-        serial_port, protocol_name, protocol_name))
+        serial_port, sketchbook_path,
+        protocol_name, protocol_name))
     
     # Should look for programmer is not responding in output and warn user
     # to plug/unplug arduino
