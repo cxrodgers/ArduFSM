@@ -18,6 +18,8 @@ def write_to_user(buffer, data):
     """
     # No matter what, pipe new_lines to savefile here
     for line in data:
+        if sys.version_info>=(3,1):
+            line = str(line)
         buffer.write(line)
     buffer.flush()
 
@@ -45,6 +47,8 @@ def read_from_user(buffer, buffer_size=1024):
 def write_to_device(device, data):
     # I suspect this fails silently if the arduino's buffer is full
     if data is not None:
+        if sys.version_info>=(3,1):
+            data = bytes(data, 'UTF-8')
         device.write(data)
 
 
@@ -89,8 +93,11 @@ class Chatter:
             if to_user_dir is not None:
                 to_user = os.path.join(
                     os.path.realpath(to_user_dir), to_user)
-        self.ofi = file(to_user, 'w')
-
+        if sys.version_info<=(3,1):
+            self.ofi = file(to_user, 'w')
+        else:
+            self.ofi = open(to_user, 'w')
+            
         ## Set up device
         # 0 means return whatever is available immediately
         # otherwise, wait for specified time
