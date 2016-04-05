@@ -314,7 +314,7 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // convoluted way to determine step_size
   if (remaining_rotation < 0)
     step_size = -1;
-    
+
   // Perform the rotation
   if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
   {
@@ -327,11 +327,11 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
       actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 1);
     
     else if (param_values[tpidx_STPPOS] == 199) {
-      // Rotate to positive reading on second sensor
+      // Rotate to negative reading on second sensor
       actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 2);    
     
     } else if (param_values[tpidx_STPPOS] == 100) {
-      // Rotate to negative reading on second sensor
+      // Rotate to positive reading on second sensor
       actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS], 2);
     
     } else {
@@ -386,6 +386,14 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   // Sometimes the stepper spins like crazy without a delay here
   delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
   
+  //~ Serial.print("0 DBG RTS ");
+  //~ Serial.print(hall_sensor_id);
+  //~ Serial.print(" ");
+  //~ Serial.print(positive_peak);
+  //~ Serial.print(" ");
+  //~ Serial.println(sensor);
+  //~ delay(1000);
+  
   // iterate till target found
   while (keep_going)
   {
@@ -401,6 +409,10 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     } else if (hall_sensor_id == 2) {
       sensor = analogRead(__HWCONSTANTS_H_HALL2);
     }
+    
+    //~ Serial.print("0 DBG ");
+    //~ Serial.println(sensor);
+    //~ delay(1000);
 
     // test if peak found
     if (positive_peak && (prev_sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
@@ -421,7 +433,8 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   //~ delay(50);
   //~ actual_steps -= step_size;
   
-  Serial.print("0 DBG PK ");
+  Serial.print(millis());
+  Serial.print(" DBG PK ");
   Serial.print(prev_sensor);
   Serial.print(" ");
   Serial.println(sensor);
