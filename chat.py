@@ -35,7 +35,6 @@ def read_from_user(buffer, buffer_size=1024):
     platformName = platform.system()
     #... for UNIX-based systems:
     if platformName.find('Windows',0) == -1:
-        print('This is not Windows??')
         try:
             data = os.read(buffer, buffer_size)
         except OSError as err:
