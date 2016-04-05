@@ -96,36 +96,56 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, {},),
     ('KF62', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},),
-    ('KM63', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {},),
-    ('KM64', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {},),
-    ('KM65', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {},),
+    ('KM63', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
+    ('KM64', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
+    ('KM65', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
     ('KF72', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF73', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+    ('KF73', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF74', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
+    ('KF74', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto,
+        {'n_trials_forced_alt': 20},
         trial_setter_ui.UI, 
-        {'TO': 100},
+        {'TO': 6000},
         ),        
     ('KF76', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
-        {'TO': 100},
+        {'TO': 6000},
         ),        
     ('KF77', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
-        {'TO': 100},
+        {'TO': 6000},
         ),        
+    ('KF78', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF79', 'trial_types_CCL_3srvpos', Scheduler.Auto, 
+        {'n_trials_forced_alt': 20},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF80', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),            
     ], columns=('mouse', 'trial_types', 'scheduler', 'scheduler_kwargs', 
         'ui', 'params'),
     ).set_index('mouse')
@@ -258,10 +278,12 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
-        try:
-            translated_trial_matrix = ts_obj.update(splines, logfile_lines)
-        except ValueError:
-            raise ValueError("cannot get any lines; try reuploading protocol")
+        # This try/except is no good because it conflates actual
+        # ValueError like sending a zero
+        #~ try:
+        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
+        #~ except ValueError:
+            #~ raise ValueError("cannot get any lines; try reuploading protocol")
         
         ## Meta-scheduler
         # Not sure how to handle this yet. Probably should be an object

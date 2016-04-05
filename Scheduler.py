@@ -475,7 +475,8 @@ class Auto:
     Always begins with SessionStarter, then goes random.
     Switches to forced alt automatically based on biases.
     """
-    def __init__(self, trial_types, debug=False, reverse_srvpos=False, **kwargs):
+    def __init__(self, trial_types, debug=False, reverse_srvpos=False, 
+        n_trials_forced_alt=None, **kwargs):
         self.name = 'auto'
         self.params = {
             'subsch': 'none',
@@ -505,14 +506,16 @@ class Auto:
             self.n_trials_recent_win = 10
             self.n_trials_recent_random_thresh = 2
         else:
-            self.n_trials_session_starter = 8
+            self.n_trials_session_starter = 0
             self.n_trials_forced_alt = 45
             self.n_trials_sticky = 6
             self.n_trials_recent_win = 32
             self.n_trials_recent_random_thresh = 8
         
-        self.last_changed_trial = 0
+        if n_trials_forced_alt is not None:
+            self.n_trials_forced_alt = n_trials_forced_alt
         
+        self.last_changed_trial = 0
 
     def generate_trial_params(self, trial_matrix):
         # already translated

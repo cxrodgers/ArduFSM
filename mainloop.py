@@ -58,7 +58,7 @@ def get_params_table():
         ('TOE',     YES,      0, 0, 1, 0, 1),
         ('MRT',     1,        0, 0, 1, 0, 1),
         ('STPSPD',  MD,       0, 0, 0, 1, 1),
-        ('STPFR',   50,       0, 0, 0, 1, 0),
+        ('STPFR',   50,      0, 0, 0, 1, 1),
         ('2PSTP',   MD,       0, 0, 0, 1, 1),
         ('SRVST',   1000,     0, 0, 0, 1, 0),
         ('STPIP',   50,       0, 0, 0, 1, 1),
@@ -216,8 +216,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 80,
-            'RD_R': 75,
+            'RD_L': 140,
+            'RD_R': 105,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
@@ -228,7 +228,7 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 55,
+            'RD_L': 70,
             'RD_R': 220,
             'STPHAL': YES,
             'HALPOS': 50,
@@ -240,10 +240,10 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 70,
-            'RD_R': 55,
+            'RD_L': 75,
+            'RD_R': 75,
             'STPHAL': YES,
-            'HALPOS': 50,
+            'HALPOS': 150,
             }  
 
     elif rigname == 'B2':
@@ -252,8 +252,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 60,
-            'RD_R': 70,
+            'RD_L': 70,
+            'RD_R': 85,
             'STPHAL': YES,
             'HALPOS': 50,
             }              
