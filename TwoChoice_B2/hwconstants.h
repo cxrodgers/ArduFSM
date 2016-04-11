@@ -21,8 +21,8 @@
 #define PIN_STEPPER4 11
 
 // Rewards
-#define L_REWARD_VALVE 4
-#define R_REWARD_VALVE 5
+#define L_REWARD_VALVE 5
+#define R_REWARD_VALVE 4
 #define TOUCH_IRQ 2
 
 // light
@@ -33,10 +33,13 @@
 #define LINEAR_SERVO 13
 
 //// ANALOG
-#define __HWCONSTANTS_H_HALL 1
+#define __HWCONSTANTS_H_HALL1 1
+#define __HWCONSTANTS_H_HALL2 0
 
 #define __HWCONSTANTS_H_IR_L_PIN 0
 #define __HWCONSTANTS_H_IR_R_PIN 2
+
+#define __HWCONSTANTS_H_HALL_THRESH 8
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200

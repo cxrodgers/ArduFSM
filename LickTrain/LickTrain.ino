@@ -60,9 +60,11 @@ void setup()
   pinMode(L_REWARD_VALVE, OUTPUT);
   pinMode(R_REWARD_VALVE, OUTPUT);
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
+  pinMode(__HWCONSTANTS_H_BACK_LIGHT, OUTPUT);
   
   // initialize the house light to OFF
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
   
   // random number seed
   randomSeed(analogRead(3));

@@ -94,6 +94,7 @@ void setup()
 
   // attach servo
   linServo.attach(LINEAR_SERVO);
+  //linServo.write(1850); // move close for measuring
 
   
   //// Run communications until we've received all setup info
@@ -246,7 +247,7 @@ void loop()
     case TRIAL_START:
       // turn the backlight off
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
-      delay(25);
+      delay(133);
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);    
     
       // Set up the trial based on received trial parameters
