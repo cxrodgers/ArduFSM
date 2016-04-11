@@ -37,11 +37,17 @@ if not os.path.exists(serial_port):
 
 ## Get webcam params
 SHOW_WEBCAM = True
+webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
     video_device = '/dev/video0'
     video_window_position = 1150, 0
     #~ video_filename = '/dev/null'
+    webcam_controls = {
+        'brightness': 0,
+        'gain': 0,
+        'exposure': 8,
+        }
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_window_position = 1150, 0
@@ -238,7 +244,8 @@ try:
         try:
             wc = my.video.WebcamController(device=video_device, 
                 output_filename=video_filename,
-                window_title=window_title)
+                window_title=window_title,
+                image_controls=webcam_controls,)
             wc.start()
         except IOError:
             print "cannot find webcam at port", video_device
