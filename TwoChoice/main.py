@@ -37,6 +37,7 @@ if not os.path.exists(serial_port):
 
 ## Get webcam params
 SHOW_WEBCAM = True
+SHOW_IR_PLOT = False
 webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
@@ -48,6 +49,7 @@ if rigname == 'L0':
         'gain': 0,
         'exposure': 8,
         }
+    SHOW_IR_PLOT = True
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_window_position = 1150, 0
@@ -264,8 +266,10 @@ try:
             plotter.graphics_handles['f'].canvas.manager.window.move(
                 gui_window_position[0], gui_window_position[1])
         
-        plotter2 = ArduFSM.plot.LickPlotter()
-        plotter2.init_handles()
+        if SHOW_IR_PLOT:
+            plotter2 = ArduFSM.plot.LickPlotter()
+            plotter2.init_handles()
+        
         last_updated_trial = 0
     
     # Move the webcam window once it appears
@@ -319,12 +323,13 @@ try:
                 last_updated_trial = len(translated_trial_matrix)
                 
                 # don't understand why these need to be here
-                #~ plt.show()
-                #~ plt.draw()
+                plt.show()
+                plt.draw()
             
-            plotter2.update(logfile_lines)
-            plt.show()
-            plt.draw()
+            if SHOW_IR_PLOT:
+                plotter2.update(logfile_lines)
+                plt.show()
+                plt.draw()
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
