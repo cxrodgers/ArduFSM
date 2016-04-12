@@ -33,25 +33,172 @@ rigname = os.path.split(this_dir_name)[1]
 serial_port = mainloop.get_serial_port(rigname)
 #~ serial_port = '/dev/ttyACM0'
 
+if not os.path.exists(serial_port):
+    raise OSError("serial port %s does not exist" % serial_port)
+
+## Get webcam params
+SHOW_WEBCAM = True
+SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
+DEFAULT_TOUT, DEFAULT_RELT = 100, 100
+webcam_controls = None
+if rigname == 'L0':
+    #~ SHOW_WEBCAM = False
+    video_device = '/dev/video0'
+    video_window_position = 700, 0
+    #~ video_filename = '/dev/null'
+    webcam_controls = {
+        'brightness': 0,
+        'gain': 0,
+        'exposure': 8,
+        }
+    SHOW_IR_PLOT = True
+elif rigname == 'B1':
+    video_device = '/dev/video0'
+    video_window_position = 1150, 0
+    gui_window_position = 425, 0    
+elif rigname == 'B2':
+    video_device = '/dev/video1'
+    video_window_position = 1150, 260
+    gui_window_position = 425, 260    
+elif rigname == 'B3':
+    video_device = '/dev/video2'
+    video_window_position = 1150, 520
+    gui_window_position = 425, 520    
+elif rigname == 'B4':
+    video_device = '/dev/video3'
+    video_window_position = 1150, 780
+    gui_window_position = 425, 780    
+
+    
 ## Get params
 params_table = mainloop.get_params_table()
 params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
-## Get trial types
-if rigname in []:
-    trial_types = mainloop.get_trial_types('trial_types_4srvpos')
-    reverse_srvpos = False
-elif rigname == 'L0':
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos_r')
+## Upload
+if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+    protocol_name = 'TwoChoice_%s' % rigname
+    sketchbook_path = os.path.expanduser('~/dev/ArduFSM')
+    
+    os.system('arduino --board arduino:avr:uno --port %s \
+        --pref sketchbook.path=%s \
+        --upload ~/dev/ArduFSM/%s/%s.ino' % (
+        serial_port, sketchbook_path,
+        protocol_name, protocol_name))
+    
+    # Should look for programmer is not responding in output and warn user
+    # to plug/unplug arduino
+
+## Set parameters
+# Get a rig parameter
+if rigname in ['L0', 'B1', 'B2', 'B3', 'B4']:
     reverse_srvpos = True
 else:
-    trial_types = mainloop.get_trial_types('trial_types_3srvpos')
     reverse_srvpos = False
 
+# Set the trial types and scheduler based on the mouse name
+mouse_parameters_df = pandas.DataFrame.from_records([
+    ('default', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},),
+    ('KF60', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},),
+    ('KF61', 'trial_types_3srvpos_80pd', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},),
+    ('KF62', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},),
+    ('KM63', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
+    ('KM64', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
+    ('KM65', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'STPFR': 125},
+        ),
+    ('KF72', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF73', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF74', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto,
+        {'n_trials_forced_alt': 20},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF76', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF77', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF78', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF79', 'trial_types_CCL_3srvpos', Scheduler.Auto, 
+        {'n_trials_forced_alt': 20},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),        
+    ('KF80', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, 
+        {'TO': 6000},
+        ),            
+    ], columns=('mouse', 'trial_types', 'scheduler', 'scheduler_kwargs', 
+        'ui', 'params'),
+    ).set_index('mouse')
+
+# Get the mouse name
+while True:
+    # Get the mosue name (default is blank, continue if not in index)
+    mouse_name = raw_input("Enter mouse name: ")
+    mouse_name = mouse_name.upper().strip()
+    if mouse_name == '':
+        mouse_name = 'default'
+    if mouse_name not in mouse_parameters_df.index:
+        continue
+    
+    # Get the trial types (optionally reversing by rig)
+    trial_types_name = mouse_parameters_df.loc[mouse_name, 'trial_types']
+    if reverse_srvpos:
+        trial_types_name = trial_types_name + '_r'
+    
+    # Get the scheduler
+    scheduler_obj = mouse_parameters_df.loc[mouse_name, 'scheduler']
+    
+    # Get the ui
+    ui_obj = mouse_parameters_df.loc[mouse_name, 'ui']
+    break
+
+## Now actually load the trial type
+trial_types = mainloop.get_trial_types(trial_types_name)
+
+## Set params by mouse
+params_to_set = mouse_parameters_df.loc[mouse_name, 'params']
+if SHOW_IR_PLOT:
+    params_to_set['TOUT'] = DEFAULT_TOUT
+    params_to_set['RELT'] = DEFAULT_RELT
+for key, value in params_to_set.items():
+    params_table.loc[key, 'init_val'] = value
+    params_table.loc[key, 'current-value'] = value
+
 ## Initialize the scheduler
-scheduler = Scheduler.SessionStarter(trial_types=trial_types)
-scheduler = Scheduler.Auto(trial_types=trial_types, reverse_srvpos=reverse_srvpos)
+# Do all scheduler objects accept reverse_srvpos?
+scheduler = scheduler_obj(trial_types=trial_types, 
+    reverse_srvpos=reverse_srvpos,
+    **mouse_parameters_df.loc[mouse_name, 'scheduler_kwargs'])
 
 ## Create Chatter
 logfilename = 'out.log'
@@ -59,6 +206,11 @@ logfilename = None # autodate
 chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, serial_port=serial_port)
 logfilename = chatter.ofi.name
+
+## Reset video filename
+date_s = os.path.split(logfilename)[1].split('.')[1]
+video_filename = os.path.join(os.path.expanduser('~/Videos'), 
+    '%s-%s.mkv' % (rigname, date_s))
 
 ## Trial setter
 ts_obj = trial_setter.TrialSetter(chatter=chatter, 
@@ -70,7 +222,7 @@ RUN_UI = True
 RUN_GUI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
-    ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
+    ui = ui_obj(timeout=200, chatter=chatter, 
         logfilename=logfilename,
         ts_obj=ts_obj)
 
@@ -93,17 +245,50 @@ if RUN_UI:
 ## Main loop
 final_message = None
 try:
+    ## Initialize webcam
+    if SHOW_WEBCAM:
+        window_title = os.path.split(video_filename)[1]
+        try:
+            wc = my.video.WebcamController(device=video_device, 
+                output_filename=video_filename,
+                window_title=window_title,
+                image_controls=webcam_controls,)
+            wc.start()
+        except IOError:
+            print "cannot find webcam at port", video_device
+            wc = None
+            SHOW_WEBCAM = False
+    else:
+        wc = None
+    
     ## Initialize GUI
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
-        plotter.init_handles()        
+        plotter.init_handles()
+        if rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
+            # for backend tk
+            #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
+                "+%d+%d" % (gui_window_position[0], gui_window_position[1]))
+        else:
+            # for backend gtk
+            plotter.graphics_handles['f'].canvas.manager.window.move(
+                gui_window_position[0], gui_window_position[1])
         
-        # Try to move
-        plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+600+0")
+        if SHOW_IR_PLOT:
+            plotter2 = ArduFSM.plot.LickPlotter()
+            plotter2.init_handles()
         
-        plotter2 = ArduFSM.plot.LickPlotter()
-        plotter2.init_handles()
         last_updated_trial = 0
+    
+    # Move the webcam window once it appears
+    if SHOW_WEBCAM:
+        cmd = 'xdotool search --name %s windowmove %d %d' % (
+            window_title, video_window_position[0], video_window_position[1])
+        while os.system(cmd) != 0:
+            # Should test here if it's been too long and then give up
+            print "Waiting for webcam window"
+            time.sleep(.5)
     
     while True:
         ## Chat updates
@@ -116,7 +301,12 @@ try:
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
         # Run the trial setting logic
+        # This try/except is no good because it conflates actual
+        # ValueError like sending a zero
+        #~ try:
         translated_trial_matrix = ts_obj.update(splines, logfile_lines)
+        #~ except ValueError:
+            #~ raise ValueError("cannot get any lines; try reuploading protocol")
         
         ## Meta-scheduler
         # Not sure how to handle this yet. Probably should be an object
@@ -140,14 +330,14 @@ try:
                 # update plot
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
-                
-                # don't understand why these need to be here
-                #~ plt.show()
-                #~ plt.draw()
             
-            plotter2.update(logfile_lines)
-            plt.show()
-            plt.draw()
+                plt.show()
+                plt.draw()
+                        
+            if SHOW_IR_PLOT:
+                plotter2.update(logfile_lines)
+                plt.show()
+                plt.draw()
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
@@ -164,6 +354,9 @@ except:
     raise
 
 finally:
+    if SHOW_WEBCAM:
+        wc.stop()
+        wc.cleanup()
     chatter.close()
     print "chatter closed"
     

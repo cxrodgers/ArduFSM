@@ -14,13 +14,19 @@ Here are the things that the user should have to change for each protocol:
 */
 #include "chat.h"
 #include "hwconstants.h"
-//#include "mpr121.h"
-//#include <Wire.h> // also for mpr121
 #include <Servo.h>
 #include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
+
+#ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
+#include "mpr121.h"
+#include <Wire.h> // also for mpr121
+#endif
+
+#ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
 #include "ir_detector.h"
+#endif
 
 // Make this true to generate random responses for debugging
 #define FAKE_RESPONDER 0
@@ -75,9 +81,11 @@ void setup()
   //// Put this in a user_setup1() function?
   
   // MPR121 touch sensor setup
+  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
   pinMode(TOUCH_IRQ, INPUT);
   digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
-  //Wire.begin();
+  Wire.begin();
+  #endif
   
   // output pins
   pinMode(L_REWARD_VALVE, OUTPUT);
@@ -94,6 +102,7 @@ void setup()
 
   // attach servo
   linServo.attach(LINEAR_SERVO);
+  //linServo.write(1850); // move close for measuring
 
   
   //// Run communications until we've received all setup info
@@ -122,6 +131,10 @@ void setup()
     // Make sure it's off    
     digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
     
+    // Opto (collides with one of the 4-pin setups)
+    pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
+    digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
+    
     // Initialize
     stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
       TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
@@ -140,8 +153,10 @@ void setup()
   }
   
   // thresholds for MPR121
-  //mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-  //  param_values[tpidx_REL_THRESH]);
+  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
+  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+    param_values[tpidx_REL_THRESH]);
+  #endif
 
   // Set the speed of the stepper
   stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
@@ -201,11 +216,17 @@ void loop()
   // could put other user-specified every_loop() stuff here
   
   // Poll touch inputs
+  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
+  touched = pollTouchInputs();
+  #endif
+  
+  #ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
   if (time % 500 == 0) {
     touched = pollTouchInputs(time, 1);
   } else {
     touched = pollTouchInputs(time, 0);
   }
+  #endif
   
   // announce sticky
   if (touched != sticky_touched)
@@ -242,7 +263,7 @@ void loop()
     case TRIAL_START:
       // turn the backlight off
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
-      delay(25);
+      delay(133);
       digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);    
     
       // Set up the trial based on received trial parameters
@@ -556,8 +577,11 @@ void asynch_action_set_thresh()
   unsigned long time = millis();
   Serial.print(time);
   Serial.println(" EV AAST");
-  //mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-  //  param_values[tpidx_REL_THRESH]);
+
+  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
+  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
+    param_values[tpidx_REL_THRESH]);
+  #endif
 }
 
 void asynch_action_light_on()

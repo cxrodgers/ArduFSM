@@ -10,6 +10,9 @@ import pandas, my, numpy as np
 def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
     """Read data from file and make trial matrix.
     
+    See also TrialSpeak.make_trials_matrix_from_logfile_lines2 which is
+    a faster version of this.
+    
     Wrapper around:
     TrialSpeak.read_lines_from_file
     TrialSpeak.split_by_trial
@@ -23,12 +26,16 @@ def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
     """
     # Read
     logfile_lines = TrialSpeak.read_lines_from_file(log_filename)
-    
+        
     # Spline
     lines_split_by_trial = TrialSpeak.split_by_trial(logfile_lines)
     
     # Make matrix
     trial_matrix = make_trials_info_from_splines(lines_split_by_trial)
+    
+    # This would be faster and I think identical:
+    #~ trial_matrix = ArduFSM.TrialSpeak.make_trials_matrix_from_logfile_lines2(
+        #~ logfile_lines)    
     
     # Translate and/or numericate
     if translate:
@@ -42,6 +49,9 @@ def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
 def make_trials_info_from_splines(lines_split_by_trial, 
     always_insert=('resp', 'outc')):
     """Parse out the parameters and outcomes from the lines in the logfile
+
+    See also TrialSpeak.make_trials_matrix_from_logfile_lines2 which is
+    a faster version of this.
     
     For each trial, the following parameters are extracted:
         trial_start : time in seconds at which TRL_START was issued

@@ -10,11 +10,17 @@ Defines the following:
 */
 
 #include "States.h"
-//#include "mpr121.h"
 #include "Arduino.h"
 #include "hwconstants.h"
 #include "Stepper.h"
+
+#ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
+#include "mpr121.h"
+#endif
+
+#ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
 #include "ir_detector.h"
+#endif
 
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
@@ -30,6 +36,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
   "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
   "TOUT", "RELT", "STPHAL", "HALPOS", "DIRDEL",
+  "OPTO",
   };
 long param_values[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 3000,
@@ -37,6 +44,7 @@ long param_values[N_TRIAL_PARAMS] = {
   40, 40, 1000, 1, 1,
   6000, 20, 50, 50, 0,
   6, 3, 0, 50, 0,
+  0,
   };
 
 // Whether to report on each trial  
@@ -50,6 +58,7 @@ bool param_report_ET[N_TRIAL_PARAMS] = {
   0, 0, 0, 0, 0,
   0, 0, 0, 0, 1,
   0, 0, 0, 0, 1,
+  1,
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -75,11 +84,17 @@ void StateResponseWindow::loop()
   int current_response;
   bool licking_l;
   bool licking_r;
+  unsigned long time = millis();
   
   // get the licking state 
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
   
+  // Turn off laser if we've been in the state for long enough
+  if ((time - (timer - duration)) > 4000) {
+    digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  }
+    
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -125,18 +140,49 @@ void StateResponseWindow::loop()
   else
   { // Error made, TOE is true
     next_state = ERROR;
-    results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+
+    // The type of error depends on whether it's gonogo or 2AFC
+    if (param_values[tpidx_REWSIDE] == NOGO) {
+      // Response should have been nogo, so he made a false positive or a spoil
+      if (current_response == RIGHT) {
+        // Licked when he shouldn't have done anything
+        results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+      } else {
+        // Licked the wrong pipe
+        results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+      }
+    } else {
+      // 2AFC task, so it's an error for licking the wrong way
+      results_values[tridx_OUTCOME] = OUTCOME_ERROR;
+    }
   }
 }
 
 void StateResponseWindow::s_finish()
 {
-  // If response is still not set, mark as spoiled
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  
+  // If response is still not set, mark as a nogo response
   if (results_values[tridx_RESPONSE] == 0)
   {
+    // The response was nogo
     results_values[tridx_RESPONSE] = NOGO;
-    results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
-    next_state = INTER_TRIAL_INTERVAL;
+    
+    // Outcome depends on what he was supposed to do
+    if (param_values[tpidx_REWSIDE] == NOGO) {
+      // Correctly did nothing on a NOGO trial
+      results_values[tridx_OUTCOME] = OUTCOME_HIT;
+    } else {
+      // If this is a 2AFC task, then this is a spoil.
+      // If this is a gonogo task, then this is a miss.
+      // No way to tell which is which right now, so just call it a spoil
+      // regardless.
+      results_values[tridx_OUTCOME] = OUTCOME_SPOIL;
+    }
+
+  // In any case the trial is over
+  next_state = INTER_TRIAL_INTERVAL;
   }
 }
 
@@ -171,6 +217,9 @@ void StateErrorTimeout::s_finish()
 
 void StateErrorTimeout::s_setup()
 {
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+  
   my_linServo.write(param_values[tpidx_SRV_FAR]);
 }
 
@@ -190,18 +239,32 @@ void StateWaitForServoMove::s_setup()
 
 void StateWaitForServoMove::loop()
 {
+  unsigned long time = millis();
+
+  // First set opto
+  if (
+    (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
+    ((time - timer) > -1000)) {
+    digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  }
+  
+  // Now set direct delivery  
   if ((param_values[tpidx_DIRECT_DELIVERY] == __TRIAL_SPEAK_NO) ||
       (direct_delivery_delivered == 1)) {
     return;
   }
   
-  if ((millis() - timer) > -500) {
+  if ((time - timer) > -500) {
     if (param_values[tpidx_REWSIDE] == LEFT) {
+      Serial.print(time);
+      Serial.println(" EV DDR_L");
       digitalWrite(L_REWARD_VALVE, HIGH);
       delay(param_values[tpidx_REWARD_DUR_L]);
       digitalWrite(L_REWARD_VALVE, LOW); 
     }
     else if (param_values[tpidx_REWSIDE] == RIGHT) {
+      Serial.print(time);
+      Serial.println(" EV DDR_R");      
       digitalWrite(R_REWARD_VALVE, HIGH);
       delay(param_values[tpidx_REWARD_DUR_R]);
       digitalWrite(R_REWARD_VALVE, LOW); 
@@ -218,6 +281,9 @@ void StateWaitForServoMove::s_finish()
 //// Inter-trial interval
 void StateInterTrialInterval::s_setup()
 {
+  // Turn off laser, if it was on
+  digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+    
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
   {
@@ -281,14 +347,31 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // convoluted way to determine step_size
   if (remaining_rotation < 0)
     step_size = -1;
-    
+
   // Perform the rotation
   if (param_values[tpidx_STP_HALL] == __TRIAL_SPEAK_YES)
   {
+    // Rotate to sensor if available, otherwise regular rotation
     if (param_values[tpidx_STPPOS] == param_values[tpidx_STP_POSITIVE_STPPOS])
-      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS]);
-    else
-      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS]);
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS], 1);
+    
+    else if (param_values[tpidx_STPPOS] == 
+            ((param_values[tpidx_STP_POSITIVE_STPPOS] + 100) % 200))
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 1);
+    
+    else if (param_values[tpidx_STPPOS] == 199) {
+      // Rotate to negative reading on second sensor
+      actual_steps = rotate_to_sensor(step_size, 0, param_values[tpidx_STPPOS], 2);    
+    
+    } else if (param_values[tpidx_STPPOS] == 100) {
+      // Rotate to positive reading on second sensor
+      actual_steps = rotate_to_sensor(step_size, 1, param_values[tpidx_STPPOS], 2);
+    
+    } else {
+      // no sensor available
+      rotate(remaining_rotation);
+    }
+    
     if (actual_steps != remaining_rotation)
     {
       Serial.print(millis());
@@ -307,17 +390,25 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
 }
   
 
-int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
+int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
+  int hall_sensor_id)
 { /* Rotate to a position where the Hall effect sensor detects a peak.
   
   step_size : typically 1 or -1, the number of steps to use between checks
   positive_peak : whether to stop when a positive or negative peak detected
   set_position : will set "sticky_stepper_position" to this afterwards
+  hall_sensor_id : 1 or 2, depending on which hall sensor to read
   */
   bool keep_going = 1;
-  int sensor = analogRead(__HWCONSTANTS_H_HALL);
+  int sensor;
   int prev_sensor = sensor;
   int actual_steps = 0;
+  
+  if (hall_sensor_id == 1) {
+    sensor = analogRead(__HWCONSTANTS_H_HALL1);
+  } else if (hall_sensor_id == 2) {
+    sensor = analogRead(__HWCONSTANTS_H_HALL2);
+  }
   
   // Enable the stepper according to the type of setup
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
@@ -327,6 +418,14 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
   
   // Sometimes the stepper spins like crazy without a delay here
   delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
+  
+  //~ Serial.print("0 DBG RTS ");
+  //~ Serial.print(hall_sensor_id);
+  //~ Serial.print(" ");
+  //~ Serial.print(positive_peak);
+  //~ Serial.print(" ");
+  //~ Serial.println(sensor);
+  //~ delay(1000);
   
   // iterate till target found
   while (keep_going)
@@ -338,20 +437,40 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position)
     
     // update sensor and store previous value
     prev_sensor = sensor;
-    sensor = analogRead(__HWCONSTANTS_H_HALL);
+    if (hall_sensor_id == 1) {
+      sensor = analogRead(__HWCONSTANTS_H_HALL1);
+    } else if (hall_sensor_id == 2) {
+      sensor = analogRead(__HWCONSTANTS_H_HALL2);
+    }
+    
+    //~ Serial.print("0 DBG ");
+    //~ Serial.println(sensor);
+    //~ delay(1000);
 
     // test if peak found
-    if (positive_peak && (sensor > 520) && ((sensor - prev_sensor) < -2))
+    if (positive_peak && (prev_sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
     {
         // Positive peak: sensor is high, but decreasing
         keep_going = 0;
     }
-    else if (!positive_peak && (sensor < 504) && ((sensor - prev_sensor) > 2))
+    else if (!positive_peak && (prev_sensor < (512 - __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) > 2))
     {
         // Negative peak: sensor is low, but increasing
         keep_going = 0;
     }
   }
+  
+  //~ // Undo the last step
+  //~ delay(50);
+  //~ stimStepper->step(-step_size);
+  //~ delay(50);
+  //~ actual_steps -= step_size;
+  
+  Serial.print(millis());
+  Serial.print(" DBG PK ");
+  Serial.print(prev_sensor);
+  Serial.print(" ");
+  Serial.println(sensor);
   
   // update to specified position
   sticky_stepper_position = set_position;

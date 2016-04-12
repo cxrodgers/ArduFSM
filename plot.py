@@ -29,6 +29,8 @@ import scipy.stats
 #from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 from TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 
+class TrialTypesError:
+    pass
 
 import TrialSpeak, TrialMatrix
 from TrialSpeak import YES, NO
@@ -55,6 +57,8 @@ def count_rewards(splines):
         'right auto' : 'EV R_R',
         'left manual' : 'EV AAR_L',
         'right manual' : 'EV AAR_R',
+        'left direct' : 'EV DDR_L',
+        'right direct' : 'EV DDR_R',
         }
     evname2list = dict([(evname, []) for evname in evname2token])
 
@@ -92,7 +96,7 @@ class Plotter(object):
     def init_handles(self):
         """Create graphics handles"""
         # Plot 
-        f, ax = plt.subplots(1, 1, figsize=(11, 3))
+        f, ax = plt.subplots(1, 1, figsize=(9, 2.4))
         f.subplots_adjust(left=.45, right=.95, top=.75)
         
         # Make handles to each outcome
@@ -258,9 +262,9 @@ class Plotter(object):
         # Stringify
         s = 'Rewards (auto/total): L=%d/%d R=%d/%d' % (
             d['left auto'].sum(), 
-            d['left auto'].sum() + d['left manual'].sum(),
+            d['left auto'].sum() + d['left manual'].sum() + d['left direct'].sum(),
             d['right auto'].sum(), 
-            d['right auto'].sum() + d['right manual'].sum(),
+            d['right auto'].sum() + d['right manual'].sum() + d['right direct'].sum(),
             )
         
         return s
@@ -599,7 +603,7 @@ class PlotterWithServoThrow(Plotter):
             # error-check and reduce to single index
             if len(pick_idxs) == 0:
                 # no match, use the first trial type
-                1/0
+                raise TrialTypesError
                 warn_no_matches.append(idx)
                 pick_idx = 0
             elif len(pick_idxs) > 1:
@@ -824,7 +828,7 @@ def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
         
         if typnum in typ2perf:
             nhits, ntots = typ2perf[typnum]
-            tick_label += ' Unforced:%03d/%03d' % (nhits, ntots)
+            tick_label += ' Unf:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
                 tick_label += '=%0.2f' % (float(nhits) / ntots)
             tick_label += '.'
