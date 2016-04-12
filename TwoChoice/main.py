@@ -26,6 +26,7 @@ from ArduFSM import Scheduler
 from ArduFSM import trial_setter
 from ArduFSM import mainloop
 
+
 ## Find out what rig we're in using the current directory
 this_dir_name = os.getcwd()
 rigname = os.path.split(this_dir_name)[1]
@@ -37,12 +38,13 @@ if not os.path.exists(serial_port):
 
 ## Get webcam params
 SHOW_WEBCAM = True
-SHOW_IR_PLOT = False
+SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
+DEFAULT_TOUT, DEFAULT_RELT = 100, 100
 webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
     video_device = '/dev/video0'
-    video_window_position = 1150, 0
+    video_window_position = 700, 0
     #~ video_filename = '/dev/null'
     webcam_controls = {
         'brightness': 0,
@@ -185,6 +187,9 @@ trial_types = mainloop.get_trial_types(trial_types_name)
 
 ## Set params by mouse
 params_to_set = mouse_parameters_df.loc[mouse_name, 'params']
+if SHOW_IR_PLOT:
+    params_to_set['TOUT'] = DEFAULT_TOUT
+    params_to_set['RELT'] = DEFAULT_RELT
 for key, value in params_to_set.items():
     params_table.loc[key, 'init_val'] = value
     params_table.loc[key, 'current-value'] = value
@@ -260,9 +265,13 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
-        if rigname == 'L0':
-            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+        if rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
+            # for backend tk
+            #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
+            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
+                "+%d+%d" % (gui_window_position[0], gui_window_position[1]))
         else:
+            # for backend gtk
             plotter.graphics_handles['f'].canvas.manager.window.move(
                 gui_window_position[0], gui_window_position[1])
         
@@ -321,11 +330,10 @@ try:
                 # update plot
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
-                
-                # don't understand why these need to be here
+            
                 plt.show()
                 plt.draw()
-            
+                        
             if SHOW_IR_PLOT:
                 plotter2.update(logfile_lines)
                 plt.show()
