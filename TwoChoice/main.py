@@ -130,8 +130,7 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto,
-        {'n_trials_forced_alt': 20},
+    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
@@ -147,8 +146,7 @@ mouse_parameters_df = pandas.DataFrame.from_records([
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
-    ('KF79', 'trial_types_CCL_3srvpos', Scheduler.Auto, 
-        {'n_trials_forced_alt': 20},
+    ('KF79', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, 
         {'TO': 6000},
         ),        
@@ -190,9 +188,10 @@ params_to_set = mouse_parameters_df.loc[mouse_name, 'params']
 if SHOW_IR_PLOT:
     params_to_set['TOUT'] = DEFAULT_TOUT
     params_to_set['RELT'] = DEFAULT_RELT
-for key, value in params_to_set.items():
-    params_table.loc[key, 'init_val'] = value
-    params_table.loc[key, 'current-value'] = value
+if params_to_set is not None:
+    for key, value in params_to_set.items():
+        params_table.loc[key, 'init_val'] = value
+        params_table.loc[key, 'current-value'] = value
 
 ## Initialize the scheduler
 # Do all scheduler objects accept reverse_srvpos?
@@ -270,6 +269,8 @@ try:
             #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
                 "+%d+%d" % (gui_window_position[0], gui_window_position[1]))
+            plt.show()
+            plt.draw()
         else:
             # for backend gtk
             plotter.graphics_handles['f'].canvas.manager.window.move(
