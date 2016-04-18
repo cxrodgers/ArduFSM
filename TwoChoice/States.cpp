@@ -12,7 +12,7 @@ Defines the following:
 #include "States.h"
 #include "Arduino.h"
 #include "hwconstants.h"
-#include "Stepper.h"
+//~ #include "Stepper.h"
 
 #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
 #include "mpr121.h"
@@ -70,7 +70,7 @@ long sticky_stepper_position = 0;
 
 
 //// State definitions
-extern Stepper* stimStepper;
+//~ extern Stepper* stimStepper;
 
 
 //// StateResponseWindow
@@ -432,7 +432,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   {
     // BLOCKING CALL //
     // Replace this with more iterations of smaller steps
-    stimStepper->step(step_size);
+    //~ stimStepper->step(step_size);
     actual_steps += step_size;
     
     // update sensor and store previous value
@@ -493,25 +493,32 @@ int rotate(long n_steps)
 
   // Enable the stepper according to the type of setup
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   else
-    digitalWrite(ENABLE_STEPPER, HIGH);
+    digitalWrite(ENABLE_STEPPER, LOW);
 
   // Sometimes the stepper spins like crazy without a delay here
   delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
-  stimStepper->step(n_steps);
+  //~ stimStepper->step(n_steps);
+  for (int i=0; i<16*n_steps; i++) {
+    //~ Serial.println("0 DBG STEP");
+    digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
+    delayMicroseconds(300);
+    digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
+    delayMicroseconds(300);
+  }
 
   // This delay doesn't seem necessary
   //delay(50);
   
   // disable
   if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
   else
-    digitalWrite(ENABLE_STEPPER, LOW);
+    digitalWrite(ENABLE_STEPPER, HIGH);
   
   // update sticky_stepper_position
   sticky_stepper_position = sticky_stepper_position + n_steps;

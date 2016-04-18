@@ -15,7 +15,7 @@ Here are the things that the user should have to change for each protocol:
 #include "chat.h"
 #include "hwconstants.h"
 #include <Servo.h>
-#include <Stepper.h>
+//~ #include <Stepper.h>
 #include "TimedState.h"
 #include "States.h"
 
@@ -65,7 +65,7 @@ Servo linServo;
 
 // Stepper
 // We won't assign till we know if it's 2pin or 4pin
-Stepper *stimStepper = 0;
+//~ Stepper *stimStepper = 0;
 
 //// Setup function
 void setup()
@@ -136,8 +136,8 @@ void setup()
     digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
     
     // Initialize
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-      TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+    //~ stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      //~ TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
   }
   else
   { // Four-pin mode
@@ -148,8 +148,8 @@ void setup()
     pinMode(PIN_STEPPER4, OUTPUT);
     digitalWrite(ENABLE_STEPPER, LOW); // # Make sure it's off
     
-    stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-      PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
+    //~ stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+      //~ PIN_STEPPER1, PIN_STEPPER2, PIN_STEPPER3, PIN_STEPPER4);
   }
   
   // thresholds for MPR121
@@ -159,7 +159,7 @@ void setup()
   #endif
 
   // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  //~ stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
   
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];

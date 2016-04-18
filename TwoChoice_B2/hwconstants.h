@@ -13,6 +13,8 @@
 #define TWOPIN_STEPPER_1 6
 #define TWOPIN_STEPPER_2 8
 
+#define __HWCONSTANTS_H_STEP_PIN 6
+
 // Four-pin mode
 #define ENABLE_STEPPER 12
 #define PIN_STEPPER1 8
