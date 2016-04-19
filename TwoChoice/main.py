@@ -37,7 +37,7 @@ if not os.path.exists(serial_port):
     raise OSError("serial port %s does not exist" % serial_port)
 
 ## Get webcam params
-SHOW_WEBCAM = True
+SHOW_WEBCAM = False
 SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
 DEFAULT_TOUT, DEFAULT_RELT = 100, 100
 webcam_controls = None
@@ -68,6 +68,10 @@ elif rigname == 'B4':
     video_device = '/dev/video3'
     video_window_position = 1150, 780
     gui_window_position = 425, 780    
+elif rigname == 'B5':
+    video_device = None
+    gui_window_position = 425, 1200
+    
 
     
 ## Get params
@@ -241,7 +245,7 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
-        if rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
+        if True:# rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
             # for backend tk
             #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
             plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
