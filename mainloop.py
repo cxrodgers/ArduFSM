@@ -244,7 +244,7 @@ def get_rig_specific(rigname):
             'RD_L': 95,
             'RD_R': 95,
             'STPHAL': YES,
-            'HALPOS': 150,
+            'HALPOS': 50,
             }  
 
     elif rigname == 'B2':
