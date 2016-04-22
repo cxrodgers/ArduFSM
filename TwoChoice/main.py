@@ -44,7 +44,7 @@ webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
     video_device = '/dev/video0'
-    video_window_position = 700, 0
+    video_window_position = 1000, 700
     #~ video_filename = '/dev/null'
     webcam_controls = {
         'brightness': 0,
@@ -52,6 +52,7 @@ if rigname == 'L0':
         'exposure': 8,
         }
     SHOW_IR_PLOT = True
+    gui_window_position = 700, 0    
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_window_position = 1150, 0
