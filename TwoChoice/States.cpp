@@ -420,34 +420,12 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
   }  
   
-  // Enable the stepper according to the type of setup
-  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
-  
-  // Sometimes the stepper spins like crazy without a delay here
-  //~ delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
-  
-  //~ Serial.print("0 DBG RTS ");
-  //~ Serial.print(hall_sensor_id);
-  //~ Serial.print(" ");
-  //~ Serial.print(positive_peak);
-  //~ Serial.print(" ");
-  //~ Serial.println(sensor);
-  //~ delay(1000);
-  
   // iterate till target found
   while (keep_going)
   {
-    // BLOCKING CALL //
-    // Replace this with more iterations of smaller steps
-    //~ stimStepper->step(step_size);
+    // Rotate the correct number of steps
     for (int i=0; i<nondirectional_steps; i++) {
-      //~ Serial.println("0 DBG STEP");
-      digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
-      delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
-        __HWCONSTANTS_H_MICROSTEP);
-      digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-      delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
-        __HWCONSTANTS_H_MICROSTEP);
+      rotate_one_step();
     }
     
     actual_steps += step_size;
@@ -459,10 +437,6 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     } else if (hall_sensor_id == 2) {
       sensor = analogRead(__HWCONSTANTS_H_HALL2);
     }
-    
-    //~ Serial.print("0 DBG ");
-    //~ Serial.println(sensor);
-    //~ delay(1000);
 
     // test if peak found
     if (positive_peak && (prev_sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
@@ -486,10 +460,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   
   // update to specified position
   sticky_stepper_position = set_position;
-  
-  // disable
-  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);    
-  
+
   return actual_steps;
 }
 
@@ -499,6 +470,7 @@ int rotate(long n_steps)
   I think positive n_steps means CCW and negative n_steps means CW. It does
   on L2, at least.
   */
+  
   // This incorporates microstepping and will always be positive
   long nondirectional_steps = 0;
 
@@ -511,27 +483,10 @@ int rotate(long n_steps)
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
   }
   
-  //~ // Enable the stepper
-  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
-
-  //~ // Check if this delay is necessary
-  //~ delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
-  
-  // BLOCKING CALL //
-  // Replace this with more iterations of smaller steps  
+  // Rotate the correct number of steps
   for (int i=0; i<nondirectional_steps; i++) {
-    //~ Serial.println("0 DBG STEP");
-    digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
-    delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
-      __HWCONSTANTS_H_MICROSTEP);
-    digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-    delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
-      __HWCONSTANTS_H_MICROSTEP);
+    rotate_one_step();
   }
-
-  // disable
-  //~ delay(10);
-  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);
   
   // update sticky_stepper_position
   sticky_stepper_position = sticky_stepper_position + n_steps;
@@ -540,6 +495,16 @@ int rotate(long n_steps)
   sticky_stepper_position = (sticky_stepper_position + 200) % 200;
   
   return 0;
+}
+
+void rotate_one_step()
+{ // Pulse the step pin, then delay the specified number of microseconds
+  digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
+  delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+    __HWCONSTANTS_H_MICROSTEP);
+  digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
+  delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+    __HWCONSTANTS_H_MICROSTEP);  
 }
 
 //// Post-reward state

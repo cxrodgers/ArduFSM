@@ -126,6 +126,7 @@ enum STATE_TYPE
 int rotate(long n_steps);
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int hall_sensor_id);
+void rotate_one_step();
 
 // Declare non-class states
 int state_inter_rotation_pause(unsigned long time, long state_duration,
