@@ -403,12 +403,22 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int sensor;
   int prev_sensor = sensor;
   int actual_steps = 0;
+  long nondirectional_steps = 0;
   
   if (hall_sensor_id == 1) {
     sensor = analogRead(__HWCONSTANTS_H_HALL1);
   } else if (hall_sensor_id == 2) {
     sensor = analogRead(__HWCONSTANTS_H_HALL2);
   }
+  
+  // Step forwards or backwards
+  if (step_size < 0) {
+    nondirectional_steps = -step_size * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  } else {
+    nondirectional_steps = step_size * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  }  
   
   // Enable the stepper according to the type of setup
   digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
@@ -430,6 +440,16 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     // BLOCKING CALL //
     // Replace this with more iterations of smaller steps
     //~ stimStepper->step(step_size);
+    for (int i=0; i<nondirectional_steps; i++) {
+      //~ Serial.println("0 DBG STEP");
+      digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
+      delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+        __HWCONSTANTS_H_MICROSTEP);
+      digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
+      delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+        __HWCONSTANTS_H_MICROSTEP);
+    }
+    
     actual_steps += step_size;
     
     // update sensor and store previous value
@@ -509,11 +529,9 @@ int rotate(long n_steps)
     digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
     delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
       __HWCONSTANTS_H_MICROSTEP);
-    //delayMicroseconds(500000);
     digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
     delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
       __HWCONSTANTS_H_MICROSTEP);
-    //delayMicroseconds(500000);
   }
 
   // disable
