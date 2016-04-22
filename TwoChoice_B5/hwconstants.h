@@ -43,8 +43,8 @@
 // The half delay is 5000 us per step
 // Will get bugs if this value is more than 16383
 // With eg 1/4 stepping, this delay is 1/4 as long
-#define __HWCONSTANTS_H_STEP_HALFDELAY_US 5000
+#define __HWCONSTANTS_H_STEP_HALFDELAY_US 4000
 #define __HWCONSTANTS_H_MICROSTEP 1
-#define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
+//#define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
 
 #endif

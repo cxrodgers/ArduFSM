@@ -421,10 +421,10 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   }  
   
   // Enable the stepper according to the type of setup
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
+  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
   
   // Sometimes the stepper spins like crazy without a delay here
-  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
+  //~ delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
   
   //~ Serial.print("0 DBG RTS ");
   //~ Serial.print(hall_sensor_id);
@@ -476,12 +476,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
         keep_going = 0;
     }
   }
-  
-  //~ // Undo the last step
-  //~ delay(50);
-  //~ stimStepper->step(-step_size);
-  //~ delay(50);
-  //~ actual_steps -= step_size;
+
   
   Serial.print(millis());
   Serial.print(" DBG PK ");
@@ -493,7 +488,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   sticky_stepper_position = set_position;
   
   // disable
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);    
+  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);    
   
   return actual_steps;
 }
@@ -516,11 +511,11 @@ int rotate(long n_steps)
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
   }
   
-  // Enable the stepper
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
+  //~ // Enable the stepper
+  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
 
-  // Check if this delay is necessary
-  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
+  //~ // Check if this delay is necessary
+  //~ delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
   
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps  
@@ -535,7 +530,8 @@ int rotate(long n_steps)
   }
 
   // disable
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);
+  //~ delay(10);
+  //~ digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);
   
   // update sticky_stepper_position
   sticky_stepper_position = sticky_stepper_position + n_steps;

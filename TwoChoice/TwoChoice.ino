@@ -126,7 +126,7 @@ void setup()
   pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
   
   // Make sure it's off    
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH); 
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW); 
   digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
   digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
   
