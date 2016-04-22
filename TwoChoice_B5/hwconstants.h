@@ -7,20 +7,10 @@
 
 
 //// DIGITAL
-
-// Two-pin mode
-#define TWOPIN_ENABLE_STEPPER 7
-#define TWOPIN_STEPPER_1 6
-#define TWOPIN_STEPPER_2 8
-
+// Stepper control
+#define __HWCONSTANTS_H_STEP_ENABLE 7
 #define __HWCONSTANTS_H_STEP_PIN 6
-
-// Four-pin mode
-#define ENABLE_STEPPER 12
-#define PIN_STEPPER1 8
-#define PIN_STEPPER2 9
-#define PIN_STEPPER3 10
-#define PIN_STEPPER4 11
+#define __HWCONSTANTS_H_STEP_DIR 8
 
 // Rewards
 #define L_REWARD_VALVE 5
@@ -48,6 +38,13 @@
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
+
+// standard is 30 rpm, or 2s per rotation, or 10ms per step
+// The half delay is 5000 us per step
+// Will get bugs if this value is more than 16383
+// With eg 1/4 stepping, this delay is 1/4 as long
+#define __HWCONSTANTS_H_STEP_HALFDELAY_US 5000
+#define __HWCONSTANTS_H_MICROSTEP 1
 #define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
 
 #endif

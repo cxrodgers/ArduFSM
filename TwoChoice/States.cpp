@@ -411,10 +411,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   }
   
   // Enable the stepper according to the type of setup
-  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
-  else
-    digitalWrite(ENABLE_STEPPER, HIGH);
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
   
   // Sometimes the stepper spins like crazy without a delay here
   delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);  
@@ -476,10 +473,7 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   sticky_stepper_position = set_position;
   
   // disable
-  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
-  else
-    digitalWrite(ENABLE_STEPPER, LOW);    
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);    
   
   return actual_steps;
 }
@@ -490,42 +484,46 @@ int rotate(long n_steps)
   I think positive n_steps means CCW and negative n_steps means CW. It does
   on L2, at least.
   */
+  // This incorporates microstepping and will always be positive
+  long nondirectional_steps = 0;
 
-  // Enable the stepper according to the type of setup
-  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
-  else
-    digitalWrite(ENABLE_STEPPER, LOW);
+  // Step forwards or backwards
+  if (n_steps < 0) {
+    nondirectional_steps = -n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  } else {
+    nondirectional_steps = n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  }
+  
+  // Enable the stepper
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
 
-  // Sometimes the stepper spins like crazy without a delay here
+  // Check if this delay is necessary
   delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
   
   // BLOCKING CALL //
-  // Replace this with more iterations of smaller steps
-  //~ stimStepper->step(n_steps);
-  for (int i=0; i<16*n_steps; i++) {
+  // Replace this with more iterations of smaller steps  
+  for (int i=0; i<nondirectional_steps; i++) {
     //~ Serial.println("0 DBG STEP");
     digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
-    delayMicroseconds(300);
+    delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+      __HWCONSTANTS_H_MICROSTEP);
+    //delayMicroseconds(500000);
     digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-    delayMicroseconds(300);
+    delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
+      __HWCONSTANTS_H_MICROSTEP);
+    //delayMicroseconds(500000);
   }
 
-  // This delay doesn't seem necessary
-  //delay(50);
-  
   // disable
-  if (param_values[tpidx_2PSTP] == __TRIAL_SPEAK_YES)
-    digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
-  else
-    digitalWrite(ENABLE_STEPPER, HIGH);
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);
   
   // update sticky_stepper_position
   sticky_stepper_position = sticky_stepper_position + n_steps;
   
   // keep it in the range [0, 200)
   sticky_stepper_position = (sticky_stepper_position + 200) % 200;
-  
   
   return 0;
 }
