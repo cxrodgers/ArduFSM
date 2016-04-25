@@ -261,6 +261,9 @@ try:
             plotter2 = ArduFSM.plot.LickPlotter()
             plotter2.init_handles()
         
+        sensor_plotter = ArduFSM.plot.SensorPlotter()
+        sensor_plotter.init_handles()
+        
         last_updated_trial = 0
     
     # Move the webcam window once it appears
@@ -313,6 +316,8 @@ try:
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
             
+                sensor_plotter.update(logfile_lines)
+            
                 plt.show()
                 plt.draw()
                         
@@ -320,6 +325,8 @@ try:
                 plotter2.update(logfile_lines)
                 plt.show()
                 plt.draw()
+            
+                
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"

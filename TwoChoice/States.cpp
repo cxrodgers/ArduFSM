@@ -405,11 +405,20 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int actual_steps = 0;
   long nondirectional_steps = 0;
   
+  // Keep track of the previous values
+  int sensor_history[__HWCONSTANTS_H_SENSOR_HISTORY_SZ] = {0};
+  int sensor_history_idx = 0;
+  
   if (hall_sensor_id == 1) {
     sensor = analogRead(__HWCONSTANTS_H_HALL1);
   } else if (hall_sensor_id == 2) {
     sensor = analogRead(__HWCONSTANTS_H_HALL2);
   }
+  
+  // Store in circular buffer
+  sensor_history[sensor_history_idx] = sensor;
+  sensor_history_idx = (sensor_history_idx + 1) % 
+    __HWCONSTANTS_H_SENSOR_HISTORY_SZ;
   
   // Step forwards or backwards
   if (step_size < 0) {
@@ -438,6 +447,11 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
       sensor = analogRead(__HWCONSTANTS_H_HALL2);
     }
 
+    // Store in circular buffer
+    sensor_history[sensor_history_idx] = sensor;
+    sensor_history_idx = (sensor_history_idx + 1) % 
+      __HWCONSTANTS_H_SENSOR_HISTORY_SZ;    
+    
     // test if peak found
     if (positive_peak && (prev_sensor > (512 + __HWCONSTANTS_H_HALL_THRESH)) && ((sensor - prev_sensor) < -2))
     {
@@ -451,12 +465,15 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     }
   }
 
-  
+  // Dump the circular buffer
   Serial.print(millis());
-  Serial.print(" DBG PK ");
-  Serial.print(prev_sensor);
-  Serial.print(" ");
-  Serial.println(sensor);
+  Serial.print(" SENH ");
+  for (int i=0; i<__HWCONSTANTS_H_SENSOR_HISTORY_SZ; i++) {
+    Serial.print(sensor_history[
+      (sensor_history_idx + i + 1) % __HWCONSTANTS_H_SENSOR_HISTORY_SZ]);
+    Serial.print(" ");
+  }
+  Serial.println("");
   
   // update to specified position
   sticky_stepper_position = set_position;

@@ -396,6 +396,30 @@ class PlotterByStimNumber(Plotter):
             res.append(side + ' %d' % sn)        
         return res
 
+class SensorPlotter():
+    """Plots sensor values by step"""
+    def __init__(self):
+        self.handles = {}
+    
+    def init_handles(self):
+        self.handles['f'], self.handles['ax'] = plt.subplots()
+
+    def update(self, logfile_lines):
+        """Update plot with new sensor values"""
+        # Extract sensor values from each SENH line
+        rec_l = []
+        senh_lines = filter(lambda l: ' SENH ' in l, logfile_lines)
+        for line in senh_lines:
+            post_senh_text = line.split(' SENH ')[1]
+            sensor_history = post_senh_text.split()
+            rec_l.append(map(int, sensor_history))
+
+        # Plot each
+        for line in self.handles['ax'].lines:
+            line.remove()
+        for rec in rec_l:
+            self.handles['ax'].plot(rec)
+
 class LickPlotter():
     """Plots licks by time"""
     def __init__(self):
