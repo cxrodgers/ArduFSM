@@ -15,7 +15,11 @@ Here are the things that the user should have to change for each protocol:
 #include "chat.h"
 #include "hwconstants.h"
 #include <Servo.h>
-//~ #include <Stepper.h>
+
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#include <Stepper.h>
+#endif
+
 #include "TimedState.h"
 #include "States.h"
 
@@ -65,7 +69,9 @@ Servo linServo;
 
 // Stepper
 // We won't assign till we know if it's 2pin or 4pin
-//~ Stepper *stimStepper = 0;
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+Stepper *stimStepper = 0;
+#endif
 
 //// Setup function
 void setup()
@@ -120,7 +126,10 @@ void setup()
   
   //// Now finalize the setup using the received initial parameters
   // user_setup2() function?
-  
+
+
+
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
   pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
   pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
@@ -128,17 +137,40 @@ void setup()
   // Make sure it's off    
   digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW); 
   digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
+  #endif
   
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
+  pinMode(TWOPIN_STEPPER_1, OUTPUT);
+  pinMode(TWOPIN_STEPPER_2, OUTPUT);
+  
+  // Make sure it's off    
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
+  
+  // Initialize
+  stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+    TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+  #endif
+
+
   // Opto (collides with one of the 4-pin setups)
   pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
   digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
+  
   
   // thresholds for MPR121
   #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
   #endif
+
+
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  // Set the speed of the stepper
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  #endif
+
 
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
