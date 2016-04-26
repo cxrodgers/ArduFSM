@@ -135,7 +135,7 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KM82', 'trial_types_CCL_2srvpos', Scheduler.ForcedAlternation, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),             
-    ('KM83', 'trial_types_CCL_2srvpos', Scheduler.ForcedAlternation, {},
+    ('KM83', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),             
     ], columns=('mouse', 'trial_types', 'scheduler', 'scheduler_kwargs', 
