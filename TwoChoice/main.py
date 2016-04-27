@@ -39,6 +39,7 @@ if not os.path.exists(serial_port):
 ## Get webcam params
 SHOW_WEBCAM = False
 SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
+SHOW_SENSOR_PLOT = False
 DEFAULT_TOUT, DEFAULT_RELT = 100, 100
 webcam_controls = None
 if rigname == 'L0':
@@ -268,8 +269,9 @@ try:
             plotter2 = ArduFSM.plot.LickPlotter()
             plotter2.init_handles()
         
-        sensor_plotter = ArduFSM.plot.SensorPlotter()
-        sensor_plotter.init_handles()
+        if SHOW_SENSOR_PLOT:
+            sensor_plotter = ArduFSM.plot.SensorPlotter()
+            sensor_plotter.init_handles()
         
         last_updated_trial = 0
     
@@ -323,7 +325,8 @@ try:
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
             
-                sensor_plotter.update(logfile_lines)
+                if SHOW_SENSOR_PLOT:
+                    sensor_plotter.update(logfile_lines)
             
                 plt.show()
                 plt.draw()
