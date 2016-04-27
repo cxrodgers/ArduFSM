@@ -13,8 +13,6 @@
 #define TWOPIN_STEPPER_1 6
 #define TWOPIN_STEPPER_2 8
 
-#define __HWCONSTANTS_H_STEP_PIN 6
-
 // Four-pin mode
 #define ENABLE_STEPPER 12
 #define PIN_STEPPER1 8
@@ -50,4 +48,7 @@
 #define __HWCONSTANTS_H_NUMSTEPS 200
 #define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
 
+
+
+#define __HWCONSTANTS_H_SENSOR_HISTORY_SZ 10
 #endif
