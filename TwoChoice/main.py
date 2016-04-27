@@ -37,7 +37,7 @@ if not os.path.exists(serial_port):
     raise OSError("serial port %s does not exist" % serial_port)
 
 ## Get webcam params
-SHOW_WEBCAM = False
+SHOW_WEBCAM = True
 SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
 SHOW_SENSOR_PLOT = False
 DEFAULT_TOUT, DEFAULT_RELT = 100, 100
@@ -62,6 +62,7 @@ elif rigname == 'B2':
     video_device = '/dev/video1'
     video_window_position = 1150, 260
     gui_window_position = 425, 260    
+    SHOW_IR_PLOT = True
 elif rigname == 'B3':
     video_device = '/dev/video2'
     video_window_position = 1150, 520
