@@ -7,7 +7,7 @@
 
 
 // This defines whether we use stepper driver or H-bridge
-//#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
 
 
 
