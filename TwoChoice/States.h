@@ -16,6 +16,7 @@ into States.cpp.
 #ifndef __STATES_H_INCLUDED__
 #define __STATES_H_INCLUDED__
 
+#include "hwconstants.h"
 #include "TimedState.h"
 #include <Servo.h>
 
@@ -126,7 +127,10 @@ enum STATE_TYPE
 int rotate(long n_steps);
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int hall_sensor_id);
+
+#ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
 void rotate_one_step();
+#endif
 
 // Declare non-class states
 int state_inter_rotation_pause(unsigned long time, long state_duration,
