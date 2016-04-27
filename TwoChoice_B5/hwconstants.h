@@ -74,5 +74,3 @@
 
 
 #define __HWCONSTANTS_H_SENSOR_HISTORY_SZ 10
-
-#endif
