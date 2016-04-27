@@ -12,7 +12,10 @@ Defines the following:
 #include "States.h"
 #include "Arduino.h"
 #include "hwconstants.h"
-//~ #include "Stepper.h"
+
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#include "Stepper.h"
+#endif
 
 #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
 #include "mpr121.h"
@@ -70,7 +73,9 @@ long sticky_stepper_position = 0;
 
 
 //// State definitions
-//~ extern Stepper* stimStepper;
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+extern Stepper* stimStepper;
+#endif
 
 
 //// StateResponseWindow
@@ -403,7 +408,9 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int sensor;
   int prev_sensor = sensor;
   int actual_steps = 0;
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   long nondirectional_steps = 0;
+  #endif
   
   // Keep track of the previous values
   int sensor_history[__HWCONSTANTS_H_SENSOR_HISTORY_SZ] = {0};
@@ -420,6 +427,13 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   sensor_history_idx = (sensor_history_idx + 1) % 
     __HWCONSTANTS_H_SENSOR_HISTORY_SZ;
   
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
+  #endif
+
+  
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   // Step forwards or backwards
   if (step_size < 0) {
     nondirectional_steps = -step_size * __HWCONSTANTS_H_MICROSTEP;
@@ -428,14 +442,22 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     nondirectional_steps = step_size * __HWCONSTANTS_H_MICROSTEP;
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
   }  
-  
+  #endif
+
+
   // iterate till target found
   while (keep_going)
   {
     // Rotate the correct number of steps
+    #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
     for (int i=0; i<nondirectional_steps; i++) {
       rotate_one_step();
     }
+    #endif
+    
+    #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+    stimStepper->step(step_size);
+    #endif
     
     actual_steps += step_size;
     
@@ -474,6 +496,12 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
     Serial.print(" ");
   }
   Serial.println("");
+
+
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
+  #endif
+
   
   // update to specified position
   sticky_stepper_position = set_position;
@@ -488,6 +516,8 @@ int rotate(long n_steps)
   on L2, at least.
   */
   
+  
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   // This incorporates microstepping and will always be positive
   long nondirectional_steps = 0;
 
@@ -504,7 +534,22 @@ int rotate(long n_steps)
   for (int i=0; i<nondirectional_steps; i++) {
     rotate_one_step();
   }
+  #endif
+
+
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  // Enable the stepper according to the type of setup
+  digitalWrite(TWOPIN_ENABLE_STEPPER, HIGH);
+
+  // Sometimes the stepper spins like crazy without a delay here
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
   
+  // BLOCKING CALL //
+  // Replace this with more iterations of smaller steps
+  stimStepper->step(n_steps);
+  #endif
+ 
+ 
   // update sticky_stepper_position
   sticky_stepper_position = sticky_stepper_position + n_steps;
   
@@ -514,6 +559,7 @@ int rotate(long n_steps)
   return 0;
 }
 
+#ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
 void rotate_one_step()
 { // Pulse the step pin, then delay the specified number of microseconds
   digitalWrite(__HWCONSTANTS_H_STEP_PIN, HIGH);
@@ -523,6 +569,8 @@ void rotate_one_step()
   delayMicroseconds(__HWCONSTANTS_H_STEP_HALFDELAY_US / 
     __HWCONSTANTS_H_MICROSTEP);  
 }
+#endif
+
 
 //// Post-reward state
 void StatePostRewardPause::s_finish()
