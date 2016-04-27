@@ -44,7 +44,7 @@ webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
     video_device = '/dev/video0'
-    video_window_position = 700, 0
+    video_window_position = 1000, 700
     #~ video_filename = '/dev/null'
     webcam_controls = {
         'brightness': 0,
@@ -52,6 +52,7 @@ if rigname == 'L0':
         'exposure': 8,
         }
     SHOW_IR_PLOT = True
+    gui_window_position = 700, 0    
 elif rigname == 'B1':
     video_device = '/dev/video0'
     video_window_position = 1150, 0
@@ -108,11 +109,11 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KF61', 'trial_types_3srvpos_80pd', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),
-    ('KM63', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'STPFR': 125},
+    ('KM63', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},
         ),
-    ('KM64', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'STPFR': 125},
+    ('KM64', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},
         ),
     ('KM65', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125},
@@ -120,21 +121,27 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KF73', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),        
-    ('KF75', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+    ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),        
     ('KF76', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),        
-    ('KF78', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+    ('KF79', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),        
-    ('KF79', 'trial_types_2shapes_C0_CCL_2srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'TO': 6000},
-        ),        
-    ('KF80', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+    ('KF80', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
         ),            
+    ('KM81', 'trial_types_CCL_2srvpos', Scheduler.ForcedAlternation, {},
+        trial_setter_ui.UI, {'TO': 6000},
+        ),             
+    ('KM82', 'trial_types_CCL_2srvpos', Scheduler.ForcedAlternation, {},
+        trial_setter_ui.UI, {'TO': 6000},
+        ),             
+    ('KM83', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {'TO': 6000},
+        ),             
     ], columns=('mouse', 'trial_types', 'scheduler', 'scheduler_kwargs', 
         'ui', 'params'),
     ).set_index('mouse')
