@@ -77,7 +77,7 @@
 
 
 
-#define __HWCONSTANTS_H_USE_IR_DETECTOR
+//#define __HWCONSTANTS_H_USE_IR_DETECTOR
 
 
 #endif // #ifndef __HWCONSTANTS_H_INCLUDED__

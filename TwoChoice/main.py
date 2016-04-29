@@ -62,7 +62,7 @@ elif rigname == 'B2':
     video_device = '/dev/video1'
     video_window_position = 1150, 260
     gui_window_position = 425, 260    
-    SHOW_IR_PLOT = True
+    #~ SHOW_IR_PLOT = True
 elif rigname == 'B3':
     video_device = '/dev/video2'
     video_window_position = 1150, 520
