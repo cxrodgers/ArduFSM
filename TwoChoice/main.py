@@ -72,9 +72,12 @@ elif rigname == 'B4':
     video_window_position = 1150, 780
     gui_window_position = 425, 780    
 elif rigname == 'B5':
+    SHOW_IR_PLOT = True
     video_device = None
     gui_window_position = 425, 1200
-    
+
+if video_device is None:
+    SHOW_WEBCAM = False
 
     
 ## Get params
