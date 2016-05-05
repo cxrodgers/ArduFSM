@@ -572,12 +572,12 @@ class Auto:
             self.params['status'] = 'randchk' + str(this_trial)       
             return
         
-        # Run the anova on all recent trials
+        # Run the anova on all trials (used for checking for stay bias)
         numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
             translated_trial_matrix)
-        recent_ntm = numericated_trial_matrix.iloc[
-            -self.n_trials_recent_for_side_bias:]
-        aov_res = TrialMatrix._run_anova(recent_ntm)        
+        #~ recent_ntm = numericated_trial_matrix.iloc[
+            #~ -self.n_trials_recent_for_side_bias:]
+        aov_res = TrialMatrix._run_anova(numericated_trial_matrix)        
         if aov_res is None:
             self.current_sub_scheduler = self.sub_schedulers['RandomStim']
             self.last_changed_trial = this_trial
