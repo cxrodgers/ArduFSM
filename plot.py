@@ -92,6 +92,8 @@ class Plotter(object):
         self.cached_anova_len1 = 0
         self.cached_anova_text2 = ''
         self.cached_anova_len2 = 0       
+        self.cached_anova_text3 = ''
+        self.cached_anova_len3 = 0
     
     def init_handles(self):
         """Create graphics handles"""
@@ -203,6 +205,8 @@ class Plotter(object):
                 translated_trial_matrix)
             title_string += '\n' + self.form_string_unforced_trials_perf(
                 translated_trial_matrix)
+            title_string += '\n' + self.form_string_recent_trials_perf(
+                translated_trial_matrix)
 
         ## PLOTTING
         # plot each outcome
@@ -288,6 +292,27 @@ class Plotter(object):
             anova_stats = self.cached_anova_text2
         
         return 'All: ' + string_perf_by_side + '. Biases: ' + anova_stats
+
+    def form_string_recent_trials_perf(self, translated_trial_matrix):
+        """Form a string with side perf and anova for recent trials
+        
+        cached in cached_anova_text3 and cached_anova_len3
+        """
+        side2perf = count_hits_by_type_from_trials_info(
+            translated_trial_matrix.iloc[-50:], split_key='rewside')     
+        
+        string_perf_by_side = self.form_string_perf_by_side(side2perf)
+        
+        if len(translated_trial_matrix) > self.cached_anova_len3 or self.cached_anova_text3 == '':
+            numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
+                translated_trial_matrix.iloc[-50:])
+            anova_stats = TrialMatrix.run_anova(numericated_trial_matrix)
+            self.cached_anova_text3 = anova_stats
+            self.cached_anova_len3 = len(translated_trial_matrix)
+        else:
+            anova_stats = self.cached_anova_text3
+        
+        return 'Recent: ' + string_perf_by_side + '. Biases: ' + anova_stats
     
     def form_string_unforced_trials_perf(self, translated_trial_matrix):
         """Exactly the same as form_string_all_trials_perf, except that:
@@ -305,10 +330,10 @@ class Plotter(object):
             numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
                 translated_trial_matrix[~translated_trial_matrix.bad])
             anova_stats = TrialMatrix.run_anova(numericated_trial_matrix)
-            self.cached_anova_text2 = anova_stats
-            self.cached_anova_len2 = len(translated_trial_matrix)
+            self.cached_anova_text1 = anova_stats
+            self.cached_anova_len1 = len(translated_trial_matrix)
         else:
-            anova_stats = self.cached_anova_text2
+            anova_stats = self.cached_anova_text1
         
         return 'UF: ' + string_perf_by_side + '. Biases: ' + anova_stats        
 

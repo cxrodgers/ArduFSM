@@ -521,12 +521,14 @@ class Auto:
             self.n_trials_sticky = 3
             self.n_trials_recent_win = 10
             self.n_trials_recent_random_thresh = 2
+            self.n_trials_recent_for_side_bias = 10
         else:
             self.n_trials_session_starter = 0
             self.n_trials_forced_alt = 45
             self.n_trials_sticky = 6
             self.n_trials_recent_win = 32
             self.n_trials_recent_random_thresh = 8
+            self.n_trials_recent_for_side_bias = 50
         
         if n_trials_forced_alt is not None:
             self.n_trials_forced_alt = n_trials_forced_alt
@@ -570,22 +572,28 @@ class Auto:
             self.params['status'] = 'randchk' + str(this_trial)       
             return
         
-        # Run the anova
+        # Run the anova on all recent trials
         numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
             translated_trial_matrix)
-        aov_res = TrialMatrix._run_anova(numericated_trial_matrix)        
+        recent_ntm = numericated_trial_matrix.iloc[
+            -self.n_trials_recent_for_side_bias:]
+        aov_res = TrialMatrix._run_anova(recent_ntm)        
         if aov_res is None:
             self.current_sub_scheduler = self.sub_schedulers['RandomStim']
             self.last_changed_trial = this_trial
             self.params['status'] = 'an_none' + str(this_trial)
             return
         
+        # Also calculate the side bias in all recent trials
+        recent_ttm = translated_trial_matrix.iloc[
+            -self.n_trials_recent_for_side_bias:]
+        
         # Take the largest significant bias
         # Actually, better to take the diff of perf between sides for forced
         # side. Although this is a bigger issue than unexplainable variance
         # shouldn't be interpreted.
         side2perf_all = TrialMatrix.count_hits_by_type(
-            translated_trial_matrix, split_key='rewside')     
+            recent_ttm, split_key='rewside')     
         if 'left' in side2perf_all and 'right' in side2perf_all:
             lperf = side2perf_all['left'][0] / float(side2perf_all['left'][1])
             rperf = side2perf_all['right'][0] / float(side2perf_all['right'][1])
