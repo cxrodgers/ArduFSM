@@ -7,7 +7,7 @@
 
 
 // This defines whether we use stepper driver or H-bridge
-//#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
 
 
 
@@ -50,7 +50,7 @@
 #define __HWCONSTANTS_H_IR_L_PIN 2
 #define __HWCONSTANTS_H_IR_R_PIN 3
 
-#define __HWCONSTANTS_H_HALL_THRESH 8
+#define __HWCONSTANTS_H_HALL_THRESH 15
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
@@ -62,7 +62,7 @@
 // The half delay is 5000 us per step
 // Will get bugs if this value is more than 16383
 // With eg 1/4 stepping, this delay is 1/4 as long
-#define __HWCONSTANTS_H_STEP_HALFDELAY_US 3000
+#define __HWCONSTANTS_H_STEP_HALFDELAY_US 4000
 #define __HWCONSTANTS_H_MICROSTEP 1
 #endif
 
