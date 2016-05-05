@@ -101,7 +101,7 @@ if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
 
 ## Set parameters
 # Get a rig parameter
-if rigname in ['L0', 'B1', 'B2', 'B3', 'B4']:
+if rigname in ['L0', 'B1', 'B2', 'B3', 'B4', 'B5']:
     reverse_srvpos = True
 else:
     reverse_srvpos = False
@@ -109,9 +109,9 @@ else:
 # Set the trial types and scheduler based on the mouse name
 mouse_parameters_df = pandas.DataFrame.from_records([
     ('default', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {},
+        trial_setter_ui.UI, {'STPFR': 125,},
         ),
-    ('KF61', 'trial_types_3srvpos_80pd', Scheduler.ForcedAlternation, {},
+    ('KF61', 'trial_types_3srvpos_80pd', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),
     ('KM63', 'trial_types_CCL_3srvpos', Scheduler.ForcedAlternation, {},
@@ -123,8 +123,8 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KM65', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),
-    ('KF73', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'TO': 6000},
+    ('KF73', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {'TO': 6000, 'STPFR': 125,},
         ),        
     ('KF75', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000},
