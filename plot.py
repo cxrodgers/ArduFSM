@@ -203,9 +203,9 @@ class Plotter(object):
         if 'rewside' in translated_trial_matrix.columns:
             title_string += '\n' + self.form_string_all_trials_perf(
                 translated_trial_matrix)
-            title_string += '\n' + self.form_string_unforced_trials_perf(
-                translated_trial_matrix)
             title_string += '\n' + self.form_string_recent_trials_perf(
+                translated_trial_matrix)
+            title_string += '\n' + self.form_string_unforced_trials_perf(
                 translated_trial_matrix)
 
         ## PLOTTING
