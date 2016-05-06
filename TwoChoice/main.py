@@ -52,7 +52,7 @@ if rigname == 'L0':
         'gain': 0,
         'exposure': 8,
         }
-    SHOW_IR_PLOT = True
+    #~ SHOW_IR_PLOT = True
     gui_window_position = 700, 0    
 elif rigname == 'B1':
     video_device = '/dev/video0'
