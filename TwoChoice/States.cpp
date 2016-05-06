@@ -497,12 +497,21 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   }
   Serial.println("");
 
-
+  // Undo the last step to reach peak exactly
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  if (step_size < 0) {
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  } else {
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  }  
+  rotate_one_step();
+  #endif  
+  
+  // Disable H-bridge to prevent overheating
   #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   #endif
 
-  
   // update to specified position
   sticky_stepper_position = set_position;
 
