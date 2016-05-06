@@ -670,12 +670,12 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
                 np.asarray(rdf.index), side='right') - 1        
     
     # Error check
-    # Very commonly the ACK TRL_RELEASED, AAR_L, and AAR_R commands
+    # Very commonly the ACK TRL_RELEASED, SENH, AAR_L, and AAR_R commands
     # are out of order. So ignore this for now.
     # Somewhat commonly, there is a missing first digit of the time, for
     # some reason.
     rrdf = rdf[
-        ~rdf.command.isin(['DBG', 'ACK']) &
+        ~rdf.command.isin(['DBG', 'ACK', 'SENH']) &
         ~rdf.arg0.isin(['AAR_L', 'AAR_R'])
         ]
     unsorted_times = rrdf['time'].values
