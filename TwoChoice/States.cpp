@@ -485,6 +485,13 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
         // Negative peak: sensor is low, but increasing
         keep_going = 0;
     }
+    
+    // Quit if >400 steps have been taken
+    if (abs(actual_steps) > 400) {
+      Serial.print(millis());
+      Serial.println(" DBG STEPS400");
+      keep_going = 0;
+    }
   }
 
   // Dump the circular buffer
