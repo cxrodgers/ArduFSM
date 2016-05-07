@@ -148,11 +148,17 @@ void myStepper::loop( int fcnIdx ){
    
   //myStepper action 2: extend stepper if stepper is retracted
   else if ( fcnIdx == 1 ){
-    if ( this->stprState == "RETRACTED" ){ this -> fwd(); }
+    if ( this->stprState == "RETRACTED" ){ 
+      this -> fwd(); 
+      this -> stprState = "EXTENDED";
+    }
   }
 }
 
-void myStepper::s_finish(){ this -> back(); }
+void myStepper::s_finish(){ 
+  this -> back(); 
+  this -> stprState = "RETRACTED";
+}
 
 /*DK 151208: high-level function for extending stepper 100 steps 
 with Hall effect sensor feedback in a single discrete function 
