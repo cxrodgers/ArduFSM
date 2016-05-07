@@ -86,7 +86,7 @@ void mySpeaker::loop( int fcnIdx ){
   //mySpeaker action 2: play a tone
   else if ( fcnIdx == 1 ){
     int freq = random( 10000, 20000 );
-    
+    myTones[0].play(freq);
   }
 }
 
