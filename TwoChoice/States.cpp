@@ -249,7 +249,7 @@ void StateWaitForServoMove::loop()
   // First set opto
   if (
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
-    ((time - timer) > -1500)) {
+    ((time - timer) > -2000)) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   }
   
