@@ -96,7 +96,7 @@ void StateResponseWindow::loop()
   set_licking_variables(licking_l, licking_r);
   
   // Turn off laser if we've been in the state for long enough
-  if ((time - (timer - duration)) > 4000) {
+  if ((time - (timer - duration)) > 1000) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   }
     
@@ -249,7 +249,7 @@ void StateWaitForServoMove::loop()
   // First set opto
   if (
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
-    ((time - timer) > -1000)) {
+    ((time - timer) > -2000)) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   }
   
