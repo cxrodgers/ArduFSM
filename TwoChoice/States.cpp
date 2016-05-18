@@ -563,6 +563,10 @@ int rotate(long n_steps)
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
   stimStepper->step(n_steps);
+
+  // Disable H-bridge to prevent overheating
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   #endif
  
  
