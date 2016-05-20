@@ -9,6 +9,8 @@
 // This defines whether we use stepper driver or H-bridge
 #define __HWCONSTANTS_H_USE_STEPPER_DRIVER
 
+// This defines whether we use IR detector or MPR121
+#define __HWCONSTANTS_H_USE_IR_DETECTOR
 
 
 //// DIGITAL

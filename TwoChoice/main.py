@@ -67,6 +67,8 @@ elif rigname == 'B3':
     video_device = '/dev/video2'
     video_window_position = 1150, 520
     gui_window_position = 425, 520    
+    
+    SHOW_IR_PLOT = True
 elif rigname == 'B4':
     video_device = '/dev/video3'
     video_window_position = 1150, 780
@@ -117,13 +119,13 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KM63', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),
-    ('KM65', 'trial_types_2shapes_3srvpos', Scheduler.Auto, {},
+    ('KM65', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),
     ('KF73', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),        
-    ('KF75', 'trial_types_2shapes_CCL_3srvpos', Scheduler.ForcedAlternation, {},
+    ('KF75', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),        
     ('KF79', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
@@ -132,13 +134,13 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KF80', 'trial_types_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'TO': 6000,},
         ),            
-    ('KM81', 'trial_types_2shapes_C0_CCL_2srvpos', Scheduler.Auto, {},
+    ('KM81', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),             
     ('KM82', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),             
-    ('KM83', 'trial_types_2shapes_C0_CCL_2srvpos', Scheduler.Auto, {},
+    ('KM83', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {},
         ),             
     ], columns=('mouse', 'trial_types', 'scheduler', 'scheduler_kwargs', 
