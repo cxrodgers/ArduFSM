@@ -40,7 +40,7 @@ if not os.path.exists(serial_port):
 SHOW_WEBCAM = True
 SHOW_IR_PLOT = False # This will also update TOUT and RELT if True
 SHOW_SENSOR_PLOT = False
-DEFAULT_TOUT, DEFAULT_RELT = 100, 100
+DEFAULT_TOUT, DEFAULT_RELT = 50, 80
 webcam_controls = None
 if rigname == 'L0':
     #~ SHOW_WEBCAM = False
@@ -119,14 +119,14 @@ mouse_parameters_df = pandas.DataFrame.from_records([
     ('KM63', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),
-    ('KM65', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'STPFR': 125,},
+    ('KM65', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},
         ),
     ('KF73', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
         ),        
-    ('KF75', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
-        trial_setter_ui.UI, {'STPFR': 125,},
+    ('KF75', 'trial_types_CCL_2srvpos', Scheduler.Auto, {},
+        trial_setter_ui.UI, {},
         ),        
     ('KF79', 'trial_types_2shapes_CCL_3srvpos', Scheduler.Auto, {},
         trial_setter_ui.UI, {'STPFR': 125,},
