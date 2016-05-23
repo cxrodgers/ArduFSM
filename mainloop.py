@@ -259,7 +259,7 @@ def get_rig_specific_passive_detect(rigname):
 def get_rig_specific_licktrain(rigname):
     """Return a dict of params for each rig for licktrain.
     """
-    elif rigname == 'B1':
+    if rigname == 'B1':
         return {
             'RD_L': 95,
             'RD_R': 95,
