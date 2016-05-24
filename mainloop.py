@@ -185,7 +185,7 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 105,
+            'RD_L': 120,
             'RD_R': 105,
             'STPHAL': YES,
             'HALPOS': 50,
@@ -197,8 +197,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 80,
-            'RD_R': 105,
+            'RD_L': 95,
+            'RD_R': 120,
             'STPHAL': YES,
             'HALPOS': 50,
             }        
@@ -209,9 +209,9 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 95,
+            'RD_L': 110,
             'RD_R': 110,
-            'STPHAL': YES,
+            'STPHAL': NO,
             'HALPOS': 50,
             }              
 
@@ -221,8 +221,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 140,
-            'RD_R': 200,
+            'RD_L': 150,
+            'RD_R': 270,
             'STPHAL': YES,
             'HALPOS': 50,
             }     
@@ -273,7 +273,7 @@ def get_rig_specific_licktrain(rigname):
 
     elif rigname == 'B3':
         return {
-            'RD_L': 95,
+            'RD_L': 110,
             'RD_R': 110,
             }  
     
