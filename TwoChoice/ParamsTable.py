@@ -2,7 +2,7 @@
 import os.path
 import pandas
 import numpy as np
-from TrialSpeak import YES, NO, MD
+from ArduFSM.TrialSpeak import YES, NO, MD
 
 
 def get_params_table():
