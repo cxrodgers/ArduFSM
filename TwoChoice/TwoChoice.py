@@ -41,10 +41,6 @@ def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
 with file('parameters.json') as fi:
     runner_params = json.load(fi)
 
-time.sleep(1)
-print "done working"
-1/0
-
 # Check the serial port exists
 if not os.path.exists(runner_params['serial_port']):
     raise OSError("serial port %s does not exist" % 
