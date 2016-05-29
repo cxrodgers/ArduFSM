@@ -50,7 +50,7 @@
 #define __HWCONSTANTS_H_IR_L_PIN 2
 #define __HWCONSTANTS_H_IR_R_PIN 3
 
-#define __HWCONSTANTS_H_HALL_THRESH 50
+#define __HWCONSTANTS_H_HALL_THRESH 80
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
@@ -63,7 +63,7 @@
 // Will get bugs if this value is more than 16383
 // With eg 1/4 stepping, this delay is 1/4 as long
 #define __HWCONSTANTS_H_STEP_HALFDELAY_US 4000
-#define __HWCONSTANTS_H_MICROSTEP 1
+#define __HWCONSTANTS_H_MICROSTEP 8
 #endif
 
 
