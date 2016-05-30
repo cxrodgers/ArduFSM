@@ -98,6 +98,7 @@ trial_types = get_trial_types(trial_types_name)
 
 
 ## User interaction
+session_results = {}
 # Get weight
 session_results['mouse_mass'] = \
     raw_input("Enter mass of %s: " % runner_params['mouse'])
@@ -107,6 +108,8 @@ if not runner_params['has_side_HE_sensor']:
     # Note this may not be a stimulus we're using in this stimulus set
     raw_input("Rotate stepper to position %s" % 
         params_table.loc['STPIP', 'init_val'])
+
+raw_input("Fill water reservoirs and press Enter to start")
 
 ## Set up the scheduler
 if runner_params['scheduler'] == 'Auto':
@@ -202,7 +205,7 @@ try:
             plotter2 = ArduFSM.plot.LickPlotter()
             plotter2.init_handles()
             if window_position_IR_detector is not None:
-                plotter2.graphics_handles['f'].canvas.manager.window.wm_geometry(
+                plotter2.handles['f'].canvas.manager.window.wm_geometry(
                     "+%d+%d" % (
                         window_position_IR_detector[0], 
                         window_position_IR_detector[1]))            
