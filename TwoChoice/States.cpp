@@ -434,6 +434,18 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
 
   
   #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  #ifdef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
+  if (step_size < 0) {
+    nondirectional_steps = -step_size * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  } else {
+    nondirectional_steps = step_size * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  }  
+  #endif
+  
+  #ifndef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
   // Step forwards or backwards
   if (step_size < 0) {
     nondirectional_steps = -step_size * __HWCONSTANTS_H_MICROSTEP;
@@ -441,7 +453,8 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   } else {
     nondirectional_steps = step_size * __HWCONSTANTS_H_MICROSTEP;
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
-  }  
+  }    
+  #endif
   #endif
 
 
@@ -506,13 +519,27 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
 
   // Undo the last step to reach peak exactly
   #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  #ifdef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
+  if (step_size < 0) {
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  } else {
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  }  
+  #endif
+  
+  #ifndef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
   if (step_size < 0) {
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
   } else {
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
-  }  
+  }    
+  #endif
+  
   rotate_one_step();
-  #endif  
+  #endif
+  
   
   // Disable H-bridge to prevent overheating
   #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
@@ -536,7 +563,19 @@ int rotate(long n_steps)
   #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   // This incorporates microstepping and will always be positive
   long nondirectional_steps = 0;
-
+  
+  #ifdef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
+  if (n_steps < 0) {
+    nondirectional_steps = -n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  } else {
+    nondirectional_steps = n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  }  
+  #endif
+  
+  #ifndef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
   // Step forwards or backwards
   if (n_steps < 0) {
     nondirectional_steps = -n_steps * __HWCONSTANTS_H_MICROSTEP;
@@ -544,7 +583,8 @@ int rotate(long n_steps)
   } else {
     nondirectional_steps = n_steps * __HWCONSTANTS_H_MICROSTEP;
     digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
-  }
+  }    
+  #endif
   
   // Rotate the correct number of steps
   for (int i=0; i<nondirectional_steps; i++) {
