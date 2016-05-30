@@ -73,7 +73,8 @@ SHOW_SENSOR_PLOT = False
 ## Various window positions
 video_window_position = runner_params.get('video_window_position', None)
 gui_window_position = runner_params.get('gui_window_position', None)
-
+window_position_IR_detector = runner_params.get(
+    'window_position_IR_detector', None)
     
 ## Set up params_table
 # First we load the table of protocol-specific parameters that is used by the UI
@@ -200,6 +201,11 @@ try:
         if SHOW_IR_PLOT:
             plotter2 = ArduFSM.plot.LickPlotter()
             plotter2.init_handles()
+            if window_position_IR_detector is not None:
+                plotter2.graphics_handles['f'].canvas.manager.window.wm_geometry(
+                    "+%d+%d" % (
+                        window_position_IR_detector[0], 
+                        window_position_IR_detector[1]))            
         
         if SHOW_SENSOR_PLOT:
             sensor_plotter = ArduFSM.plot.SensorPlotter()
