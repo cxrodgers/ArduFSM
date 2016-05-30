@@ -81,7 +81,8 @@ gui_window_position = runner_params.get('gui_window_position', None)
 params_table = ParamsTable.get_params_table()
 params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
 params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
-params_table.loc['STPHAL', 'init_val'] = runner_params['has_side_HE_sensor']
+params_table.loc['STPHAL', 'init_val'] = 3 if runner_params['has_side_HE_sensor'] else 2
+params_table.loc['STPFR', 'init_val'] = runner_params['step_first_rotation']
 if runner_params['use_ir_detector']:
     params_table.loc['TOUT', 'init_val'] = runner_params['l_ir_detector_thresh']    
     params_table.loc['RELT', 'init_val'] = runner_params['r_ir_detector_thresh']   
@@ -94,6 +95,17 @@ params_table['current-value'] = params_table['init_val'].copy()
 trial_types_name = runner_params['stimulus_set'] + '_r'
 trial_types = get_trial_types(trial_types_name)
 
+
+## User interaction
+# Get weight
+session_results['mouse_mass'] = \
+    raw_input("Enter mass of %s: " % runner_params['mouse'])
+
+# Get stepper in correct position
+if not runner_params['has_side_HE_sensor']:
+    # Note this may not be a stimulus we're using in this stimulus set
+    raw_input("Rotate stepper to position %s" % 
+        params_table.loc['STPIP', 'init_val'])
 
 ## Set up the scheduler
 if runner_params['scheduler'] == 'Auto':
@@ -253,6 +265,12 @@ except KeyboardInterrupt:
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
+    
+    # Get weight
+    session_results['l_volume'] = raw_input("Enter L water volume: ")
+    session_results['r_volume'] = raw_input("Enter R water volume: ")
+    with file(os.path.join(os.path.split(logfilename)[0], 'results'), 'w') as fi:
+        json.dump(session_results, fi, indent=4)
 
 except curses.error as err:
     raise Exception(
