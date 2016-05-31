@@ -278,6 +278,7 @@ except trial_setter_ui.QuitException as qe:
     # Get weight
     session_results['l_volume'] = raw_input("Enter L water volume: ")
     session_results['r_volume'] = raw_input("Enter R water volume: ")
+    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
     with file(os.path.join(os.path.split(logfilename)[0], 'results'), 'w') as fi:
         json.dump(session_results, fi, indent=4)
 
