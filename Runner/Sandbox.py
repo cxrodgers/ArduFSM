@@ -226,7 +226,8 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=True):
         else:
             # Check if upload failed
             if 'avrdude: ser_open(): can' in stderr_temp:
-                raise IOError("upload failed; try again")
+                print "upload failed; trying again ..."
+                time.sleep(2)
             else:
                 stop_looping = True
             
