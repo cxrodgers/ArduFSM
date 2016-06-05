@@ -1,26 +1,3 @@
-"""Module for looking up specific parameters given session parameters.
-
-Right now these are just hard-coded parameters for boxes, boards, etc.
-Later this should be able to access JSON files or a database.
-
-This also contains the function
-    get_specific_parameters_from_user_input
-which takes the session parameters, gets the specific parameters, and
-puts them together by implementing the prioritization rules.
-
-Each parameter dict has the following structure:
-    'C': a dict of (key, value) pairs that will become #define macros
-        `value` should be a string, or None
-        None means do not define
-    'Python': a dict that will be written as a JSON parameters file
-        for Python.
-    'build': a dict of sandbox parameters, like the protocol name,
-        that is used in the creation of the sandbox.
-    
-This could potentially be a list of parameters, each with fields
-'human-readable-name', 'code-name', 'value'
-"""
-
 def get_box_parameters(box):
     """Dummy function returning parameters determined by box"""
     if box == 'test':
@@ -509,37 +486,3 @@ def get_default_parameters():
         'build': {
         },
     }
-
-def get_specific_parameters_from_user_input(user_input):
-    """Converts session parameters to specific parameters.
-    
-    """
-    # Convert session parameters into specific parameters
-    board_parameters = get_board_parameters(user_input['board'])
-    box_parameters = get_box_parameters(user_input['box'])
-    mouse_parameters = get_mouse_parameters(user_input['mouse'])    
-    
-    # Split into C, Python, and build parameters
-    specific_parameters = {}
-    for param_type in ['C', 'Python', 'build']:
-        if param_type not in specific_parameters:
-            specific_parameters[param_type] = {}
-        
-        specific_parameters[param_type].update(box_parameters[param_type])
-        specific_parameters[param_type].update(board_parameters[param_type])
-        specific_parameters[param_type].update(mouse_parameters[param_type])
-
-    # Check the required ones are present
-    for param_name in ['protocol_name', 'script_name', 'serial_port']:
-        assert param_name in specific_parameters['build']
-    
-    # Copy some from 'build' to 'python'
-    if 'serial_port' not in specific_parameters['Python']:
-        specific_parameters['Python']['serial_port'] = specific_parameters[
-            'build']['serial_port']
-    if 'box' not in specific_parameters['Python']:
-        specific_parameters['Python']['box'] = user_input['box']
-    if 'mouse' not in specific_parameters['Python']:
-        specific_parameters['Python']['mouse'] = user_input['mouse']
-    
-    return specific_parameters
