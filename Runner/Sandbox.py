@@ -179,63 +179,69 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=True):
         out.close()
     
     # Create the subprocess
-    if verbose:
-        print "compiling and uploading: " + ' '.join(cmd_string)
-    compile_proc = subprocess.Popen(cmd_string, 
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        bufsize=1)
-
-    # Non-blocking read magic
-    q = Queue()
-    t = Thread(target=enqueue_output, args=(compile_proc.stderr, q))
-    t.daemon = True
-    t.start()
-    
-    # Wait till compilation is finished
-    stderr_temp = ''
-    killed = False
-    while compile_proc.poll() is None:
-        time.sleep(2)
-        print "working..."
-        
-        # Check for any new results on STDERR
-        try:
-            while True:
-                line = q.get_nowait()
-                stderr_temp += line
-        except Empty:
-            # no output
-            pass
-        
-        # Kill if necessary
-        if 'avrdude: stk500_recv(): programmer is not responding' in stderr_temp:
-            print "not responding, terminating"
-            compile_proc.kill()
-            killed = True
-            compile_proc.poll()
-            break
-    
-    # compile process either completed or was killed
-    if killed:
-        raise IOError("avrdude process killed; unplug and replug")
-    else:
-        # Check if upload failed
-        if 'avrdude: ser_open(): can' in stderr_temp:
-            raise IOError("upload failed; try again")
-        
-        stdout = compile_proc.stdout.read()
+    n_repeats = 0
+    stop_looping = False
+    while (not stop_looping and n_repeats < 2):
+        n_repeats = n_repeats + 1
         if verbose:
-            print "COMPILATION STDOUT:"
-            print stdout
-            print "COMPILATION STDERR:"
-            print stderr_temp
-    
-        # Check for compilation errors
-        if compile_proc.returncode != 0:
-            print "error in compiling:"
-            print stderr_temp
-            raise IOError("compilation error")
+            print "compiling and uploading: " + ' '.join(cmd_string)
+        compile_proc = subprocess.Popen(cmd_string, 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1)
+
+        # Non-blocking read magic
+        q = Queue()
+        t = Thread(target=enqueue_output, args=(compile_proc.stderr, q))
+        t.daemon = True
+        t.start()
+        
+        # Wait till compilation is finished
+        stderr_temp = ''
+        killed = False
+        while compile_proc.poll() is None:
+            time.sleep(2)
+            print "working..."
+            
+            # Check for any new results on STDERR
+            try:
+                while True:
+                    line = q.get_nowait()
+                    stderr_temp += line
+            except Empty:
+                # no output
+                pass
+            
+            # Kill if necessary
+            if 'avrdude: stk500_recv(): programmer is not responding' in stderr_temp:
+                print "not responding, hit CTRL+C to end this"
+                compile_proc.terminate()
+                killed = True
+                compile_proc.poll()
+                break
+        
+        # compile process either completed or was killed
+        if killed:
+            raise IOError("avrdude process killed; unplug and replug")
+        else:
+            # Check if upload failed
+            if 'avrdude: ser_open(): can' in stderr_temp:
+                raise IOError("upload failed; try again")
+            else:
+                stop_looping = True
+            
+            stdout = compile_proc.stdout.read()
+            if verbose:
+                print "COMPILATION STDOUT:"
+                print stdout
+                print "COMPILATION STDERR:"
+                print stderr_temp
+        
+            # Check for compilation errors
+            if compile_proc.returncode != 0:
+                print "error in compiling:"
+                print stderr_temp
+                raise IOError("compilation error")
     
 def write_python_parameters(sandbox_paths, python_parameters, script_name,
     verbose=False):
