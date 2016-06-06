@@ -26,8 +26,8 @@ def get_box_parameters(box):
                 'video_device': '/dev/video0',
                 'video_window_position': (1150, 0),
                 'gui_window_position': (425, 0),
-                'l_reward_duration': 170,
-                'r_reward_duration': 220,
+                'l_reward_duration': 190,
+                'r_reward_duration': 240,
             },
             'build': {
                 'serial_port': '/dev/ttyACM0',
@@ -57,8 +57,8 @@ def get_box_parameters(box):
                 'video_window_position': (1150, 520),
                 'gui_window_position': (420, 520),
                 'window_position_IR_plot': (1000, 260),                            
-                'l_reward_duration': 100,
-                'r_reward_duration': 100,                
+                'l_reward_duration': 115,
+                'r_reward_duration': 115,                
             },
             'build': {
                 'serial_port': '/dev/ttyACM2',
@@ -72,8 +72,8 @@ def get_box_parameters(box):
                 'video_device': '/dev/video3',
                 'video_window_position': (1150, 780),
                 'gui_window_position': (425, 780),
-                'l_reward_duration': 150,
-                'r_reward_duration': 100,                
+                'l_reward_duration': 170,
+                'r_reward_duration': 130,                
             },
             'build': {
                 'serial_port': '/dev/ttyACM3',
