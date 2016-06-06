@@ -1,20 +1,6 @@
 def get_box_parameters(box):
     """Dummy function returning parameters determined by box"""
-    if box == 'test':
-        return {
-            'C': {},
-            'Python': {
-                'l_reward_duration': 30,
-                'r_reward_duration': 40,
-                'video_device': '/dev/video3',
-                'window_position_video': (100, 100),
-                'window_position_gui': (500, 600),
-            },
-            'build': {
-                'serial_port': '/dev/ttyACM1',
-            },
-        }
-    elif box == 'CR0':
+    if box == 'CR0':
         return {
             'C': {},
             'Python': {
