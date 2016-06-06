@@ -275,14 +275,36 @@ except KeyboardInterrupt:
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
+
+    rewdict = ArduFSM.plot.count_rewards(splines)
+    nlrew = (rewdict['left auto'].sum() + 
+        rewdict['left manual'].sum() + rewdict['left direct'].sum())
+    nrrew = (rewdict['right auto'].sum() + 
+        rewdict['right manual'].sum() + rewdict['right direct'].sum())
     
     # Get volumes and pipe position
     print "Preparing to save. Press CTRL+C to abort save."
-    session_results['l_volume'] = raw_input("Enter L water volume: ")
-    session_results['r_volume'] = raw_input("Enter R water volume: ")
-    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
     if session_results.get('mouse_mass') in ['', None]:
         session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
+    
+    choice = 'N'
+    while choice.upper().strip() == 'N':
+        session_results['l_volume'] = raw_input("Enter L water volume: ")
+        session_results['r_volume'] = raw_input("Enter R water volume: ")
+        if nlrew == 0:
+            lmean = 0.
+        else:
+            lmean = float(session_results['l_volume']) / nlrew
+        if nrrew == 0:
+            rmean = 0.
+        else:
+            rmean = float(session_results['r_volume']) / nrrew
+        print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
+        choice = raw_input("Confirm? [Y/n] ")
+    session_results['l_valve_mean'] = lmean
+    session_results['r_valve_mean'] = rmean
+    
+    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
     
     # Dump the results
     logfile_dir = os.path.split(logfilename)[0]
