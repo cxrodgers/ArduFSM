@@ -227,28 +227,6 @@ def get_board_parameters(board):
     
     raise ValueError("unknown board: %s" % board)
 
-def translate_c_parameter_name(name):
-    """Translate C parameters from human-readable to C-mangled.
-    
-    For example: if name is 'side_HE_sensor_thresh', this function returns
-        '__HWCONSTANTS_H_HALL_THRESH'
-    
-    If the name is not recognized, returns None.
-    
-    """
-    if name == 'side_HE_sensor_thresh':
-        return '__HWCONSTANTS_H_HALL_THRESH'
-    elif name == 'use_ir_detector':
-        return '__HWCONSTANTS_H_USE_IR_DETECTOR'
-    elif name == 'stepper_driver':
-        return '__HWCONSTANTS_H_USE_STEPPER_DRIVER'
-    elif name == 'microstep':   
-        return '__HWCONSTANTS_H_MICROSTEP'
-    elif name == 'invert_stepper_direction':
-        return '__HWCONSTANTS_H_INVERT_STEPPER_DIRECTION'
-    else:
-        return None
-
 def get_mouse_parameters(mouse):
     """Dummy function returning parameters determined by mouse
     
@@ -294,6 +272,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR4',
+                'default_box': 'CR4',                
             },        
         }             
     elif mouse == 'KM65':
@@ -308,6 +288,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR1',
+                'default_box': 'CR1',                
             },        
         }    
     elif mouse == 'KF73':
@@ -315,13 +297,15 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_2srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
                 'scheduler': 'Auto',
             },
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR3',
+                'default_box': 'CR3',
             },        
         }
     elif mouse == 'KF75':
@@ -336,6 +320,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR3',
+                'default_box': 'CR3',                
             },        
         }
     elif mouse == 'KF79':
@@ -350,6 +336,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR4',
+                'default_box': 'CR4',                
             },        
         }
     elif mouse == 'KF80':
@@ -364,6 +352,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR6',
+                'default_box': 'CR0',
             },        
         }
     elif mouse == 'KM81':
@@ -378,6 +368,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR2',
+                'default_box': 'CR2',                
             },        
         }
     elif mouse == 'KM82':
@@ -392,6 +384,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR1',
+                'default_box': 'CR1',                
             },        
         }
     elif mouse == 'KM83':
@@ -406,6 +400,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR2',
+                'default_box': 'CR2',                
             },        
         }
     elif mouse == 'KM84':
@@ -420,6 +416,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR1',
+                'default_box': 'CR1',                
             },        
         }
     elif mouse == 'KM85':
@@ -434,6 +432,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR4',
+                'default_box': 'CR4',                
             },        
         }
     elif mouse == 'KM86':
@@ -448,6 +448,8 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+                'default_board': 'CR2',
+                'default_box': 'CR2',                
             },        
         }
     

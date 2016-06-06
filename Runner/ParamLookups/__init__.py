@@ -22,5 +22,8 @@ This could potentially be a list of parameters, each with fields
 """
 
 import Hardcoded
-import Database
+try:
+    import Database
+except ImportError:
+    print "warning: cannot import Database"
 from base import *
