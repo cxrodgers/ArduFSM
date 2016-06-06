@@ -72,13 +72,13 @@ mouse_name = raw_input("Enter mouse: ")
 mouse_name = mouse_name.upper().strip()
 
 # Look up the specific parameters
-specific_parameters = get_specific_parameters_from_mouse_name(mouse_name)
+specific_parameters = ParamLookups.get_specific_parameters_from_mouse_name(mouse_name)
 
 # Fudge the user input for the sandbox creations
 user_input = {
-    'board': specific_parameters['build']['board'],
-    'box': specific_parameters['build']['box'],
-    'mouse': specific_parameters['build']['mouse'],
+    'board': specific_parameters['build']['default_board'],
+    'box': specific_parameters['build']['default_box'],
+    'mouse': mouse_name,
 }
 
 #~ # Get session parameters from user (board number, etc)
