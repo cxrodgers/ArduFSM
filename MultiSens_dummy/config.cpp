@@ -1,4 +1,4 @@
-#include "config_dummy.h"
+#include "config.h"
 
 Device ** config_hw(){ 
   static dummyStepper dmStpr1;
