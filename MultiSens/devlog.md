@@ -1,5 +1,5 @@
 #MultiSens devlog
-___
+
 ##160505: How can we get object instantiations out of the main sketch? 
 
 I've managed to accomplish this in MultiSens. There were two main things I had to do:
@@ -20,7 +20,9 @@ becomes
 
 However, calling functions from a `TimedState` pointer creates a problem with the `update` function, described below. 
 
-2) `update` has to be changed to return nothing and take no arguments. As is, this is how `update` is defined in `TimedState`: virtual void `update`. However, `update` is then redefined with a new signature in States.cpp in several classes that inherit from `TimedState`. For example, in `TwoChoice`, we see `StateWaitForServoMove.update(Servo linServo)`, and `StateResponseWindow.update(uint16_int touched)`. 
+2) `update` has to be changed to return nothing and take no arguments. As is, this is how `update` is defined in `TimedState`: `virtual void update`. However, `update` is then redefined with a new signature in States.cpp in several classes that inherit from `TimedState`. 
+
+For example, in `TwoChoice`, we see `StateWaitForServoMove.update(Servo linServo)`, and `StateResponseWindow.update(uint16_int touched)`. 
 
 Because these functions have different signatures from the one for `TimedState.update()`, they are not actually re-definitions of the `TimedState` virtual function. Rather, they are just regular functions of the inheriting class; they just happen to also be called update, but have no relation to `TimedState.update`.   
 
@@ -41,10 +43,11 @@ The `update` function of `StateWaitForServoMove` takes a `Servo` object as its a
 One better would be to not just declare `linServo` as `extern` in the global scope of States.cpp, but to actually instantiate `linServo` in States.cpp and remove it from the main sketch. Currently, there are a few other references to `linServo` in the main sketch, but can these somehow be moved to States.cpp?    
 
 In `INTER_TRIAL_INTERVAL`, we see `linServo.write(param_values[tpidx_SRV_FAR])`; it seems like we could wrap this line in a function that returns void and takes nothing, move the definition to States.cpp then just call that function from the main sketch. There are also a few lines that refer to `linServo` in `setup`, but it seems that these could also be moved to some `void servoSetup` function defined in States.cpp and just called from the main sketch. 
-___
-##160505: A usable version of my multisensory stimulus protocol is now implemented in ArduFSM/MultiSens. I've run it in conjunction with testMultiSens160504, and verified that it works in the output file testMultiSens_output160504. 
 
-Remaining issues: In a departure from existing protocols, I've decided to make reward delivery coterminous with the stimulus. Now I need to decide how to deal with errors.
+##160505: Created working MultiSens protocol in ArduFSM repo
+A usable version of my multisensory stimulus protocol is now implemented in ArduFSM/MultiSens. I've run it in conjunction with testMultiSens160504, and verified that it works in the output file testMultiSens_output160504. 
+
+###Remaining issues: In a departure from existing protocols, I've decided to make reward delivery coterminous with the stimulus. Now I need to decide how to deal with errors.
 
 I suppose having a timeout makes sense because I don't want the animal licking indiscriminately to everything; I want to know that the mouse specifically associates reward with a particular stimulus condition, so I think a timeout may be necessary for shaping behavior.
 
@@ -59,7 +62,7 @@ Should the timeout really be triggered after only ONE lick? Or should there be s
 If the animal doesn't lick during the stimulus period, then there should STILL be a post-stimulus response window. If the animal licks during this time, go to the timeout state immediately.
 
 How long should I make this response window? Does it really need to be 45 seconds? 
-___
+
 ##160302:Planning my own MultiSensProtocol
 So, if I want to pilot my own FSM, what states and parameters do I need?
 
@@ -87,8 +90,8 @@ Alternatively, doesn't the existing code already do something like start to deli
 response_values:
 whether or not it responded (can be binary for one pipe)
 whether ot not this was a correct response (i.e, )
-___
-##160302:
+
+##160302: Some possible improvements
 Given the understanding of ArduFSM described below, here are some ideas for possible improvements:
 
 Currently, all of the TimedState objects are declared static at the beginning of loop(), and the timers are reset (using a syntax I don't understand) in the TRIAL_START switch case statement. This involves manually listing every TimedState object.
@@ -97,7 +100,7 @@ Would it be better if we could move references to individual TimedState objects 
 
 Also, in order to reset the timers on the TimedState objects, each object could have a resetTimer() function, and during the TRIAL_START switch case statement, the sketch could iterate through TimedStateArray and call each object's resetTimer() function.
 
-___
+
 ##160302: Some outstanding questions
 Here are some questions that remain for me after describing in the previous post how ArduFSM works and how it might be merged with my multisens_hw_control:
 
@@ -123,7 +126,7 @@ How is the changing signature of `TimedState.update` allowed?
 
 Why is reward given in the move servo epoch??
 
-___
+
 ##160302: Merging multisens_hw_control with ArduFSM
 I would like to merge my personal code for multi-sensory stimulation with the ArduFSM framework that Chris developed. I've started this log to keep track of how the project has developed in a form that may be somewhat more accessible than going through reams of git commits.
 
@@ -189,14 +192,14 @@ So far, I have a test program that:
 
 This test program works (at least at baud rates of 9600 and 115200), which leads me to conclude that an object-oriented, polymorphic approach can work.
 
-###Part 2: ArduFSM
+###Background on ArduFSM
 Now the question is how to take these strategies and implement them in the existing ArduFSM framework. The ArduFSM framework includes more functionality than I currently need, so it might be acceptable to just take a very pared-down version of ArduFSM and merge it with multisens_hw_control somehow. However, it's conceivable that I might ultimately want to start testing more sophisticated behaviors, in which case it may be more of a hassle to have to build out functionality by merging successive portions of ArduFSM piecewise; every round of this kind of expansion requires figuring out which pieces of ArduFSM can be merged independently of each other. Thus, it may be worthwhile to figure out how much ArduFSM functionality can be merged now without unacceptable amounts of superfluous functionality. 
 
 I've written a detailed explanation of ArduFSM's functionality and how it works here:
 
 https://github.com/danieldkato/ArduFSM/wiki/ArduFSM
 
-###Part 3: Merging multisens_hw_control and ArduFSM
+###Merging multisens_hw_control and ArduFSM
 `TimedState.loop` might be a reasonable place to iterate through `devPtrs`; that is, for the duration of the stimulus epoch, the switch case statement will call the `run` function of some `TimedState` object corresponding to the stimulus epoch. This in turn will call that `TimedState` object's `loop` function, each call of which will iterate once through the `devPtrs` array and call each device's `Device.update` function. `devPtrs` can be instantiated in the global scope of `States.cpp` so it can be accessed from any `TimedState`'s `loop` function.
 
 Some issues to think about if I do it this way:
