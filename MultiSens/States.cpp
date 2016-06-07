@@ -10,7 +10,7 @@ Defines the following:
 */
 
 #include "devices.h"
-#include "config.h"
+#include "config_dummy.h"
 #include "States.h"
 #include "Arduino.h"
 #include "Stepper.h"

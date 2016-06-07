@@ -18,7 +18,7 @@ into States.cpp.
 
 #include "TimedState.h"
 #include "devices.h"
-#include "config.h"
+#include "config_dummy.h"
 
 //// Global trial parameters structure. This holds the current value of
 // all parameters. Should probably also make a copy to hold the latched
