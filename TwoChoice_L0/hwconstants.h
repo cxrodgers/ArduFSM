@@ -7,7 +7,7 @@
 
 
 // This defines whether we use stepper driver or H-bridge
-//#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#define __HWCONSTANTS_H_USE_STEPPER_DRIVER
 
 
 
@@ -50,7 +50,7 @@
 #define __HWCONSTANTS_H_IR_L_PIN 2
 #define __HWCONSTANTS_H_IR_R_PIN 3
 
-#define __HWCONSTANTS_H_HALL_THRESH 8
+#define __HWCONSTANTS_H_HALL_THRESH 45
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
@@ -72,7 +72,7 @@
 #define __HWCONSTANTS_H_STP_POST_ENABLE_DELAY 100
 #endif
 
-#define __HWCONSTANTS_H_USE_IR_DETECTOR
+//#define __HWCONSTANTS_H_USE_IR_DETECTOR
 
 
 #define __HWCONSTANTS_H_SENSOR_HISTORY_SZ 10

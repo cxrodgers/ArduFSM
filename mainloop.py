@@ -54,7 +54,7 @@ def get_params_table():
         ('RD_R',    MD,       0, 0, 1, 1, 1),
         ('ITI',     50,       0, 0, 1, 0, 1),
         ('PSW',     1,        0, 0, 0, 0, 0),
-        ('TO',      6000,     0, 0, 1, 0, 1),       
+        ('TO',      9000,     0, 0, 1, 0, 1),       
         ('TOE',     YES,      0, 0, 1, 0, 1),
         ('MRT',     1,        0, 0, 1, 0, 1),
         ('STPSPD',  MD,       0, 0, 0, 1, 1),
@@ -174,67 +174,10 @@ def get_rig_specific(rigname):
             'SRVFAR' : 1100,
             'SRVTT': 2000,
             'RD_L': 60,
-            'RD_R': 60,
+            'RD_R': 55,
             'STPHAL': YES,
             'HALPOS': 50,
             }
-    
-    elif rigname == 'L1':
-        return {
-            'STPSPD': 30,
-            '2PSTP': NO,
-            'SRVTT': 2000,
-            'RD_L': 60,
-            'RD_R': 50,
-            'STPHAL': YES,
-            'HALPOS': 150,
-            }
-    
-    elif rigname == 'L2':
-        return {
-            'STPSPD': 30,
-            '2PSTP': NO,
-            'SRVTT': 2000,
-            'RD_L': 21,
-            'RD_R': 30,
-            'STPHAL': YES,
-            'HALPOS': 50,
-            }
-    
-    elif rigname == 'L3':
-        return {
-            'STPSPD': 30,
-            '2PSTP': YES,
-            'SRVTT': 2000,
-            'RD_L': 25,
-            'RD_R': 26,
-            'STPHAL': YES,
-            'HALPOS': 50,
-            }  
-            
-    elif rigname == 'B3':
-        return {
-            'STPSPD': 30,
-            '2PSTP': YES,
-            'SRVFAR' : 1100,
-            'SRVTT': 2000,
-            'RD_L': 95,
-            'RD_R': 110,
-            'STPHAL': YES,
-            'HALPOS': 50,
-            }              
-
-    elif rigname == 'B4':
-        return {
-            'STPSPD': 30,
-            '2PSTP': YES,
-            'SRVFAR' : 1100,
-            'SRVTT': 2000,
-            'RD_L': 120,
-            'RD_R': 170,
-            'STPHAL': YES,
-            'HALPOS': 50,
-            }     
 
     elif rigname == 'B1':
         return {
@@ -242,8 +185,8 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 90,
-            'RD_R': 90,
+            'RD_L': 120,
+            'RD_R': 120,
             'STPHAL': YES,
             'HALPOS': 50,
             }  
@@ -254,11 +197,35 @@ def get_rig_specific(rigname):
             '2PSTP': YES,
             'SRVFAR' : 1100,
             'SRVTT': 2000,
-            'RD_L': 80,
-            'RD_R': 105,
+            'RD_L': 95,
+            'RD_R': 120,
             'STPHAL': YES,
             'HALPOS': 50,
             }        
+
+    elif rigname == 'B3':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 110,
+            'RD_R': 110,
+            'STPHAL': NO,
+            'HALPOS': 50,
+            }              
+
+    elif rigname == 'B4':
+        return {
+            'STPSPD': 30,
+            '2PSTP': YES,
+            'SRVFAR' : 1100,
+            'SRVTT': 2000,
+            'RD_L': 150,
+            'RD_R': 350,
+            'STPHAL': YES,
+            'HALPOS': 50,
+            }     
 
     elif rigname == 'B5':
         return {
@@ -292,25 +259,7 @@ def get_rig_specific_passive_detect(rigname):
 def get_rig_specific_licktrain(rigname):
     """Return a dict of params for each rig for licktrain.
     """
-    if rigname == 'L1':
-        return {
-            'RD_L': 60,
-            'RD_R': 31,
-            }
-    
-    elif rigname == 'L2':
-        return {
-            'RD_L': 23,
-            'RD_R': 21,
-            }
-    
-    elif rigname == 'L3':
-        return {
-            'RD_L': 16,
-            'RD_R': 25,
-            }  
-    
-    elif rigname == 'B1':
+    if rigname == 'B1':
         return {
             'RD_L': 95,
             'RD_R': 95,
@@ -324,14 +273,14 @@ def get_rig_specific_licktrain(rigname):
 
     elif rigname == 'B3':
         return {
-            'RD_L': 100,
-            'RD_R': 60,
+            'RD_L': 110,
+            'RD_R': 110,
             }  
     
     elif rigname == 'B4':
         return {
-            'RD_L': 70,
-            'RD_R': 70,
+            'RD_L': 140,
+            'RD_R': 200,
             }  
     
     else:

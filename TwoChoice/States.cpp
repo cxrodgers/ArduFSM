@@ -96,7 +96,7 @@ void StateResponseWindow::loop()
   set_licking_variables(licking_l, licking_r);
   
   // Turn off laser if we've been in the state for long enough
-  if ((time - (timer - duration)) > 4000) {
+  if ((time - (timer - duration)) > 1000) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   }
     
@@ -249,7 +249,7 @@ void StateWaitForServoMove::loop()
   // First set opto
   if (
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
-    ((time - timer) > -1000)) {
+    ((time - timer) > -2000)) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   }
   
@@ -485,6 +485,13 @@ int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
         // Negative peak: sensor is low, but increasing
         keep_going = 0;
     }
+    
+    // Quit if >400 steps have been taken
+    if (abs(actual_steps) > 400) {
+      Serial.print(millis());
+      Serial.println(" DBG STEPS400");
+      keep_going = 0;
+    }
   }
 
   // Dump the circular buffer
@@ -556,6 +563,10 @@ int rotate(long n_steps)
   // BLOCKING CALL //
   // Replace this with more iterations of smaller steps
   stimStepper->step(n_steps);
+
+  // Disable H-bridge to prevent overheating
+  delay(__HWCONSTANTS_H_STP_POST_ENABLE_DELAY);
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW);
   #endif
  
  
