@@ -7,7 +7,7 @@ def get_box_parameters(box):
                 'video_device': '/dev/video0',
                 'video_window_position': (500, 0),
                 'gui_window_position': (700, 0),
-                'window_position_IR_plot': (1100, 0),                
+                'window_position_IR_plot': (1000, 0),                
                 'video_brightness': 0,
                 'video_gain': 0,
                 'video_exposure': 8,
@@ -217,7 +217,7 @@ def get_board_parameters(board):
             'Python': {
                 'has_side_HE_sensor': False,            
                 'use_ir_detector': True,                        
-                'l_ir_detector_thresh': 40,
+                'l_ir_detector_thresh': 80,
                 'r_ir_detector_thresh': 80,
                 'window_position_IR_detector': (1300, 450),
             },
