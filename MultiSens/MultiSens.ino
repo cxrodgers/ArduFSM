@@ -1,6 +1,111 @@
-/* A two-alternative choice behavior with left and right lick ports.
+/* OVERVIEW 160607:
+ * This file is the main Arduino sketch for the ArduFSM protocol MultiSens. This 
+ * protocol is used for presenting simultaneous multi-sensory stimuli. 
+ * Arbitrary stimulus presentations can be paired with coterminous dispensation 
+ * of a liquid reward (determined by the computer-side program), and licks during 
+ * non-rewarded stimuli will result in a timeout error period.
+ *  
+ * REQUIREMENTS:
+ * This sketch must be located in the MultiSens protocol directory within
+ * a copy of the ArduFSM repository on the local computer's Arduino sketchbook
+ * folder. In addition to this file, the MultiSens directory should contain
+ * the following files:
+ *  
+ * 1. config.h
+ * 2. config.cpp
+ * 3. States.h
+ * 4. States.cpp
+ *  
+ * In addition, the local computer's Arduino sketchbook library must contain 
+ * the following libraries:
+ *  
+ * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+ * 2. devices, available at https://github.com/danieldkato/devices
+ *  
+ * This sketch is largely agnostic with respect to how the computer-side code is
+ * implemented; the only requirements are that both programs specify the same
+ * baud rate for the serial connection, and that the computer-side code send
+ * certain specific messages comprised of byte arrays terminated by a newline
+ * ('\n') character over a serial connection to the Arduino. The syntax and
+ * semantics of these messages are described below.
+ *  
+ * DESCRIPTION:
+ * Like all ArduFSM programs, this sketch, on every pass of the main loop, 
+ * performs the following actions: 1) check for messages from the computer,
+ * 2) check for licks, 3) performs state-dependent operations, and 4) if 
+ * necessary, advances the current state. 
+ *  
+ * The protocol consits of 8 states: WAIT_TO_START_TRIAL, TRIAL_START, STIM_PERIOD,   
+ * RESPONSE_WINDOW, REWARD, POST_REWARD_PAUSE, ERROR and INTER_TRIAL_INTERVAL.  
+ * During WAIT_TO_START_TRIAL, the Arduino does nothing until it receives the
+ * message "RELEASE_TRL\0\n" from the computer. It then advances to TRIAL_START,
+ * when it prints the current trial parameters back to the computer. It then  
+ * advances to STIM_PERIOD, during which it presents the stimuli. 
+ * 
+ * On rewarded trials, the reward valve will open some amount of time before 
+ * the end of STIM_PERIOD. The state will then advance to RESPONSE_PERIOD, during 
+ * which licks will cause the state to advance to REWARD, during which the reward
+ * valve will open. This will be followed by a POST_REWARD_PAUSE, which will cycle
+ * back to RESPONSE_WINDOW. As long as the mouse keeps licking, this cycle will
+ * repeat until some maximum number of rewards is reached. If no licks are 
+ * recorded during the response window, no further rewards are given, and the
+ * trial is scored as a miss. 
+ * 
+ * On unrewarded trials, any licks during the STIM_PERIOD or RESPONSE_WINDOW
+ * states will result in a false alarm outcome and cause the state to advance
+ * to ERROR. If no licks are detected during either STIM_PERIOD or 
+ * RESPONSE_WINDOW, then the trial is scored as a correct reject. 
+ * 
+ * In any case, after the trial is scored, the state will advance to
+ * INTER_TRIAL_INTERVAL, during which it will report back the trial outcome,
+ * and then to WAIT_TO_START_TRIAL, during which it will await the parameters
+ * for the next trial and the "RELEASE_TRL\0" message to begin the next trial.
+ * 
+ * This sketch expects to receive trial parameters in messages with the syntax:
+ * 
+ * "SET <parameter abbreviation> <parameter value>\n"
+ * 
+ * where <parameters abbreviation> stands for some parameter abbreviation and
+ * <parameter value> stands for the value of that parameter on the upcoming 
+ * trial.
+ * 
+ * The semantics of the parameters abbreviations are as follows:
+ * 
+ * STPRIDX: function index for the stepper motor; used by an object 
+ * representing the stepper motor to determine what actions to take during the 
+ * stimulus period. 0 means do nothing, 1 means extend the stepper at the 
+ * beginning of the trial. 
+ * 
+ * SPKRIDX: function index for the speaker. 0 means do nothing, 1 means 
+ * play a white noise stimulus. Set to 0 by default on the Arduino. 
+ * 
+ * REW: whether or not the current trial will be rewarded. Set to 0 by default 
+ * on the Arduino.
+ * 
+ * REW_DUR: the duration of any rewards given on the current trial. Set to 50 
+ * by default on the Arduino.
+ * 
+ * IRI: inter-reward interval; the minimum amount of time that must elapse 
+ * between rewards. Set to 500 by default on the Arduino. 
+ * 
+ * TO: timeout; the minimum amount of time between a false alarm response and 
+ * the following trial. Set to 6000 by default on the Arduino.
+ * 
+ * ITI: inter-trial interval; minimum amount of time between trials [?]. Set to 
+ * 3000 by default on the Arduino.
+ * 
+ * RWIN: response window duration; the maximum amount of time the mouse has to 
+ * respond following the stimulus. Set to 45000 by default on the Arduino.
+ * 
+ * MRT: maximum number of rewards mouse can receive on a single trial. Set 
+ * to 1 by default on the Arduino.
+ * 
+ * TOE: terminate on error; whether or not the trial will end immediately 
+ * following a false alarm response. Set to 1 by default on the Arduino. 
 
-TODO
+  */ 
+
+/* TODO
 ----
 * Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
   as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
