@@ -15,15 +15,15 @@ This protocol directory should contain the following files:
    5. MultiSens.ino
    6. testMultiSens.py
   
-Running this protocol requires that the local computer's Arduino sketchbook library folder contain the following libraries
+Running this protocol requires that the local computer's Arduino sketchbook library contain the following libraries:
   1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
   2. devices, available at https://github.com/danieldkato/devices
 
-In addition, the path of the Python instance running testMultiSens.py must include the path to the module chat, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
+In addition, the path of the Python instance running testMultiSens.py must include the path to the module `chat`, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
 
 
 ###INSTRUCTIONS:
-To run this protocol, upload MultiSens.ino to an Arduino. Then, in a command window, navigate to this directory and enter the command:
+To run this protocol, first upload MultiSens.ino to an Arduino. Then, in a command window, navigate to this directory and enter the command:
 
 `python testMultiSens.py`
 
