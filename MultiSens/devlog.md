@@ -1,4 +1,7 @@
 #MultiSens devlog
+This is a reverse-chronological log of the development of this ArduFSM protocol, starting from after I had completed my own multisensory stimulation code from scratch but wanted to merge it into ArduFSM. I include it because I think it may be more accessible and expository than reading through reams of commit messages in the repo's git log. 
+
+For help on using the most current version of MultiSens, see README.md.
 
 ##160505: How can we get object instantiations out of the main sketch? 
 
