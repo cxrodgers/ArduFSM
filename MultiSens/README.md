@@ -3,7 +3,7 @@ This file provides documentation for the most current version of the ArduFSM pro
 
 
 ###PROTOCOL DESCRIPTION:
-This protocol is used for delivering and measuring licks during simultaneous multi-sensory stimulus presentations. Arbitrary stimulus presentations can be paired with coterminous dispensation of a liquid reward (determined by the computer-side program), and licks during non-rewarded stimuli will result in a timeout error period. 
+This protocol is used for presenting simultaneous multi-sensory stimuli. Arbitrary stimulus presentations can be paired with coterminous dispensation of a liquid reward (determined by the computer-side program), and licks during non-rewarded stimuli will result in a timeout error period. 
 
 
 ###REQUIREMENTS:
