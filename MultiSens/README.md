@@ -23,7 +23,7 @@ In addition, the path of the Python instance running testMultiSens.py must inclu
 
 
 ###INSTRUCTIONS:
-To run this protocol, first upload MultiSens.ino to an Arduino. Then, in a command window, navigate to this directory and enter the command:
+To run this protocol, upload MultiSens.ino to an Arduino. Then, in a command window, navigate to this directory and enter the command:
 
 `python testMultiSens.py`
 
