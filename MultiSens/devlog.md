@@ -26,7 +26,7 @@ For example, in `TwoChoice`, we see `StateWaitForServoMove.update(Servo linServo
 
 Because these functions have different signatures from the one for `TimedState.update()`, they are not actually re-definitions of the `TimedState` virtual function. Rather, they are just regular functions of the inheriting class; they just happen to also be called update, but have no relation to `TimedState.update`.   
 
-Moreover, it turns out that when we have our states array, its actual type is of pointer to the PARENT `TimedState` class. Even though the array includes pointers to objects that instantiate different inheriting classes `(StateWaitForServoMove, StateResponseWindow, etc.)`, each object ALSO instantiates the parent class TimedState, and THAT is the type that the pointers actually point to. 
+Moreover, it turns out that when we have our states array, its actual type is of pointer to the **parent** `TimedState` class. Even though the array includes pointers to objects that instantiate different inheriting classes `(StateWaitForServoMove, StateResponseWindow, etc.)`, each object ALSO instantiates the parent class TimedState, and THAT is the type that the pointers actually point to. 
 
 Thus, when one tries to call 
 
@@ -35,6 +35,8 @@ Thus, when one tries to call
 what you're actually calling is the TimedState function `update`, and NOT the `update` function of any of the inheriting classes. This means that `update` as used above must obey the syntax declared in `TimedState`, i.e., it takes nothing and returns void. If you try to pass it a `Servo` or `uint16_int`, you will get a compiler error saying that `TimedState` has no function called `update` that takes a `Servo` or a `uint16_int`.       
 
 Given everything that `update` is intended to do currently, we can probably remove any arguments to it in the inheriting classes and keep it in conformity with the signature declared in TimedState.
+
+For the time being, this is not much of a concern for me personally, because my partciular protocol does not make much use of the 'TimedState.update' function - I'm not attaching any servos or passing any 'touched' variables returned from the MPR121 library's 'pollTouchInputs' (I'm using Clay's analog lick detector on the 2P rig). However, this may be more of a concern for other existing protocols like TwoChoice.
 
 For example, the `update` function of `StateResponseWindow` current takes the uint16_int variable touched as its input, then assigns the private variable `my_touched` to have the same value. In every case, however, the value of touched was just returned from a call to  `pollTouchInputs` earlier on in the main sketch. Could we just move the call to `pollTouchInputs` inside of `StateResponseWindow.update` and just have it return its value to `my_touched` directly?
 
@@ -47,7 +49,8 @@ In `INTER_TRIAL_INTERVAL`, we see `linServo.write(param_values[tpidx_SRV_FAR])`;
 ##160505: Created working MultiSens protocol in ArduFSM repo
 A usable version of my multisensory stimulus protocol is now implemented in ArduFSM/MultiSens. I've run it in conjunction with testMultiSens160504, and verified that it works in the output file testMultiSens_output160504. 
 
-###Remaining issues: In a departure from existing protocols, I've decided to make reward delivery coterminous with the stimulus. Now I need to decide how to deal with errors.
+###Remaining issues: 
+In a departure from existing protocols, I've decided to make reward delivery coterminous with the stimulus. Now I need to decide how to deal with errors.
 
 I suppose having a timeout makes sense because I don't want the animal licking indiscriminately to everything; I want to know that the mouse specifically associates reward with a particular stimulus condition, so I think a timeout may be necessary for shaping behavior.
 
