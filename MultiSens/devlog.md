@@ -69,7 +69,7 @@ If the animal doesn't lick during the stimulus period, then there should STILL b
 
 How long should I make this response window? Does it really need to be 45 seconds? 
 
-##160302:Planning my own MultiSensProtocol
+##160413:Planning my own MultiSensProtocol
 So, if I want to pilot my own FSM, what states and parameters do I need?
 
 States:
@@ -97,7 +97,7 @@ response_values:
 whether or not it responded (can be binary for one pipe)
 whether ot not this was a correct response (i.e, )
 
-##160302: Some possible improvements
+##160413: Some possible improvements
 Given the understanding of ArduFSM described below, here are some ideas for possible improvements:
 
 Currently, all of the TimedState objects are declared static at the beginning of loop(), and the timers are reset (using a syntax I don't understand) in the TRIAL_START switch case statement. This involves manually listing every TimedState object.
@@ -107,7 +107,7 @@ Would it be better if we could move references to individual TimedState objects 
 Also, in order to reset the timers on the TimedState objects, each object could have a resetTimer() function, and during the TRIAL_START switch case statement, the sketch could iterate through TimedStateArray and call each object's resetTimer() function.
 
 
-##160302: Some outstanding questions
+##160413: Some outstanding questions
 Here are some questions that remain for me after describing in the previous post how ArduFSM works and how it might be merged with my multisens_hw_control:
 
 If I downlad ArduFSM as a subdirectory of an existing Arduino sketchbook (for exmaple, on a computer that already has other Arduino sketches), can this libraries folder stay in ArduFSM? Or do its contents have to be moved to the pre-existing sketchbok's library?*   
@@ -133,7 +133,7 @@ How is the changing signature of `TimedState.update` allowed?
 Why is reward given in the move servo epoch??
 
 
-##160302: Merging multisens_hw_control with ArduFSM
+##160413: Merging multisens_hw_control with ArduFSM
 I would like to merge my personal code for multi-sensory stimulation with the ArduFSM framework that Chris developed. I've started this log to keep track of how the project has developed in a form that may be somewhat more accessible than going through reams of git commits.
 
 The basic problem was that I had developed my own program from scratch, but I wanted to re-cast it in the ArduFSM framework in order to benefit from the features and flexibility already built into the latter, and as part of a broader effort to standardize code across the lab somewhat.
