@@ -35,7 +35,7 @@ For more specific exposition of each file, see comments in the header of each.
 ###Protocol
 This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
-On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to RESPONSE_PERIOD, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
+On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to `RESPONSE_PERIOD`, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
 
 On unrewarded trials, any licks during the `STIM_PERIOD` or `RESPONSE_WINDOW` states will result in a false alarm outcome and cause the state to advance to ERROR. If no licks are detected during either `STIM_PERIOD` or `RESPONSE_WINDOW`, then the trial is scored as a correct reject. 
  
@@ -63,19 +63,19 @@ config.h and config.cpp define individual device instances (e.g., steppers, spea
 ####Trial parameters
 The Arduino expects to receive trial parameters with the syntax:
 
-`"SET \<parameter abbreviation\> \<parameter value\>\n"`
+`"SET parameter_abbreviation parameter_value\n"`
 
-where <parameters abbreviation> stands for some parameter abbreviation and <parameter value> stands for the value of that parameter on the upcoming trial.
+where `parameter_abbreviation` stands for some parameter abbreviation and `parameter value` stands for the value of that parameter on the upcoming trial.
 
 The semantics of the parameters abbreviations are as follows:
  
-STPRIDX: function index for the stepper motor; used by an object representing the stepper motor to determine what actions to take during the stimulus period. 0 means do nothing, 1 means extend the stepper at the beginning of the trial. 
+`STPRIDX`: function index for the stepper motor; used by an object representing the stepper motor to determine what actions to take during the stimulus period. 0 means do nothing, 1 means extend the stepper at the beginning of the trial. 
 
-SPKRIDX: function index for the speaker. 0 means do nothing, 1 means play a white noise stimulus. Set to 0 by default on the Arduino. REW: whether or not the current trial will be rewarded. Set to 0 by default on the Arduino.
+`SPKRIDX`: function index for the speaker. 0 means do nothing, 1 means play a white noise stimulus. Set to 0 by default on the Arduino. REW: whether or not the current trial will be rewarded. Set to 0 by default on the Arduino.
 
-REW_DUR: the duration of any rewards given on the current trial. Set to 50 by default on the Arduino.
+`REW_DUR`: the duration of any rewards given on the current trial. Set to 50 by default on the Arduino.
 
-IRI: inter-reward interval; the minimum amount of time that must elapse between rewards. Set to 500 by default on the Arduino. 
+`IRI`: inter-reward interval; the minimum amount of time that must elapse between rewards. Set to 500 by default on the Arduino. 
 
 TO: timeout; the minimum amount of time between a false alarm response and the following trial. Set to 6000 by default on the Arduino.
 
