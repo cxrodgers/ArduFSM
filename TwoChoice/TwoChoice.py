@@ -85,6 +85,7 @@ params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
 params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
 params_table.loc['STPHAL', 'init_val'] = 3 if runner_params['has_side_HE_sensor'] else 2
 params_table.loc['STPFR', 'init_val'] = runner_params['step_first_rotation']
+params_table.loc['TO', 'init_val'] = runner_params['timeout']
 if runner_params['use_ir_detector']:
     params_table.loc['TOUT', 'init_val'] = runner_params['l_ir_detector_thresh']    
     params_table.loc['RELT', 'init_val'] = runner_params['r_ir_detector_thresh']   
@@ -291,16 +292,25 @@ except trial_setter_ui.QuitException as qe:
     while choice.upper().strip() == 'N':
         session_results['l_volume'] = raw_input("Enter L water volume: ")
         session_results['r_volume'] = raw_input("Enter R water volume: ")
-        if nlrew == 0:
-            lmean = 0.
-        else:
-            lmean = float(session_results['l_volume']) / nlrew
-        if nrrew == 0:
-            rmean = 0.
-        else:
-            rmean = float(session_results['r_volume']) / nrrew
-        print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
-        choice = raw_input("Confirm? [Y/n] ")
+        
+        bad_data = False
+        try:
+            if nlrew == 0:
+                lmean = 0.
+            else:
+                lmean = float(session_results['l_volume']) / nlrew
+            if nrrew == 0:
+                rmean = 0.
+            else:
+                rmean = float(session_results['r_volume']) / nrrew
+        except ValueError:
+            print "warning: cannot convert to float"
+            bad_data = True
+        
+        if not bad_data:
+            print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
+            choice = raw_input("Confirm? [Y/n] ")
+
     session_results['l_valve_mean'] = lmean
     session_results['r_valve_mean'] = rmean
     
