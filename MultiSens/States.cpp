@@ -1,3 +1,58 @@
+/* Last updated DDK 6/7/16
+ *  
+ * OVERVIEW: 
+ * This file defines functions that constitute most of the state-dependent 
+ * operations for the ArduFSM protocol MultiSens. This includes much of the 
+ * protocol's state-transition logic. Trial and response parameters are also 
+ * stored here.
+ * 
+ * 
+ * REQUIREMENTS:
+ * This sketch must be located in the MultiSens protocol directory within
+ * a copy of the ArduFSM repository on the local computer's Arduino sketchbook
+ * folder. In addition to this file, the MultiSens directory should contain
+ * the following files:
+ * 
+ * 1. config.h
+ * 2. config.cpp
+ * 3. States.h
+ * 4. MultiSens.ino
+ * 
+ * In addition, the local computer's Arduino sketchbook library must contain 
+ * the following libraries:
+ *  
+ * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+ * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+ * 3. devices, available at https://github.com/danieldkato/devices
+ * 
+ * 
+ * INSTRUCTIONS:
+ * Compile and upload this sketch along with States.h, States.cpp, config.h
+ * and config.cpp to an Arduino over a connected serial port. See this 
+ * protocol's README.md for instructions on running the corresponding computer-
+ * side code. 
+ * 
+ * 
+ * DESCRIPTION:
+ * This file primarily defines a number of functions that are called from
+ * the state-dependent `switch case` statement in the `loop` function of the 
+ * main MultiSens.ino sketch. For any state that consist entirely of some short-
+ * duration (1-100ms) action that can be completed on a single pass of loop,
+ * States.cpp defines a single, non-class function. For states that must persist  
+ * for an extended period of time over multiple passes of `loop`, States.cpp 
+ * defines classes and class functions that inherit from TimedState. These
+ * TimedState objects store the time the corresponding state began as well as
+ * the current time, and execute appropriate class functions based on how
+ * much time has elapsed since the beginning of the state.
+ * 
+ * This file also defines arrays that store trial and response parameters for 
+ * the current trial.
+ * 
+ * This code is agnostic with respect to what actual hardware devices are 
+ * controlled by the Arduino on the current experiment. These hardware 
+ * settings are included in config.cpp. 
+ */
+
 /* Implementation file for declaring protocol-specific states.
 This implements a two-alternative choice task with two lick ports.
 
