@@ -1,7 +1,7 @@
-Last updated DDK 6/7/16
+*Last updated DDK 6/7/16*
 
 ##OVERVIEW: 
-This directory contains files needed to run the ArduFSM protocol MultiSens. This protocol is used for presenting simultaneous multi-sensory stimuli. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
+This directory contains files needed to run the ArduFSM protocol MultiSens. This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
 
 This readme provides documentation for the most current version of the protocol. For a record of the historical development of this protocol and more exposition of some of the design choices therein, see this directory's devlog.md.
 
@@ -32,7 +32,7 @@ For more specific exposition of each file, see comments in the header of each.
 
 ##DESCRIPTION
 
-###Protocol
+###Behavioral protocol
 This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
 On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to `RESPONSE_PERIOD`, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
@@ -43,7 +43,7 @@ In any case, after the trial is scored, the state will advance to `INTER_TRIAL_I
 
 For a full list of trial parameters, see below. 
 
-###Program
+###Code
 As with all ArduFSM protocols, the code for running this protocol consists of separate computer-side and Arduino programs. 
 
 ####Computer-side code
@@ -77,15 +77,15 @@ The semantics of the parameters abbreviations are as follows:
 
 `IRI`: inter-reward interval; the minimum amount of time that must elapse between rewards. Set to 500 by default on the Arduino. 
 
-TO: timeout; the minimum amount of time between a false alarm response and the following trial. Set to 6000 by default on the Arduino.
+`TO`: timeout; the minimum amount of time between a false alarm response and the following trial. Set to 6000 by default on the Arduino.
 
-ITI: inter-trial interval; minimum amount of time between trials [?]. Set to 3000 by default on the Arduino.
+`ITI`: inter-trial interval; minimum amount of time between trials [?]. Set to 3000 by default on the Arduino.
 
-RWIN: response window duration; the maximum amount of time the mouse has to respond following the stimulus. Set to 45000 by default on the Arduino.
+`RWIN`: response window duration; the maximum amount of time the mouse has to respond following the stimulus. Set to 45000 by default on the Arduino.
  
-MRT: maximum number of rewards mouse can receive on a single trial. Set to 1 by default on the Arduino.
+`MRT`: maximum number of rewards mouse can receive on a single trial. Set to 1 by default on the Arduino.
 
-TOE: terminate on error; whether or not the trial will end immediately following a false alarm response. Set to 1 by default on the Arduino. 
+`TOE`: terminate on error; whether or not the trial will end immediately following a false alarm response. Set to 1 by default on the Arduino. 
 
      
 
