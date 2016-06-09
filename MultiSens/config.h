@@ -1,5 +1,11 @@
-/*Header file defining device configuration for current 
- * experiment.
+/* Last updated DDK 6/7/16
+ *  
+ * OVERVIEW:
+ * This is a header file for config.cpp, which instantiates the device objects 
+ * to be used in the current session of the ArduFSM protocol MultiSens. It also
+ * defines a number of macros that specify hardware pins, step size, motor 
+ * speeds, DC biases, etc., used in instantiating the device objects. 
+ * 
  */
  
 #ifndef CONFIG_MS_INCLUDED
