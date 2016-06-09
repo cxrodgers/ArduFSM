@@ -281,8 +281,8 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_3srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
                 'scheduler': 'Auto',
             },
             'build': {
@@ -361,8 +361,8 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_3srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
                 'timeout': 6000,
                 'scheduler': 'Auto',
             },
