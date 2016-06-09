@@ -1,3 +1,39 @@
+/* Last updated DDK 6/7/16
+ * 
+ * OVERVIEW: 
+ * This is a header file containing declarations for the functions defined in the 
+ * States.cpp file of the ArduFSM protocol MultiSens. These functions constitute 
+ * most of the state-dependent operations for the ArduFSM protocol MultiSens. This 
+ * includes much of the protocol's state-transition logic.
+ * 
+ * This is also where the `STATE_TYPE` variable and its values (i.e. the protocol's
+ * states) are declared. 
+ * 
+ * This file also defines a number of macros for indexing into the trial parameter
+ * and trial results arrays defined in States.cpp, thereby precluding the need
+ * to memorize numeric indices for each trial and results parameter.
+ * 
+ * 
+ * REQUIREMENTS:
+ * This sketch must be located in the MultiSens protocol directory within
+ * a copy of the ArduFSM repository on the local computer's Arduino sketchbook
+ * folder. In addition to this file, the MultiSens directory should contain
+ * the following files:
+ * 
+ * 1. config.h
+ * 2. config.cpp
+ * 3. States.cpp
+ * 4. MultiSens.ino
+ * 
+ * In addition, the local computer's Arduino sketchbook library must contain 
+ * the following libraries:
+ *  
+ * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+ * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+ * 3. devices, available at https://github.com/danieldkato/devices
+ */
+
+
 /* Header file for declaring protocol-specific states.
 This implements a two-alternative choice task with two lick ports.
 
