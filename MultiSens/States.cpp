@@ -26,13 +26,6 @@
  * 3. devices, available at https://github.com/danieldkato/devices
  * 
  * 
- * INSTRUCTIONS:
- * Compile and upload this sketch along with States.h, States.cpp, config.h
- * and config.cpp to an Arduino over a connected serial port. See this 
- * protocol's README.md for instructions on running the corresponding computer-
- * side code. 
- * 
- * 
  * DESCRIPTION:
  * This file primarily defines a number of functions that are called from
  * the state-dependent `switch case` statement in the `loop` function of the 
@@ -45,13 +38,20 @@
  * the current time, and execute appropriate class functions based on how
  * much time has elapsed since the beginning of the state.
  * 
+ * In addition to defining the TimedState sub-classes, this file also actually
+ * instantiates them and returns them to the main sketch in an array. 
+ * 
  * This file also defines arrays that store trial and response parameters for 
  * the current trial.
  * 
- * This code is agnostic with respect to what actual hardware devices are 
- * controlled by the Arduino on the current experiment. These hardware 
- * settings are included in config.cpp. 
+ * This code is agnostic with respect to what actual hardware devices (steppers,
+ * speakers, etc.) are controlled by the Arduino on the current experiment. 
+ * Rather, the code for the STIM_PERIOD object simply iterates through an 
+ * array of device objects returned from config.cpp, and for each device object, 
+ * calls some class function that selects and executes an appropriate action 
+ * based on some current trial parameter and the current time. 
  */
+
 
 /* Implementation file for declaring protocol-specific states.
 This implements a two-alternative choice task with two lick ports.
