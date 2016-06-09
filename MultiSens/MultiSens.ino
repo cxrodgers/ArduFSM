@@ -4,9 +4,10 @@
  * This file is the main Arduino sketch for the ArduFSM protocol MultiSens. This 
  * protocol is used for presenting simultaneous multi-sensory stimuli under the 
  * control of an Arduino microcontroller and records licks measured on a 
- * capacitative touch sensor. Arbitrary stimulus presentations can be paired with 
- * coterminous dispensation of a liquid reward (determined by the computer-side 
- * program), and licks during non-rewarded stimuli will result in a timeout error period.
+ * capacitative touch sensor. Arbitrary stimulus presentations (determined by the 
+ * computer-side program) can be paired with coterminous dispensation of a 
+ * liquid reward , and licks during non-rewarded stimuli will result in a timeout 
+ * error period.
  *  
  *  
  * REQUIREMENTS:
@@ -24,7 +25,8 @@
  * the following libraries:
  *  
  * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
- * 2. devices, available at https://github.com/danieldkato/devices
+ * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+ * 3. devices, available at https://github.com/danieldkato/devices
  *  
  * This sketch is largely agnostic with respect to how the computer-side code is
  * implemented; the only requirements are that both programs specify the same
@@ -44,7 +46,7 @@
  * DESCRIPTION:
  * This main sketch is responsible for defining behavior that the Arduino should
  * repeatedly perform continuously for the duration of the experiment, defined
- * in the main loop function. This includes: 1) getting the current time, 2)
+ * in the main `loop` function. This includes: 1) getting the current time, 2)
  * checking for messages from the computer, 3) checking for licks, and 4) 
  * performing state-dependent operations. 
  * 
@@ -52,7 +54,13 @@
  * transition logic, is contained in this main sketch. The rest of the code  
  * for the state-dependent operations is contained in this protocol's States.h
  * and States.cpp files. 
+ * 
+ * This code is agnostic with repsect to what actual hardware devices are 
+ * controlled by the Arduino on the current experiment. Hardware parameters
+ * are set in config.cpp. 
   */ 
+
+
 
 /* TODO
 ----

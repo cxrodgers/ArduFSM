@@ -2,7 +2,7 @@
  * 
  * OVERVIEW:
  * This file contains instantiations of the device objects to be used on the current 
- * experiment of the ArduFSM protocol MultiSens. These objects manage the behavior
+ * session of the ArduFSM protocol MultiSens. These objects manage the behavior
  * of devices like stepper motors, speakers, etc. For full documentation of 
  * these device classes, see the README.md for the devices library. 
  * 
