@@ -7,7 +7,7 @@ def get_box_parameters(box):
                 'video_device': '/dev/video0',
                 'video_window_position': (500, 0),
                 'gui_window_position': (700, 0),
-                'window_position_IR_plot': (1000, 0),                
+                'window_position_IR_plot': (1000, 1000),                
                 'video_brightness': 0,
                 'video_gain': 0,
                 'video_exposure': 8,
@@ -219,7 +219,7 @@ def get_board_parameters(board):
                 'use_ir_detector': True,                        
                 'l_ir_detector_thresh': 80,
                 'r_ir_detector_thresh': 80,
-                'window_position_IR_detector': (1300, 450),
+                #~ 'window_position_IR_detector': (1300, 450), # Box CR0 dominates
             },
             'build': {
             },
