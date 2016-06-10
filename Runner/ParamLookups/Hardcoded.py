@@ -26,8 +26,8 @@ def get_box_parameters(box):
                 'video_device': '/dev/video0',
                 'video_window_position': (1150, 0),
                 'gui_window_position': (425, 0),
-                'l_reward_duration': 170,
-                'r_reward_duration': 220,
+                'l_reward_duration': 190,
+                'r_reward_duration': 270,
             },
             'build': {
                 'serial_port': '/dev/ttyACM0',
@@ -41,7 +41,7 @@ def get_box_parameters(box):
                 'video_device': '/dev/video1',
                 'video_window_position': (1150, 260),
                 'gui_window_position': (425, 260),
-                'l_reward_duration': 95,
+                'l_reward_duration': 110,
                 'r_reward_duration': 120,                
             },
             'build': {
@@ -57,8 +57,8 @@ def get_box_parameters(box):
                 'video_window_position': (1150, 520),
                 'gui_window_position': (420, 520),
                 'window_position_IR_plot': (1000, 260),                            
-                'l_reward_duration': 100,
-                'r_reward_duration': 100,                
+                'l_reward_duration': 115,
+                'r_reward_duration': 115,                
             },
             'build': {
                 'serial_port': '/dev/ttyACM2',
@@ -72,8 +72,8 @@ def get_box_parameters(box):
                 'video_device': '/dev/video3',
                 'video_window_position': (1150, 780),
                 'gui_window_position': (425, 780),
-                'l_reward_duration': 150,
-                'r_reward_duration': 100,                
+                'l_reward_duration': 170,
+                'r_reward_duration': 130,                
             },
             'build': {
                 'serial_port': '/dev/ttyACM3',
@@ -281,8 +281,8 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_3srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
                 'scheduler': 'Auto',
             },
             'build': {
@@ -361,8 +361,9 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_3srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
+                'timeout': 6000,
                 'scheduler': 'Auto',
             },
             'build': {
@@ -377,9 +378,10 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_2srvpos',
+                'stimulus_set': 'trial_types_CCL_1srvpos',
                 'step_first_rotation': 50,
                 'scheduler': 'Auto',
+                'timeout': 6000,
             },
             'build': {
                 'protocol_name': 'TwoChoice',
@@ -393,8 +395,9 @@ def get_mouse_parameters(mouse):
             'C': {
             },
             'Python': {
-                'stimulus_set': 'trial_types_CCL_3srvpos',
-                'step_first_rotation': 50,
+                'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
+                'step_first_rotation': 125,
+                'timeout': 6000,
                 'scheduler': 'Auto',
             },
             'build': {
