@@ -363,7 +363,6 @@ def get_mouse_parameters(mouse):
             'Python': {
                 'stimulus_set': 'trial_types_2shapes_CCL_3srvpos',
                 'step_first_rotation': 125,
-                'timeout': 6000,
                 'scheduler': 'Auto',
             },
             'build': {
@@ -381,7 +380,6 @@ def get_mouse_parameters(mouse):
                 'stimulus_set': 'trial_types_CCL_1srvpos',
                 'step_first_rotation': 50,
                 'scheduler': 'Auto',
-                'timeout': 6000,
             },
             'build': {
                 'protocol_name': 'TwoChoice',
@@ -397,7 +395,6 @@ def get_mouse_parameters(mouse):
             'Python': {
                 'stimulus_set': 'trial_types_b2shapes_CCL_3srvpos',
                 'step_first_rotation': 125,
-                'timeout': 6000,
                 'scheduler': 'Auto',
             },
             'build': {
@@ -414,6 +411,7 @@ def get_mouse_parameters(mouse):
             'Python': {
                 'stimulus_set': 'trial_types_CCL_2srvpos',
                 'step_first_rotation': 50,
+                'timeout': 6000,
                 'scheduler': 'ForcedAlternation',
             },
             'build': {
@@ -430,6 +428,7 @@ def get_mouse_parameters(mouse):
             'Python': {
                 'stimulus_set': 'trial_types_CCL_2srvpos',
                 'step_first_rotation': 50,
+                'timeout': 6000,
                 'scheduler': 'ForcedAlternation',
             },
             'build': {
