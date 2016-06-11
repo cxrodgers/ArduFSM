@@ -16,81 +16,76 @@ import Hardcoded
 
 def get_box_parameters(box_name):
     box = runner.models.Box.objects.get(name=box_name)
-    
-    def parse(box):
-        return {
-                'C': {},
-                'Python': {
-                    'video_device': box.video_device,
-                    'video_window_position': box.video_window_position,
-                    'gui_window_position': box.gui_window_position,
-                    'window_position_IR_plot': box.window_position_IR_plot,
-                    'video_brightness': box.video_brightness,
-                    'video_gain': box.video_gain,
-                    'video_exposure': box.video_exposure,
-                    'l_reward_duration': box.left_valve_duration,
-                    'r_reward_duration': box.right_valve_duration,                
-                },
-                'build': {
-                    'serial_port': box.serial_port,
-                    'subprocess_window_ypos': box.subprocess_window_ypos,                
-                },
-            }
-    
-    res = parse(box)
-    
-    # temporary hack: compare to Hardcoded
-    hc_box_params = Hardcoded.get_box_parameters(box_name)
-    for typ in ['C', 'Python', 'build']:
-        for k, v in hc_box_params[typ].items():
-            if k not in res[typ] or res[typ][k] != v:
-                print "%s update: setting %s to %r" % (box_name, k, v)
-                
-                box.__setattr__(k, v)
-                box.save()
-    
-    # reparse to get changes
-    res = parse(box)
-    
-    return res
 
+    return {
+            'C': {},
+            'Python': {
+                'video_device': box.video_device,
+                'video_window_position': box.video_window_position,
+                'gui_window_position': box.gui_window_position,
+                'window_position_IR_plot': box.window_position_IR_plot,
+                'video_brightness': box.video_brightness,
+                'video_gain': box.video_gain,
+                'video_exposure': box.video_exposure,
+                'l_reward_duration': box.l_reward_duration,
+                'r_reward_duration': box.r_reward_duration,                
+            },
+            'build': {
+                'serial_port': box.serial_port,
+                'subprocess_window_ypos': box.subprocess_window_ypos,                
+            },
+        }
 
 def get_board_parameters(board_name):
     board = runner.models.Board.objects.get(name=board_name)
     
-    def parse(board):
-        return {
-                'C': {},
-                'Python': {
-                    'video_device': board.video_device,
-                    'video_window_position': board.video_window_position,
-                    'gui_window_position': board.gui_window_position,
-                    'window_position_IR_plot': board.window_position_IR_plot,
-                    'video_brightness': board.video_brightness,
-                    'video_gain': board.video_gain,
-                    'video_exposure': board.video_exposure,
-                    'l_reward_duration': board.left_valve_duration,
-                    'r_reward_duration': board.right_valve_duration,                
-                },
-                'build': {
-                    'serial_port': board.serial_port,
-                    'subprocess_window_ypos': board.subprocess_window_ypos,                
-                },
-            }
+    res = {
+        'C': {
+            'stepper_driver': board.stepper_driver,
+            'use_ir_detector': board.use_ir_detector, 
+            'side_HE_sensor_thresh': board.side_HE_sensor_thresh,
+            'microstep': board.microstep,
+            'invert_stepper_direction': board.invert_stepper_direction,
+        },
+        'Python': {
+            'has_side_HE_sensor': board.has_side_HE_sensor,            
+            'use_ir_detector': board.use_ir_detector,                        
+            'l_ir_detector_thresh': board.l_ir_detector_thresh,
+            'r_ir_detector_thresh': board.r_ir_detector_thresh,
+        },
+        'build': {
+        },
+    }
     
-    res = parse(board)
+    # Hack because a C and Python parameter have the same name
+    res['C']['use_ir_detector'] = '1' if res['Python']['use_ir_detector'] else None
     
-    # temporary hack: compare to Hardcoded
-    hc_board_params = Hardcoded.get_board_parameters(board_name)
-    for typ in ['C', 'Python', 'build']:
-        for k, v in hc_board_params[typ].items():
-            if k not in res[typ] or res[typ][k] != v:
-                print "%s update: setting %s to %r" % (board_name, k, v)
-                
-                board.__setattr__(k, v)
-                board.save()
+    # Hack because I don't know how to store a list of filenames
+    # in the django db
+    if not board.use_ir_detector:
+        res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
+
+    return res
     
-    # reparse to get changes
-    res = parse(board)
-    
+def get_mouse_parameters(mouse_name):
+    """Extract and format mouse parameters from database"""
+    mouse = runner.models.Mouse.objects.get(name=mouse_name)
+
+    res = {
+        'C': {
+        },
+        'Python': {
+            'stimulus_set': mouse.stimulus_set,
+            'step_first_rotation': mouse.step_first_rotation,
+            'timeout': mouse.timeout,
+            'scheduler': mouse.scheduler,
+        },
+        'build': {
+            'protocol_name': mouse.protocol_name,
+            'script_name': mouse.script_name,
+            'default_board': mouse.default_board,
+            'default_box': mouse.default_box,
+        },  
+    }
+
     return res
