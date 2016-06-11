@@ -1,5 +1,14 @@
 """Load params from django db
 
+First we need to get all of the parameters (hardware info, mouse behavioral
+info like pipe position) into the Runner django db.
+
+Then we need to be able to access it when starting a new session, rather
+than using Hardcoded.py.
+
+Finally we need a new interface where the Daily Plan is displayed and
+edited and the session initiated directly from the Runner admin interface,
+as opposed to from the terminal.
 """
 import django
 import runner.models
