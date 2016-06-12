@@ -72,7 +72,26 @@ mouse_name = raw_input("Enter mouse: ")
 mouse_name = mouse_name.upper().strip()
 
 # Look up the specific parameters
-specific_parameters = ParamLookups.base.get_specific_parameters_from_mouse_name(mouse_name)
+specific_parameters = \
+    ParamLookups.base.get_specific_parameters_from_mouse_name(mouse_name)
+
+## Database lookups
+# Most recent mouse weights
+recent_session = runner.models.Session.objects.filter(
+    mouse__name='KM83').order_by('-date_time_start')[0]
+recent_results = {
+    'recent_date_s': recent_session.date_time_start.strftime('%Y-%m-%d'),
+    'recent_board': recent_session.board.name,
+    'recent_weight': recent_session.user_data_weight,
+    'recent_pipe': recent_session.user_data_pipe_position_stop,
+    'recent_left_perf': recent_session.user_data_left_perf,
+    'recent_right_perf': recent_session.user_data_right_perf,
+}
+recent_results['recent_side_bias'] = \
+    recent_results['recent_right_perf'] - recent_results['recent_left_perf']
+
+# Update python parameters with the recent stuff
+specific_parameters['python'].update(recent_results)
 
 # Fudge the user input for the sandbox creations
 user_input = {
