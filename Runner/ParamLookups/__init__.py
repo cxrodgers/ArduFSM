@@ -26,4 +26,3 @@ try:
     import Database
 except ImportError:
     print "warning: cannot import Database"
-from base import *
