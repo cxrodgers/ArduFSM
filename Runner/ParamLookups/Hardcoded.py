@@ -7,12 +7,13 @@ def get_box_parameters(box):
                 'video_device': '/dev/video0',
                 'video_window_position': (500, 0),
                 'gui_window_position': (700, 0),
-                'window_position_IR_plot': (1000, 1000),                
+                'window_position_IR_plot': (2000, 0),                
                 'video_brightness': 0,
                 'video_gain': 0,
                 'video_exposure': 8,
                 'l_reward_duration': 60,
                 'r_reward_duration': 55,                
+                'timeout': 6000,
             },
             'build': {
                 'serial_port': '/dev/ttyACM0',
@@ -217,9 +218,8 @@ def get_board_parameters(board):
             'Python': {
                 'has_side_HE_sensor': False,            
                 'use_ir_detector': True,                        
-                'l_ir_detector_thresh': 80,
-                'r_ir_detector_thresh': 80,
-                #~ 'window_position_IR_detector': (1300, 450), # Box CR0 dominates
+                'l_ir_detector_thresh': 50,
+                'r_ir_detector_thresh': 50,
             },
             'build': {
             },
