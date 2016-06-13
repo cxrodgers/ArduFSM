@@ -9,15 +9,32 @@ than using Hardcoded.py.
 Finally we need a new interface where the Daily Plan is displayed and
 edited and the session initiated directly from the Runner admin interface,
 as opposed to from the terminal.
+
+What to do about None in the database? This probably means no data available,
+as opposed to an explicit None (although maybe for video_device...).
+So probably we want to remove it from the dicts, because otherwise a None
+from mouse will trump a real value from box or board.
 """
 import django
 import runner.models
 import Hardcoded
 
+def remove_None_from_dict(d):
+    """Remove specific parameters that are None"""
+    res = {}
+    for typ, subdict in d.items():
+        res_l = []
+        for k, v in subdict.items():
+            if v is not None and v != (None, None):
+                res_l.append((k, v))
+        res[typ] = dict(res_l)
+    
+    return res
+
 def get_box_parameters(box_name):
     box = runner.models.Box.objects.get(name=box_name)
 
-    return {
+    return remove_None_from_dict({
             'C': {},
             'Python': {
                 'video_device': box.video_device,
@@ -34,7 +51,7 @@ def get_box_parameters(box_name):
                 'serial_port': box.serial_port,
                 'subprocess_window_ypos': box.subprocess_window_ypos,                
             },
-        }
+        })
 
 def get_board_parameters(board_name):
     board = runner.models.Board.objects.get(name=board_name)
@@ -65,7 +82,7 @@ def get_board_parameters(board_name):
     if not board.use_ir_detector:
         res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
 
-    return res
+    return remove_None_from_dict(res)
     
 def get_mouse_parameters(mouse_name):
     """Extract and format mouse parameters from database"""
@@ -88,4 +105,4 @@ def get_mouse_parameters(mouse_name):
         },  
     }
 
-    return res
+    return remove_None_from_dict(res)
