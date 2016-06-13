@@ -118,13 +118,13 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
             continue
         
         # C-mangle the name
-        mangled_name = ParamLookups.translate_c_parameter_name(param_name)
+        mangled_name = ParamLookups.base.translate_c_parameter_name(param_name)
         if mangled_name is None:
             print "warning: can't mangle parameter %s, skipping" % param_name
             continue
         
         # Check that it's really a string, if not, could be weird errors
-        if type(param_value) is not str:
+        if type(param_value) is not str and type(param_value) is not unicode:
             raise TypeError("C param values must be strings, not type %r" 
                 % type(param_value))
         

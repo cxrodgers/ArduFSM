@@ -104,6 +104,17 @@ trial_types = get_trial_types(trial_types_name)
 
 ## User interaction
 session_results = {}
+# Print out the results from last time
+print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
+    runner_params.get('recent_date_s', '?'),
+    runner_params['mouse'],
+    runner_params.get('recent_weight', 0),
+    runner_params.get('recent_board', '?'),
+    runner_params.get('recent_left_perf', -1),
+    runner_params.get('recent_right_perf', -1),
+    runner_params.get('recent_pipe', -1),
+    )
+
 # Get weight
 session_results['mouse_mass'] = \
     raw_input("Enter mass of %s: " % runner_params['mouse'])

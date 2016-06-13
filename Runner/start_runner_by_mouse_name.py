@@ -35,6 +35,7 @@ import json
 import subprocess
 import Sandbox
 import ParamLookups
+import ParamLookups.base
 
 # Create a place to keep sandboxes
 sandbox_root = os.path.expanduser('~/sandbox_root')
@@ -72,7 +73,7 @@ mouse_name = raw_input("Enter mouse: ")
 mouse_name = mouse_name.upper().strip()
 
 # Look up the specific parameters
-specific_parameters = ParamLookups.get_specific_parameters_from_mouse_name(mouse_name)
+specific_parameters = ParamLookups.base.get_specific_parameters_from_mouse_name(mouse_name)
 
 # Fudge the user input for the sandbox creations
 user_input = {

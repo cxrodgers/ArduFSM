@@ -72,7 +72,7 @@ user_input = get_user_input_from_keyboard()
 
 # Look up the specific parameters
 specific_parameters = \
-    ParamLookups.get_specific_parameters_from_user_input(user_input)
+    ParamLookups.base.get_specific_parameters_from_user_input(user_input)
 
 # Use the sandbox parameters to create the sandbox
 sandbox_paths = Sandbox.create_sandbox(user_input, sandbox_root=sandbox_root)

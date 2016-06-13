@@ -1,18 +1,28 @@
-from Hardcoded import (get_board_parameters, get_box_parameters,
-    get_mouse_parameters)
+"""Function to get specific parameters using either Hardcoded or Database
+
+"""
+
+import Hardcoded
+try:
+    import Database
+    Getter = Database
+except ImportError:
+    print "warning: cannot import Database"
+    Getter = Hardcoded
+
 
 def get_specific_parameters_from_mouse_name(mouse_name):
     """Extract default board and box and use that to start session"""
     # Get mouse parameters
-    mouse_parameters = get_mouse_parameters(mouse_name)
+    mouse_parameters = Getter.get_mouse_parameters(mouse_name)
     
     # Use that to get board and box
     board = mouse_parameters['build']['default_board']
     box = mouse_parameters['build']['default_box']
 
     # Get board and box parameters
-    board_parameters = get_board_parameters(board)
-    box_parameters = get_box_parameters(box)
+    board_parameters = Getter.get_board_parameters(board)
+    box_parameters = Getter.get_box_parameters(box)
     
     # Boilerplate
     # Split into C, Python, and build parameters
@@ -47,9 +57,9 @@ def get_specific_parameters_from_user_input(user_input):
     
     """
     # Convert session parameters into specific parameters
-    board_parameters = get_board_parameters(user_input['board'])
-    box_parameters = get_box_parameters(user_input['box'])
-    mouse_parameters = get_mouse_parameters(user_input['mouse'])    
+    board_parameters = Getter.get_board_parameters(user_input['board'])
+    box_parameters = Getter.get_box_parameters(user_input['box'])
+    mouse_parameters = Getter.get_mouse_parameters(user_input['mouse'])    
     
     # Split into C, Python, and build parameters
     specific_parameters = {}
