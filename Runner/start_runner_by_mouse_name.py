@@ -35,6 +35,7 @@ import json
 import subprocess
 import Sandbox
 import ParamLookups
+import ParamLookups.base
 
 # Create a place to keep sandboxes
 sandbox_root = os.path.expanduser('~/sandbox_root')
