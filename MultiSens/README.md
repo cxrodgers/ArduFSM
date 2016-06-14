@@ -17,7 +17,8 @@ This protocol directory should contain the following files:
   
 The local computer's Arduino sketchbook library must contain the following libraries:
   1. `chat`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
-  2. `devices`, available at https://github.com/danieldkato/devices
+  2. `TimedState`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+  3. `devices`, available at https://github.com/danieldkato/devices
 
 In addition, the path of the Python instance running testMultiSens.py must include the path to the module `chat`, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
 
