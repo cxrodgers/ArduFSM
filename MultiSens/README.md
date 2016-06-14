@@ -24,7 +24,7 @@ In addition, the path of the Python instance running testMultiSens.py must inclu
 
 
 ##INSTRUCTIONS:
-To run this protocol, upload MultiSens.ino, config.h, config.cpp, States.h and States.cpp to an Arduino. Then, in a command window, navigate to this directory and enter the command:
+To run this protocol, upload `MultiSens.ino`, `config.h`, `config.cpp`, `States.h` and `States.cpp` to an Arduino. Then, in a command window, navigate to this directory and enter the command:
 
 `python testMultiSens.py`
 
@@ -59,9 +59,9 @@ In addition, the desktop-side code will save to disk a file containing all messa
 ####Arduino-side code
 The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: MultiSens.ino, config.h, config.cpp, States.h and States.cpp. 
 
-MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 1) get the current time, 2) check for messages from the desktop, 3) check for licks, 4) perform state-dependent operations. The main sketch also controls the transition between certain particular pairs of states, although much of the state-transition logic is contained within the state-dependent operations.  
+MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 1) get the current time, 2) check for messages from the desktop, 3) check for licks, 4) perform state-dependent operations. 
 
-States.h and States.cpp define much of the state-dependent operations. These source files define functions that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
+Most state-dependent operations are defined in `States.h` and `States.cpp`, although some (like those for `WAIT_TO_START_TRIAL` and `TRIAL_START`) are defined in the main .ino. These source files define functions and objects that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states, as well as the array where trial parameters are stored. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
 
 config.h and config.cpp define individual device instances (e.g., steppers, speakers) that will be controlled by the Arduino on the current experiment. Each device instance is of a class defined in devices.h and devices.cpp. Each device class has a repertoire of behaviors that it can execute on any given trial. Each behavior has its own numeric index, and trial parameters on each trial include an index for each device, thereby specifying the behavior of every device on each trial. For a detailed description of each device class, their behaviors and a listing of indices to them, see the documentation for `devices`.         
 
