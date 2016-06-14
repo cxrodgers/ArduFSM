@@ -8,17 +8,17 @@ This readme provides documentation for the most current version of the protocol.
 
 ##REQUIREMENTS:
 This protocol directory should contain the following files:
-   1. config.h
-   2. config.cpp
-   3. States.h
-   4. States.cpp
-   5. MultiSens.ino
-   6. testMultiSens.py
+   * `config.h`
+   * `config.cpp`
+   * `States.h`
+   * `States.cpp`
+   * `MultiSens.ino`
+   * `testMultiSens.py`
   
 The local computer's Arduino sketchbook library must contain the following libraries:
-  1. `chat`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
-  2. `TimedState`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
-  3. `devices`, available at https://github.com/danieldkato/devices
+  * `chat`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+  * `TimedState`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+  * `devices`, available at https://github.com/danieldkato/devices
 
 In addition, the path of the Python instance running testMultiSens.py must include the path to the module `chat`, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
 
@@ -52,7 +52,7 @@ For a full list of trial parameters, see below.
 As with all ArduFSM protocols, the code for running this protocol consists of separate computer-side and Arduino programs. 
 
 ####Desktop-side code
-The desktop-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the desktop-side code is comprised entirely of testMultiSens.py.
+The desktop-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the desktop-side code is comprised entirely of `testMultiSens.py`.
 
 In addition, the desktop-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
 
@@ -79,23 +79,23 @@ where `parameter_abbreviation` stands for some parameter abbreviation and `param
 
 The semantics of the parameters abbreviations are as follows:
  
-`STPRIDX`: function index for the stepper motor; used by an object representing the stepper motor to determine what actions to take during the stimulus period. 0 means do nothing, 1 means extend the stepper at the beginning of the trial. 
+ * `STPRIDX`: function index for the stepper motor; used by an object representing the stepper motor to determine what actions to take during the stimulus period. 0 means do nothing, 1 means extend the stepper at the beginning of the trial. 
 
-`SPKRIDX`: function index for the speaker. 0 means do nothing, 1 means play a white noise stimulus. Set to 0 by default on the Arduino. REW: whether or not the current trial will be rewarded. Set to 0 by default on the Arduino.
+ * `SPKRIDX`: function index for the speaker. 0 means do nothing, 1 means play a white noise stimulus. Set to 0 by default on the Arduino. REW: whether or not the current trial will be rewarded. Set to 0 by default on the Arduino.
 
-`REW_DUR`: the duration of any rewards given on the current trial. Set to 50 by default on the Arduino.
+ * `REW_DUR`: the duration of any rewards given on the current trial. Set to 50 by default on the Arduino.
 
-`IRI`: inter-reward interval; the minimum amount of time that must elapse between rewards. Set to 500 by default on the Arduino. 
+ * `IRI`: inter-reward interval; the minimum amount of time that must elapse between rewards. Set to 500 by default on the Arduino. 
 
-`TO`: timeout; the minimum amount of time between a false alarm response and the following trial. Set to 6000 by default on the Arduino.
+ * `TO`: timeout; the minimum amount of time between a false alarm response and the following trial. Set to 6000 by default on the Arduino.
 
-`ITI`: inter-trial interval; minimum amount of time between trials [?]. Set to 3000 by default on the Arduino.
+ * `ITI`: inter-trial interval; minimum amount of time between trials [?]. Set to 3000 by default on the Arduino.
 
-`RWIN`: response window duration; the maximum amount of time the mouse has to respond following the stimulus. Set to 45000 by default on the Arduino.
+ * `RWIN`: response window duration; the maximum amount of time the mouse has to respond following the stimulus. Set to 45000 by default on the Arduino.
  
-`MRT`: maximum number of rewards mouse can receive on a single trial. Set to 1 by default on the Arduino.
+ * `MRT`: maximum number of rewards mouse can receive on a single trial. Set to 1 by default on the Arduino.
 
-`TOE`: terminate on error; whether or not the trial will end immediately following a false alarm response. Set to 1 by default on the Arduino. 
+ * `TOE`: terminate on error; whether or not the trial will end immediately following a false alarm response. Set to 1 by default on the Arduino. 
 
      
 
