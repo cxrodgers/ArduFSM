@@ -34,7 +34,9 @@ For more specific exposition of each file, see comments in the header of each.
 ##DESCRIPTION
 
 ###Behavioral protocol
-This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
+This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
+
+During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
 On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to `RESPONSE_PERIOD`, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
 
