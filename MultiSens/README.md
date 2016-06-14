@@ -59,7 +59,12 @@ In addition, the desktop-side code will save to disk a file containing all messa
 ####Arduino-side code
 The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: MultiSens.ino, config.h, config.cpp, States.h and States.cpp. 
 
-MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 1) get the current time, 2) check for messages from the desktop, 3) check for licks, 4) perform state-dependent operations. 
+MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 
+
+1) get the current time, 
+2) check for messages from the desktop, 
+3) check for licks, 
+4) perform state-dependent operations. 
 
 Most state-dependent operations are defined in `States.h` and `States.cpp`, although some (like those for `WAIT_TO_START_TRIAL` and `TRIAL_START`) are defined in the main .ino. These source files define functions and objects that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states. It also defines the array where trial parameters are stored. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
 
