@@ -34,7 +34,9 @@ For more specific exposition of each file, see comments in the header of each.
 ##DESCRIPTION
 
 ###Behavioral protocol
-This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
+This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the desktop-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
+
+This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
 
 During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
@@ -49,15 +51,15 @@ For a full list of trial parameters, see below.
 ###Code
 As with all ArduFSM protocols, the code for running this protocol consists of separate computer-side and Arduino programs. 
 
-####Computer-side code
-The computer-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the computer-side code is comprised entirely of testMultiSens.py.
+####Desktop-side code
+The desktop-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the desktop-side code is comprised entirely of testMultiSens.py.
 
-In addition, the computer-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
+In addition, the desktop-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
 
 ####Arduino-side code
-The Arduino-side code is responsible for receiving trial parameters from the computer, waiting to receive permission from the computer to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: MultiSens.ino, config.h, config.cpp, States.h and States.cpp. 
+The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: MultiSens.ino, config.h, config.cpp, States.h and States.cpp. 
 
-MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 1) get the current time, 2) check for messages from the computer, 3) check for licks, 4) perform state-dependent operations. The main sketch also controls the transition between certain particular pairs of states, although much of the state-transition logic is contained within the state-dependent operations.  
+MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 1) get the current time, 2) check for messages from the desktop, 3) check for licks, 4) perform state-dependent operations. The main sketch also controls the transition between certain particular pairs of states, although much of the state-transition logic is contained within the state-dependent operations.  
 
 States.h and States.cpp define much of the state-dependent operations. These source files define functions that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
 
