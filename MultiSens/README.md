@@ -3,7 +3,7 @@
 ##OVERVIEW: 
 This directory contains files needed to run the ArduFSM protocol MultiSens. This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
 
-This readme provides documentation for the most current version of the protocol. For a record of the historical development of this protocol and more exposition of some of the design choices therein, see this directory's devlog.md.
+This readme provides documentation for the most current version of the protocol. For a record of the historical development of this protocol and more exposition of some of the design choices therein, see this directory's `devlog.md`.
 
 
 ##REQUIREMENTS:
@@ -38,11 +38,11 @@ This protocol is used for presenting simultaneous multi-sensory stimuli under th
 
 This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
 
-During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message "RELEASE_TRL\0\n" from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
+During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message `"RELEASE_TRL\0\n"` from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
 On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to `RESPONSE_PERIOD`, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
 
-On unrewarded trials, any licks during the `STIM_PERIOD` or `RESPONSE_WINDOW` states will result in a false alarm outcome and cause the state to advance to ERROR. If no licks are detected during either `STIM_PERIOD` or `RESPONSE_WINDOW`, then the trial is scored as a correct reject. 
+On unrewarded trials, any licks during the `STIM_PERIOD` or `RESPONSE_WINDOW` states will result in a false alarm outcome and cause the state to advance to `ERROR`. If no licks are detected during either `STIM_PERIOD` or `RESPONSE_WINDOW`, then the trial is scored as a correct reject. 
  
 In any case, after the trial is scored, the state will advance to `INTER_TRIAL_INTERVAL`, during which it will report back the trial outcome, and then to `WAIT_TO_START_TRIAL`, during which it will await the parameters for the next trial and the `"RELEASE_TRL\0"` message to begin the next trial.
 
