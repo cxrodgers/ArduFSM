@@ -68,6 +68,8 @@ MultiSens.ino is the main sketch, and defines the behavior of the Arduino on eve
 
 Most state-dependent operations are defined in `States.h` and `States.cpp`, although some (like those for `WAIT_TO_START_TRIAL` and `TRIAL_START`) are defined in the main .ino. These source files define functions and objects that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states. It also defines the array where trial parameters are stored. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
 
+*[Note: this last feature may need to change in future versions; it seems somewhat strange that the trial parameters and hardware configuration are defined separately when the trial parameters include hardware parameters. All of this information should probably be considered one unit and ultimately defined in the same file]*
+
 `config.h` and `config.cpp` define individual device instances (e.g., steppers, speakers) that will be controlled by the Arduino on the current experiment. Each device instance is of a class defined in `devices.h` and `devices.cpp`. Each device class has a repertoire of behaviors that it can execute on any given trial. Each behavior has its own numeric index, and trial parameters on each trial include an index for each device, thereby specifying the behavior of every device on each trial. For a detailed description of each device class, their behaviors and a listing of indices to them, see the documentation for `devices` at https://github.com/danieldkato/devices.         
 
 ####Trial parameters
