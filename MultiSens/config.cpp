@@ -15,7 +15,7 @@
 
 Device ** config_hw(){ 
     
-    bool debug = 0;
+    bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
     
     if ( debug == 0 ){
         static myStepper myStp1( NUM_STEPS, STPR1_PIN1, STPR1_PIN1, ENBL1_PIN, HALL1_PIN, HALL1_THRESH, STPR1_SPEED, STPR1_CW, STPR1_CCW, HALL1_VAL );  
