@@ -57,9 +57,9 @@ The desktop-side code is responsible for choosing and sending trial parameters t
 In addition, the desktop-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
 
 ####Arduino-side code
-The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: MultiSens.ino, config.h, config.cpp, States.h and States.cpp. 
+The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the computer, and advancing the state. The Arduino-side code consists of five files: `MultiSens.ino`, `config.h`, `config.cpp`, `States.h` and `States.cpp`. 
 
-MultiSens.ino is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 
+`MultiSens.ino` is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 
 
  1. get the current time 
  2. check for messages from the desktop 
