@@ -20,7 +20,7 @@ The local computer's Arduino sketchbook library must contain the following libra
   * `TimedState`, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
   * `devices`, available at https://github.com/danieldkato/devices
 
-In addition, the path of the Python instance running testMultiSens.py must include the path to the module `chat`, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
+In addition, the path of the Python instance running `testMultiSens.py` must include the path to the module `chat`, available at https://github.com/cxrodgers/ArduFSM/blob/master/chat.py
 
 
 ##INSTRUCTIONS:
@@ -38,7 +38,7 @@ This protocol is used for presenting simultaneous multi-sensory stimuli under th
 
 This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
 
-During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message `"RELEASE_TRL\0\n"` from the computer. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the computer. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
+During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message `"RELEASE_TRL\0\n"` from the desktop. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the desktop. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
 On rewarded trials, the reward valve will open some amount of time before the end of `STIM_PERIOD`. The state will then advance to `RESPONSE_PERIOD`, during which licks will cause the state to advance to `REWARD`, during which the reward valve will open. This will be followed by a `POST_REWARD_PAUSE`, which will cycle back to `RESPONSE_WINDOW`. As long as the mouse keeps licking, this cycle will repeat until some maximum number of rewards is reached. If no licks are recorded during the response window, no further rewards are given, and the trial is scored as a miss. 
 
