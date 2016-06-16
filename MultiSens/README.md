@@ -36,7 +36,15 @@ For more specific exposition of each file, see comments in the header of each.
 ###Behavioral protocol
 This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by a desktop-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
 
-This protocol consists of 8 states: `WAIT_TO_START_TRIAL`, `TRIAL_START`, `STIM_PERIOD`, `RESPONSE_WINDOW`, `REWARD`, `POST_REWARD_PAUSE`, `ERROR` and `INTER_TRIAL_INTERVAL`. 
+This protocol consists of 8 states: 
+ * `WAIT_TO_START_TRIAL` 
+ * `TRIAL_START` 
+ * `STIM_PERIOD`
+ * `RESPONSE_WINDOW` 
+ * `REWARD` 
+ * `POST_REWARD_PAUSE` 
+ * `ERROR` 
+ * `INTER_TRIAL_INTERVAL` 
 
 During `WAIT_TO_START_TRIAL`, the Arduino does nothing until it receives the message `"RELEASE_TRL\0\n"` from the desktop. It then advances to `TRIAL_START`, when it prints the current trial parameters back to the desktop. It then advances to `STIM_PERIOD`, during which it presents the stimuli. 
  
