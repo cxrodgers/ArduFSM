@@ -20,7 +20,7 @@ Each parameter dict has the following structure:
 This could potentially be a list of parameters, each with fields
 'human-readable-name', 'code-name', 'value'
 """
-
+import base
 import Hardcoded
 try:
     import Database
