@@ -140,7 +140,7 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
         fi.write(config_file_contents)
         fi.write(config_file_boilerplate_footer)
 
-def compile_and_upload(sandbox_paths, specific_parameters, verbose=True):
+def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
     """Compile and upload the code in the sandbox to the arduino"""
     # Name of the Arduino sketch
     sketch_filename = os.path.join(sandbox_paths['sketch'],
@@ -246,6 +246,8 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=True):
                 print "error in compiling:"
                 print stderr_temp
                 raise IOError("compilation error")
+            else:
+                print "successfully compiled and uploaded"
     
 def write_python_parameters(sandbox_paths, python_parameters, script_name,
     verbose=False):
