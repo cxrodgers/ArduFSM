@@ -28,6 +28,19 @@ from ArduFSM import mainloop
 import ParamsTable
 import shutil
 
+def move_figure(f, x, y):
+    """Move figure's upper left corner to pixel (x, y)"""
+    backend = matplotlib.get_backend()
+    if backend == 'TkAgg':
+        f.canvas.manager.window.wm_geometry("+%d+%d" % (x, y))
+    elif backend == 'WXAgg':
+        f.canvas.manager.window.SetPosition((x, y))
+    else:
+        # This works for QT and GTK
+        # You can also use window.setGeometry
+        f.canvas.manager.window.move(x, y)
+    plt.show()
+
 def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
     """Loads and returns the trial types file"""
     
@@ -205,24 +218,15 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
-        if True:# rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
-            # for backend tk
-            #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
-            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
-                "+%d+%d" % (gui_window_position[0], gui_window_position[1]))
-            plt.show()
-            plt.draw()
-        else:
-            # for backend gtk
-            plotter.graphics_handles['f'].canvas.manager.window.move(
-                gui_window_position[0], gui_window_position[1])
+        move_figure(plotter.graphics_handles['f'],
+            gui_window_position[0], gui_window_position[1])
         
         if SHOW_IR_PLOT:
             plotter2 = ArduFSM.plot.LickPlotter()
             plotter2.init_handles()
             if window_position_IR_plot is not None:
-                plotter2.handles['f'].canvas.manager.window.wm_geometry(
-                    "+%d+%d" % tuple(window_position_IR_plot))  
+                move_figure(plotter2.handles['f'],
+                    window_position_IR_plot[0], window_position_IR_plot[1])
         
         if SHOW_SENSOR_PLOT:
             sensor_plotter = ArduFSM.plot.SensorPlotter()
@@ -272,14 +276,14 @@ try:
             
                 if SHOW_SENSOR_PLOT:
                     sensor_plotter.update(logfile_lines)
-            
-                plt.show()
-                plt.draw()
-                        
+                
+                # Seems like this sometimes doesn't work with .01??
+                plt.pause(.1)
+
             if SHOW_IR_PLOT:
                 plotter2.update(logfile_lines)
-                plt.show()
-                plt.draw()
+                
+                plt.pause(.01)
             
                 
 
