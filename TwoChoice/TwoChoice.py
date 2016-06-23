@@ -277,13 +277,20 @@ try:
                 if SHOW_SENSOR_PLOT:
                     sensor_plotter.update(logfile_lines)
                 
-                # Seems like this sometimes doesn't work with .01??
-                plt.pause(.1)
+                # When there are multiple figures to show, it can be
+                # hard to make it update both of them. this seems to
+                # work:
+                # https://gist.github.com/rlabbe/ea3444ef48641678d733
+                plotter.graphics_handles['f'].canvas.draw()
 
             if SHOW_IR_PLOT:
                 plotter2.update(logfile_lines)
                 
-                plt.pause(.01)
+                #~ plt.pause(.01)
+                plotter2.handles['f'].canvas.draw()
+                
+            
+            plt.pause(.01)
             
                 
 
