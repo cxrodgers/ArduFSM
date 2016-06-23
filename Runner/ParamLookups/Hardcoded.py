@@ -178,7 +178,7 @@ def get_board_parameters(board):
                 'stepper_driver': '1',
                 'use_ir_detector': None,            
                 'side_HE_sensor_thresh': '15',
-                'microstep': '1',
+                'microstep': '8',
                 'invert_stepper_direction': '1',
             },
             'Python': {
