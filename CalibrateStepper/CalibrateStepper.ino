@@ -171,6 +171,7 @@ void setup()
   stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
   #endif
 
+  
 
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
@@ -180,6 +181,9 @@ void setup()
   delay(param_values[tpidx_SERVO_SETUP_T]);
 
   findPeak();
+  delay(300);
+
+  
 }
 
 
@@ -187,7 +191,7 @@ void setup()
 //// Loop function
 void loop()
 {
-  
+  rotate_to_sensor2();
 }
 
 
