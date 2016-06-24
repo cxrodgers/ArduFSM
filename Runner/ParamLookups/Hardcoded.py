@@ -253,7 +253,7 @@ def get_board_parameters(board):
                 'invert_stepper_direction': '1',                
             },
             'Python': {
-                'has_side_HE_sensor': False,            
+                'has_side_HE_sensor': True,            
                 'use_ir_detector': True,                        
                 'l_ir_detector_thresh': 50,
                 'r_ir_detector_thresh': 50,
@@ -311,8 +311,8 @@ def get_mouse_parameters(mouse):
                 'scheduler': 'Auto',
             },
             'build': {
-                'protocol_name': 'WaitToStart',
-                'script_name': 'WaitToStart.py',
+                'protocol_name': 'CalibrateStepper',
+                'script_name': 'CalibrateStepper.py',
             },        
         }
     elif mouse == 'KF61':
