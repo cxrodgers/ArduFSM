@@ -95,8 +95,24 @@ def get_box_parameters(box):
                 'serial_port': '/dev/ttyACM4',
                 'subprocess_window_ypos': 990,
             },
-        }           
+        }
     
+    elif box =='CR6':           
+        return {
+            'C': {},
+            'Python': {
+                'video_device': None,
+                'video_window_position': (1150, 980),
+                'gui_window_position': (425, 980),
+                'l_reward_duration': 150,
+                'r_reward_duration': 150,                
+            },
+            'build': {
+                'serial_port': '/dev/tty.usbmodem1421',
+                'subprocess_window_ypos': 990,
+            },
+        }
+
     raise ValueError("unknown box: %s" % box)
 
 def get_board_parameters(board):
@@ -108,7 +124,7 @@ def get_board_parameters(board):
         return {
             'C': {
                 'stepper_driver': '1',
-                'use_ir_detector': '0',            
+                'use_ir_detector': None,            
                 'side_HE_sensor_thresh': '50',
                 'top_HE_sensor_thresh': '50',
                 'side_HE_sensor_polarity': '1',
@@ -119,6 +135,27 @@ def get_board_parameters(board):
                 'l_ir_detector_thresh': 80,
                 'r_ir_detector_thresh': 50,
                 'has_side_HE_sensor': True,
+            },
+            'build': {
+                'skip_files': ['ir_detector.cpp', 'ir_detector.h'],
+            },
+        }
+    if board == 'test2':
+        return {
+            'C': {
+                'stepper_driver': '1',
+                'microstep': '8',
+                'use_ir_detector': None,            
+                'side_HE_sensor_thresh': '50',
+                'top_HE_sensor_thresh': '50',
+                'side_HE_sensor_polarity': '1',
+                'top_HE_sensor_polarity': '0',
+            },
+            'Python': {
+                'use_ir_detector': False,                        
+                'l_ir_detector_thresh': 80,
+                'r_ir_detector_thresh': 50,
+                'has_side_HE_sensor': False,
             },
             'build': {
                 'skip_files': ['ir_detector.cpp', 'ir_detector.h'],
@@ -223,7 +260,25 @@ def get_board_parameters(board):
             },
             'build': {
             },
-        }    
+        }
+    elif board == 'CR7':
+        return {
+            'C': {
+                'stepper_driver': '1',
+                'use_ir_detector': '1',            
+                'side_HE_sensor_thresh': '50',
+                'microstep': '8',                
+                'invert_stepper_direction': '1',                
+            },
+            'Python': {
+                'has_side_HE_sensor': False,            
+                'use_ir_detector': True,                        
+                'l_ir_detector_thresh': 50,
+                'r_ir_detector_thresh': 50,
+            },
+            'build': {
+            },
+        }       
     
     raise ValueError("unknown board: %s" % board)
 
@@ -244,6 +299,20 @@ def get_mouse_parameters(mouse):
             'build': {
                 'protocol_name': 'TwoChoice',
                 'script_name': 'TwoChoice.py',
+            },        
+        }
+    if mouse == 'default2':
+        return {
+            'C': {
+            },
+            'Python': {
+                'stimulus_set': 'trial_types_CCL_3srvpos',
+                'step_first_rotation': 50,
+                'scheduler': 'Auto',
+            },
+            'build': {
+                'protocol_name': 'WaitToStart',
+                'script_name': 'WaitToStart.py',
             },        
         }
     elif mouse == 'KF61':
@@ -454,7 +523,22 @@ def get_mouse_parameters(mouse):
                 'default_box': 'CR2',                
             },        
         }
-    
+    elif mouse == 'KM87':
+        return {
+            'C': {
+            },
+            'Python': {
+                'stimulus_set': 'trial_types_CCL_2srvpos',
+                'step_first_rotation': 50,
+                'scheduler': 'Auto',
+            },
+            'build': {
+                'protocol_name': 'TwoChoice',
+                'script_name': 'TwoChoice.py',
+                'default_board': 'CR2',
+                'default_box': 'CR2',                
+            },        
+        }    
     raise ValueError("unknown mouse: %s" % mouse)
 
 
