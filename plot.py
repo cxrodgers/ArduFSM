@@ -255,8 +255,8 @@ class Plotter(object):
         line.set_ydata([np.mean(ax.get_yticks())] * 2)
         
         ## PLOTTING finalize
-        #~ plt.show()
-        #~ plt.draw()    
+        plt.show()
+        plt.draw()
 
     def form_string_rewards(self, splines, translated_trial_matrix):
         """Form a string with the number of rewards on each side"""

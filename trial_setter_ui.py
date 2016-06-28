@@ -50,23 +50,28 @@ class UIActionTaker:
         self.chatter.queued_write_to_device('ACT THRESH')
 
     def ui_action_save(self):
-        """Asks for mouse name and saves"""
-        # chatter should store this attribute more transparently
-        filename = self.chatter.ofi.name
+        """No longer does anything because this is now handled by TwoChoice.py
         
-        # Get mouse name
-        mousename = self.ui.get_additional_input("Enter mouse name: ")
-        mousename = mousename.strip()
+        Used to: ask for mouse name and save
+        """
+        raise QuitException("quitting")
         
-        # Copy the file
-        if mousename != '':
-            new_filename = filename + '.' + mousename
-            assert not os.path.exists(new_filename)
-            shutil.copyfile(filename, new_filename)  
-            raise QuitException("saved as %s" % new_filename)            
-        else:
-            # Quit
-            raise QuitException("quitting without saving %s" % filename)
+        #~ # chatter should store this attribute more transparently
+        #~ filename = self.chatter.ofi.name
+        
+        #~ # Get mouse name
+        #~ mousename = self.ui.get_additional_input("Enter mouse name: ")
+        #~ mousename = mousename.strip()
+        
+        #~ # Copy the file
+        #~ if mousename != '':
+            #~ new_filename = filename + '.' + mousename
+            #~ assert not os.path.exists(new_filename)
+            #~ shutil.copyfile(filename, new_filename)  
+            #~ raise QuitException("saved as %s" % new_filename)            
+        #~ else:
+            #~ # Quit
+            #~ raise QuitException("quitting without saving %s" % filename)
     
     def set_param(self):
         # Get name and value

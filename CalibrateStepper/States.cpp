@@ -9,6 +9,7 @@ Defines the following:
 
 */
 
+
 #include "States.h"
 #include "Arduino.h"
 #include "hwconstants.h"
@@ -70,6 +71,9 @@ long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
 // Global, persistent variable to remember where the stepper is
 long sticky_stepper_position = 0;
+
+//Horizontal position (maximum voltage)
+long horizontal_position;
 
 
 //// State definitions
@@ -393,6 +397,95 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   next_state = MOVE_SERVO;
   return 0;    
 }
+
+int findPeak() {
+  //Find the maximum value of sensor through full rotation
+  int n_steps = 200;
+  long nondirectional_steps = 0;
+  int sensor_history[200] = {0};
+  int sensor;
+
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  #ifdef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
+  if (step_size < 0) {
+    nondirectional_steps = -n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  } else {
+    nondirectional_steps = n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  }  
+  #endif
+  
+  #ifndef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
+  // Step forwards or backwards
+  if (n_steps < 0) {
+    nondirectional_steps = -n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);
+  } else {
+    nondirectional_steps = n_steps * __HWCONSTANTS_H_MICROSTEP;
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);
+  }    
+  #endif
+  #endif
+  
+  for (int i = 0; i < nondirectional_steps; i++) {
+    #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+    rotate_one_step();
+    #endif
+
+    #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+    stimStepper->step(1);
+    #endif
+    sensor = analogRead(__HWCONSTANTS_H_HALL1);
+    sensor_history[i / __HWCONSTANTS_H_MICROSTEP] = sensor;
+  }
+
+  Serial.print(millis());
+  Serial.print(" SENH ");
+  for (int i=0; i < n_steps; i++) {
+    Serial.print(sensor_history[i]);
+    Serial.print(" ");
+  }
+  Serial.println("");
+
+  int steps_away = steps_to_max(sensor_history, n_steps);
+  if (steps_away > 100) {
+    steps_away = steps_away -100;
+  }
+
+  horizontal_position = (sticky_stepper_position + steps_away + 200) % 200;
+
+
+  return 0;
+
+}
+
+int steps_to_max(int a[], int size) {
+  // Calculates distance from max sensor value
+  int max = 0;
+  int max_index = 0;
+
+  for (int i = 0; i < size; i++) {
+    
+    if (a[i] > max) {
+      max = a[i];
+      max_index = i;
+    }
+  }
+
+  return max_index;
+}
+
+int rotate_to_sensor2() {
+  if (sticky_stepper_position > horizontal_position) {
+    rotate(horizontal_position - sticky_stepper_position);
+  }
+  else {
+    rotate(sticky_stepper_position - horizontal_position);
+  }
+  return 0;
+} 
   
 
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
@@ -655,3 +748,5 @@ int state_reward_r(STATE_TYPE& next_state)
   next_state = POST_REWARD_PAUSE;
   return 0;  
 }
+
+

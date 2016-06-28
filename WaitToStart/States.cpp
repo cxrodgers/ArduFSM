@@ -33,7 +33,7 @@ Defines the following:
 extern STATE_TYPE next_state;
 
 // These should go into some kind of Protocol.h or something
-char* param_abbrevs[N_TRIAL_PARAMS] = {
+char const* param_abbrevs[N_TRIAL_PARAMS] = {
   "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
   "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
   "RD_L", "RD_R", "SRVST", "PSW", "TOE",
