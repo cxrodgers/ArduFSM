@@ -398,7 +398,7 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   return 0;    
 }
 
-int findPeak() {
+int findStepperPeak() {
   //Find the maximum value of sensor through full rotation
   int n_steps = 200;
   long nondirectional_steps = 0;
@@ -429,6 +429,7 @@ int findPeak() {
   #endif
   #endif
   
+  //Rotate 360 degrees and record sensor voltages
   for (int i = 0; i < nondirectional_steps; i++) {
     #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
     rotate_one_step();
@@ -449,6 +450,7 @@ int findPeak() {
   }
   Serial.println("");
 
+  //Find max value of recorded sensor values
   int steps_away = steps_to_max(sensor_history, n_steps);
   if (steps_away > 100) {
     steps_away = steps_away -100;
@@ -478,6 +480,7 @@ int steps_to_max(int a[], int size) {
 }
 
 int rotate_to_sensor2() {
+  //Rotate to pre-recorded Hall sensor peak
   if (sticky_stepper_position > horizontal_position) {
     rotate(horizontal_position - sticky_stepper_position);
   }

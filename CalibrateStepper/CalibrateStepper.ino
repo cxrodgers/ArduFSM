@@ -180,7 +180,8 @@ void setup()
   linServo.write(param_values[tpidx_SRV_FAR]);
   delay(param_values[tpidx_SERVO_SETUP_T]);
 
-  findPeak();
+  // find maximum voltage position of stepper
+  findStepperPeak();
   delay(300);
 
   
