@@ -9,6 +9,8 @@ import json
 import ParamLookups
 import datetime 
 import time
+import platform
+import shlex
 
 def create_sandbox(user_input, sandbox_root):
     """Create a sandbox directory for Autosketch and Script
@@ -274,12 +276,24 @@ def call_python_script(script_path, script_name, ncols=80, nrows=23,
     # Launch a new terminal window in a certain position
     # Within that window, execute ipython
     # Tell ipython to run the script
-    subprocess.Popen([
-        'gnome-terminal', 
-        '--working-directory=%s' % os.path.abspath(script_path),
-        '--geometry=%dx%d+%d+%d' % (ncols, nrows, xpos, ypos),
-        '--zoom=%0.2f' % zoom,  
-        '-x',
-        'bash', '-l', '-c',
-        "ipython --pylab=qt -i %s" % script_name,
-        ])
+
+    if (platform.system().lower() == "darwin"):
+        cmd = "xterm -geometry {}x{}+{}+{} -e 'cd {} && ipython --pylab=tk -i {}' ".format(
+            ncols,
+            nrows,
+            xpos,
+            ypos,
+            os.path.abspath(script_path),
+            script_name
+        )
+        subprocess.Popen(shlex.split(cmd))
+    else:
+        subprocess.Popen([
+            'gnome-terminal', 
+            '--working-directory=%s' % os.path.abspath(script_path),
+            '--geometry=%dx%d+%d+%d' % (ncols, nrows, xpos, ypos),
+            '--zoom=%0.2f' % zoom,  
+            '-x',
+            'bash', '-l', '-c',
+            "ipython --pylab=qt -i %s" % script_name,
+            ])
