@@ -6,6 +6,8 @@
 # The (None, None) edge case is due to the fact that tuples are stored
 # in the Database
 
+1/0 # Don't use this anymore
+
 import ParamLookups
 import runner.models
 

@@ -14,18 +14,38 @@ What to do about None in the database? This probably means no data available,
 as opposed to an explicit None (although maybe for video_device...).
 So probably we want to remove it from the dicts, because otherwise a None
 from mouse will trump a real value from box or board.
+
+
+Avoid using nullable char fields because then there are two possible values
+that mean null: null, and ''. The django convention is to use ''. This is 
+a little tricky for C parameters because they have to be strings. If they
+are set to '', should we interpret this as define it without a value, or
+don't define it?
+
 """
 import django
 import runner.models
 import Hardcoded
 
 def remove_None_from_dict(d):
-    """Remove specific parameters that are None"""
+    """Remove specific parameters that are None
+    
+    When we retrieve null values from the database, we want to remove
+    them from the dict. This is because the hierarchy (mouse, board, box)
+    uses dict.update, and so we don't want null values in the dict.
+    
+    This function should be applied to each set of specific parameters
+    right after the database lookup.
+    
+    Let's also remove '' at this point, since this basically means None
+    in many cases (eg, CharFields). We should not have any charfields where
+    '' is to be interpreted as anything other than None/Null.
+    """
     res = {}
     for typ, subdict in d.items():
         res_l = []
         for k, v in subdict.items():
-            if v is not None and v != (None, None):
+            if v is not None and v != (None, None) and v != '':
                 res_l.append((k, v))
         res[typ] = dict(res_l)
     
