@@ -73,9 +73,9 @@ Defines the following:
 #include "chat.h"
 
 extern STATE_TYPE next_state;
+extern bool flag_start_trial;
 
 int lickThresh = 900;
-
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -151,7 +151,7 @@ static StatePostRewardPause state_post_reward_pause(param_values[tpidx_INTER_REW
  * .ino file's loop() function, and will in turn invoke the TimedState objects
  * instantiated above, as well as a number of non-class functions defined below. 
  */
-STATE_TYPE stateDependentOperations(STATE_TYPE current_state){
+void stateDependentOperations(STATE_TYPE current_state){
     switch (current_state)
     {
     //// Wait till the trial is released. Same for all protocols.
@@ -165,7 +165,7 @@ STATE_TYPE stateDependentOperations(STATE_TYPE current_state){
           flag_start_trial = 0;
         
           // Proceed to next trial
-          return TRIAL_START;
+          next_state = TRIAL_START;
         }
         break;
 
