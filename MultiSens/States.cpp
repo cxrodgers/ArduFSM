@@ -194,7 +194,7 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
           results_values[i] = default_results_values[i];
         }      
     
-        return STIM_PERIOD;
+        next_state = STIM_PERIOD;
         break;
 
       case STIM_PERIOD:
