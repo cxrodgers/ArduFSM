@@ -79,6 +79,7 @@ extern STATE_TYPE next_state;
 extern bool flag_start_trial;
 
 int lickThresh = 900;
+int Device::deviceCounter = 0;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
