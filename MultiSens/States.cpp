@@ -99,10 +99,6 @@ char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
 long results_values[N_TRIAL_RESULTS] = {0, 0};
 long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
-// Global, persistent variable to remember where the stepper is
-long sticky_stepper_position = 0;
-
-
 
 /* Instantiate device objects that will be used for controlling individual 
  * hardware devices like stepper motors, speakers, solenoids, etc. This is an
