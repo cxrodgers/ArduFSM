@@ -117,8 +117,6 @@ into States.cpp.
 #define tridx_RESPONSE 0
 #define tridx_OUTCOME 1
 
-
-
 //// Defines for commonly used things
 // Move this to TrialSpeak, and rename CHOICE_LEFT etc
 #define GO 1
@@ -129,7 +127,24 @@ into States.cpp.
 #define OUTCOME_MISS 3
 #define OUTCOME_CR 4 
 
-TimedState ** getStates();
+//MultiSens-specific macros
+#include "devices.h"                    
+#define NUM_DEVICES 2
+
+#define STPR1_PIN1 8
+#define STPR1_PIN2 6      
+#define ENBL1_PIN 7
+#define HALL1_PIN 1
+#define SPKR_PIN 13
+#define SOLENOID_PIN 2
+#define LICK_DETECTOR_PIN 10
+
+#define NUM_STEPS 200
+#define HALL1_THRESH 50
+#define STPR1_SPEED 80
+#define STPR1_CW -20
+#define STPR1_CCW 20
+#define HALL1_VAL 500  
 
 //// States
 // Defines the finite state machine for this protocol
