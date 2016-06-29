@@ -455,3 +455,24 @@ boolean checkLicks(){
     }
   return licking;
 }
+
+
+Device ** config_hw(){ 
+    
+    bool debug = 1; // set to 0 if using real hardware devices; set to 1 if using dummy devices
+    
+    if ( debug == 0 ){
+        static myStepper myStp1( NUM_STEPS, STPR1_PIN1, STPR1_PIN1, ENBL1_PIN, HALL1_PIN, HALL1_THRESH, STPR1_SPEED, STPR1_CW, STPR1_CCW, HALL1_VAL );  
+        static mySpeaker spkr1( SPKR_PIN );
+  
+        static Device * devPtrs[] = { &myStp1, &spkr1 };
+        return devPtrs;
+        }
+    else {
+        static dummyStepper dmStpr1;
+        static dummySpeaker dmSpkr1;
+  
+        static Device * devPtrs[] = { &dmStpr1, &dmSpkr1 };
+        return devPtrs;
+    }    
+}
