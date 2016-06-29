@@ -235,13 +235,6 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
 }
 
 
-
-
-
-extern Stepper* stimStepper;
-
-
-
 /* Definitions for the various TimedState sub-classes invoked in 
  * stateDependentOperations. Each of these sub-classes can re-define the virtual 
  * s_setup(), loop(), s_finish() and update() functions they inherit from 
