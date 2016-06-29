@@ -1,10 +1,8 @@
 /* Last updated DDK 6/7/16
  *  
  * OVERVIEW: 
- * This file defines functions that constitute most of the state-dependent 
- * operations for the ArduFSM protocol MultiSens. This includes much of the 
- * protocol's state-transition logic. Trial and response parameters are also 
- * stored here.
+ * This file defines the state-dependent operations for the ArduFSM protocol 
+ * MultiSens.
  * 
  * 
  * REQUIREMENTS:
@@ -13,10 +11,8 @@
  * folder. In addition to this file, the MultiSens directory should contain
  * the following files:
  * 
- * 1. config.h
- * 2. config.cpp
- * 3. States.h
- * 4. MultiSens.ino
+ * 1. States.h
+ * 2. MultiSens.ino
  * 
  * In addition, the local computer's Arduino sketchbook library must contain 
  * the following libraries:
@@ -27,29 +23,25 @@
  * 
  * 
  * DESCRIPTION:
- * This file primarily defines a number of functions that are called from
- * the state-dependent `switch case` statement in the `loop` function of the 
- * main MultiSens.ino sketch. For any state that consist entirely of some short-
- * duration (1-100ms) action that can be completed on a single pass of loop,
- * States.cpp defines a single, non-class function. For states that must persist  
- * for an extended period of time over multiple passes of `loop`, States.cpp 
- * defines classes and class functions that inherit from TimedState. These
- * TimedState objects store the time the corresponding state began as well as
- * the current time, and execute appropriate class functions based on how
- * much time has elapsed since the beginning of the state.
+ * At the heart of this code is a function called stateDependentOperations. This 
+ * function is called on every pass of the loop() function in the main .ino file, 
+ * which passes it the variable current_state. Nested in the function is a switch 
+ * case statement that executes the appropriate block of code based on the FSM's 
+ * current state. 
  * 
- * In addition to defining the TimedState sub-classes, this file also actually
- * instantiates them and returns them to the main sketch in an array. 
+ * Many of these cases invoke objects that are used for managing task epochs that
+ * must be distributed over multiple passes of the main .ino's loop function 
+ * because they take more than a few ms, and we want loop to complete as quickly
+ * as possible so that we can quickly check for licks again and get any new 
+ * messages from the host PC. All of these objects instantiate protocol-specific
+ * classes that inherit from TimedState, defined in ArduFSM/libraries. These 
+ * TimedState sub-classes are declared in States.h and defined and instantiated 
+ * in this file. These TimedState objects store the time the corresponding state 
+ * began as well as the current time, and execute appropriate class functions based 
+ * on how much time has elapsed since the beginning of the state.
  * 
  * This file also defines arrays that store trial and response parameters for 
  * the current trial.
- * 
- * This code is agnostic with respect to what actual hardware devices (steppers,
- * speakers, etc.) are controlled by the Arduino on the current experiment. 
- * Rather, the code for the STIM_PERIOD object simply iterates through an 
- * array of device objects returned from config.cpp, and for each device object, 
- * calls some class function that selects and executes an appropriate action 
- * based on some current trial parameter and the current time. 
  */
 
 
