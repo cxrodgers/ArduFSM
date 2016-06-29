@@ -65,7 +65,6 @@ Defines the following:
 */
 
 #include "devices.h"
-#include "config.h"
 #include "States.h"
 #include "Arduino.h"
 #include "Stepper.h"
