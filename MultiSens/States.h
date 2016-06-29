@@ -127,7 +127,7 @@ into States.cpp.
 #define OUTCOME_MISS 3
 #define OUTCOME_CR 4 
 
-//MultiSens-specific macros
+//MultiSens-specific macros:
 #include "devices.h"                    
 #define NUM_DEVICES 2
 
@@ -238,5 +238,7 @@ class StatePostRewardPause : public TimedState {
   public:
     StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
+
+Device ** config_hw();
 
 #endif
