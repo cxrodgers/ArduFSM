@@ -182,7 +182,7 @@ void loop()
     sticky_licking = licking;
   }  
   
-  
+  stateDependentOperations(current_state);
   
   //// Update the state variable
   if (next_state != current_state)
