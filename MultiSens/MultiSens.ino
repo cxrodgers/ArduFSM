@@ -4,8 +4,8 @@
  * This file is the main Arduino sketch for the ArduFSM protocol MultiSens. This 
  * protocol is used for presenting simultaneous multi-sensory stimuli under the 
  * control of an Arduino microcontroller and records licks measured on a 
- * capacitative touch sensor. Arbitrary stimulus presentations (determined by the 
- * computer-side program) can be paired with coterminous dispensation of a 
+ * capacitative touch sensor. Arbitrary stimulus presentations (determined by a 
+ * host PC-side program) can be paired with coterminous dispensation of a 
  * liquid reward , and licks during non-rewarded stimuli will result in a timeout 
  * error period.
  *  
@@ -16,10 +16,8 @@
  * folder. In addition to this file, the MultiSens directory should contain
  * the following files:
  *  
- * 1. config.h
- * 2. config.cpp
- * 3. States.h
- * 4. States.cpp
+ * 1. States.h
+ * 2. States.cpp
  *  
  * In addition, the local computer's Arduino sketchbook library must contain 
  * the following libraries:
@@ -28,19 +26,18 @@
  * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
  * 3. devices, available at https://github.com/danieldkato/devices
  *  
- * This sketch is largely agnostic with respect to how the computer-side code is
+ * This sketch is largely agnostic with respect to how the host PC-side code is
  * implemented; the only requirements are that both programs specify the same
- * baud rate for the serial connection, and that the computer-side code send
+ * baud rate for the serial connection, and that the host PC-side code send
  * certain specific messages comprised of byte arrays terminated by a newline
  * ('\n') character over a serial connection to the Arduino. The syntax and
  * semantics of these messages are described in this protocol's README.md.
  * 
  * 
  * INSTRUCTIONS:
- * Compile and upload this sketch along with States.h, States.cpp, config.h
- * and config.cpp to an Arduino over a connected serial port. See this 
- * protocol's README.md for instructions on running the corresponding computer-
- * side code. 
+ * Compile and upload this sketch along with States.h and States.cpp to an 
+ * Arduino over a connected serial port. See this protocol's README.md for 
+ * instructions on running the corresponding computer-side code. 
  * 
  * 
  * DESCRIPTION:
@@ -50,15 +47,12 @@
  * checking for messages from the computer, 3) checking for licks, and 4) 
  * performing state-dependent operations. 
  * 
- * Code for some of these state-dependent operations, including some of the state-
- * transition logic, is contained in this main sketch. The rest of the code  
- * for the state-dependent operations is contained in this protocol's States.h
- * and States.cpp files. 
+ * Code for some of these state-dependent operations, is contained in this 
+ * protocol's States.h and States.cpp files.  
  * 
- * This code is agnostic with repsect to what actual hardware devices are 
- * controlled by the Arduino on the current experiment. Hardware parameters
- * are set in config.cpp. 
-  */ 
+ * Because this sketch itself does not define the state-dependent operations,
+ * it should be totally protocol-independent.
+ */ 
 
 
 
