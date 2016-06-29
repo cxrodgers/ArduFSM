@@ -161,7 +161,7 @@ enum STATE_TYPE
 };
 
 //Declare function for handling state-dependent operations:
-STATE_TYPE stateDependentOperations(STATE_TYPE current_state);
+void stateDependentOperations(STATE_TYPE current_state, unsigned long time);
 
 // Declare utility functions
 boolean checkLicks();

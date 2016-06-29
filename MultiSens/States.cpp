@@ -151,7 +151,7 @@ static StatePostRewardPause state_post_reward_pause(param_values[tpidx_INTER_REW
  * .ino file's loop() function, and will in turn invoke the TimedState objects
  * instantiated above, as well as a number of non-class functions defined below. 
  */
-void stateDependentOperations(STATE_TYPE current_state){
+void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
     switch (current_state)
     {
     //// Wait till the trial is released. Same for all protocols.

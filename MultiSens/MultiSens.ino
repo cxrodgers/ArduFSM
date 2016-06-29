@@ -95,7 +95,6 @@ extern long default_results_values[N_TRIAL_RESULTS];
 // currently being used in both setup() and loop() so it can't be staticked
 bool flag_start_trial = 0;
 
-TimedState ** states = getStates();
 
 //// Declarations
 int take_action(char *protocol_cmd, char *argument1, char *argument2);
@@ -182,7 +181,7 @@ void loop()
     sticky_licking = licking;
   }  
   
-  stateDependentOperations(current_state);
+  stateDependentOperations(current_state, time);
   
   //// Update the state variable
   if (next_state != current_state)
