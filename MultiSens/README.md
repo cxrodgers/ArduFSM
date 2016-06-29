@@ -1,4 +1,4 @@
-*Last updated DDK 6/7/16*
+*Last updated DDK 6/29/16*
 
 ##OVERVIEW: 
 This directory contains files needed to run the ArduFSM protocol MultiSens. This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by the computer-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
@@ -8,8 +8,6 @@ This readme provides documentation for the most current version of the protocol.
 
 ##REQUIREMENTS:
 This protocol directory should contain the following files:
-   * `config.h`
-   * `config.cpp`
    * `States.h`
    * `States.cpp`
    * `MultiSens.ino`
@@ -24,7 +22,7 @@ In addition, the path of the Python instance running `testMultiSens.py` must inc
 
 
 ##INSTRUCTIONS:
-To run this protocol, upload `MultiSens.ino`, `config.h`, `config.cpp`, `States.h` and `States.cpp` to an Arduino. Then, in a command window, navigate to this directory and enter the command:
+To run this protocol, upload `MultiSens.ino`, `States.h`, and `States.cpp` to an Arduino. Then, in a command window, navigate to this directory and enter the command:
 
 `python testMultiSens.py`
 
@@ -34,7 +32,7 @@ For more specific exposition of each file, see comments in the header of each.
 ##DESCRIPTION
 
 ###Behavioral protocol
-This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by a desktop-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
+This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller and records licks measured on a capacitative touch sensor. Arbitrary stimulus presentations (determined by a host PC-side program) can be paired with coterminous delivery of a liquid reward, and licks during non-rewarded stimuli will result in a timeout error period. 
 
 This protocol consists of 8 states: 
  * `WAIT_TO_START_TRIAL` 
@@ -57,15 +55,15 @@ In any case, after the trial is scored, the state will advance to `INTER_TRIAL_I
 For a full list of trial parameters, see below. 
 
 ###Code
-As with all ArduFSM protocols, the code for running this protocol consists of separate computer-side and Arduino programs. 
+As with all ArduFSM protocols, the code for running this protocol consists of separate host PC-side and Arduino programs. 
 
-####Desktop-side code
-The desktop-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the desktop-side code is comprised entirely of `testMultiSens.py`.
+####Host PC-side code
+The host PC-side code is responsible for choosing and sending trial parameters to the Arduino and giving it the signal to initiate each trial (see below for detailed syntax and semantics). In this protocol, the host PC-side code is comprised entirely of `testMultiSens.py`.
 
-In addition, the desktop-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
+In addition, the host PC-side code will save to disk a file containing all messages received back from the Arduino over the course of the experiment, including information about responses, trial outcomes and acknowledgement of trial parameters send by the computer.  
 
 ####Arduino-side code
-The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the desktop, and advancing the state. The Arduino-side code consists of five files: `MultiSens.ino`, `config.h`, `config.cpp`, `States.h` and `States.cpp`. 
+The Arduino-side code is responsible for receiving trial parameters from the desktop, waiting to receive permission from the desktop to initiate trials, delivering stimuli, measuring responses, sending response data back to the desktop, and advancing the state. The Arduino-side code consists of three files: `MultiSens.ino`, `States.h` and `States.cpp`. 
 
 `MultiSens.ino` is the main sketch, and defines the behavior of the Arduino on every pass of the main loop function. On every pass of the main loop, the Arduino performs the following actions: 
 
@@ -74,11 +72,10 @@ The Arduino-side code is responsible for receiving trial parameters from the des
  3. check for licks
  4. perform state-dependent operations
 
-Most state-dependent operations are defined in `States.h` and `States.cpp`, although some (like those for `WAIT_TO_START_TRIAL` and `TRIAL_START`) are defined in the main .ino. These source files define functions and objects that determine how the Arduino behaves during most states, which also includes most of the logic for advancing states. It also defines the array where trial parameters are stored. It is agnostic, however, with respect to what hardware is actually controlled by the Arduino.
+State-dependent operations are defined in `States.h` and `States.cpp`. These source files define functions and objects that determine how the Arduino behaves during each state, which also includes the logic for advancing states. It also defines the array where trial parameters are stored.
 
-*[Note: this last feature may need to change in future versions; it seems somewhat strange that the trial parameters and hardware configuration are defined separately when the trial parameters include hardware parameters. All of this information should probably be considered one unit and ultimately defined in the same file.]*
 
-`config.h` and `config.cpp` define individual device instances (e.g., steppers, speakers) that will be controlled by the Arduino on the current experiment. Each device instance is of a class defined in `devices.h` and `devices.cpp`. Each device class has a repertoire of behaviors that it can execute on any given trial. Each behavior has its own numeric index, and trial parameters on each trial include an index for each device, thereby specifying the behavior of every device on each trial. For a detailed description of each device class, their behaviors and a listing of indices to them, see the documentation for `devices` at https://github.com/danieldkato/devices.         
+Unique (for the time being) to MulitSens is that `States.cpp` also instantiates a number of device objects for managing the hardware (e.g., steppers, speakers) that will be controlled by the Arduino on the current experiment. Each device instance is of a class defined in `devices.h` and `devices.cpp`. Each device class has a repertoire of behaviors that it can execute on any given trial. Each behavior has its own numeric index, and trial parameters on each trial include an index for each device, thereby specifying the behavior of every device on each trial. For a detailed description of each device class, their behaviors and a listing of indices to them, see the documentation for `devices` at https://github.com/danieldkato/devices.         
 
 ####Trial parameters
 The Arduino expects to receive trial parameters with the syntax:
