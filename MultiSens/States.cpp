@@ -72,12 +72,10 @@ Defines the following:
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
-int lickThresh = 900;
-int Device::deviceCounter = 0;
-Device ** devPtrs = config_hw();
-int devIndices[NUM_DEVICES] = { tpidx_STPRIDX, tpidx_SPKRIDX };
-
 extern STATE_TYPE next_state;
+
+int lickThresh = 900;
+
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -109,7 +107,50 @@ long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 // Global, persistent variable to remember where the stepper is
 long sticky_stepper_position = 0;
 
-//Define function for handling state-dependent operations:
+
+
+/* Instantiate device objects that will be used for controlling individual 
+ * hardware devices like stepper motors, speakers, solenoids, etc. This is an
+ * additional layer of complication that is specific to this MultiSens protocol,
+ * and may not generalize to other protocols.
+ * 
+ * In this task, I want the objects managing my hardware to inherit from a 
+ * common parent some virtual doStuff function that they can re-define
+ * appropriately based on the type of physical device they control (e.g.,
+ * extend a stepper for a stepper motor, emit a tone for speaker). Then, all
+ * of these objects can be put in an array, and a calling function can iterate 
+ * through the array and dereference each element's doStuff function in quick
+ * succession, facilitating near-simultaneous control of multiple hardware
+ * devices.
+ */
+Device ** devPtrs = config_hw();
+int devIndices[NUM_DEVICES] = { tpidx_STPRIDX, tpidx_SPKRIDX };
+
+
+
+/* Instantiate state objects for handling task epochs that should persist over 
+ * multiple passes of the main .ino file's loop() function, i.e., last more than 
+ * a few ms. While these classes are protocol-specific (defined in this States.cpp 
+ * file) they all inherit from TimedState, which is used across protocols and
+ * defined in ArduFSM/libraries. 
+ * 
+ * These objects will be invoked from stateDependentOperations, the function for 
+ * deciding how the Arduino should behave based on the current state. 
+ */
+static StimPeriod stim_period(param_values[tpidx_STIM_DUR]);
+static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
+static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
+static StateInterTrialInterval state_inter_trial_interval(param_values[tpidx_ITI]);
+static StateErrorTimeout state_error_timeout(param_values[tpidx_ERROR_TIMEOUT]);
+static StatePostRewardPause state_post_reward_pause(param_values[tpidx_INTER_REWARD_INTERVAL]);
+
+
+
+/* Define stateDependentOperations, the function for deciding how the Arduino  
+ * should behave based on the current state. This gets called from the main 
+ * .ino file's loop() function, and will in turn invoke the TimedState objects
+ * instantiated above, as well as a number of non-class functions defined below. 
+ */
 STATE_TYPE stateDependentOperations(STATE_TYPE current_state){
     switch (current_state)
     {
@@ -152,29 +193,24 @@ STATE_TYPE stateDependentOperations(STATE_TYPE current_state){
         {
           results_values[i] = default_results_values[i];
         }      
-      
-      
-      //// User-defined code goes here
-      // declare the states. Here we're both updating the parameters
-      // in case they've changed, and resetting all timers.
     
         return STIM_PERIOD;
         break;
 
       case STIM_PERIOD:
-        states[stidx_STIM_PERIOD]->run(time);
+        stim_period.run(time);
         break;
     
       case RESPONSE_WINDOW:
         if (FAKE_RESPONDER)
         {
-          states[stidx_FAKE_RESPONSE_WINDOW]->update();
-          states[stidx_FAKE_RESPONSE_WINDOW]->run(time);
+          sfrw.update();
+          sfrw.run(time);
         } 
         else 
         {
-          states[stidx_RESPONSE_WINDOW]->update();
-          states[stidx_RESPONSE_WINDOW]->run(time);
+          srw.update();
+          srw.run(time);
         }
         break;
     
@@ -185,80 +221,55 @@ STATE_TYPE stateDependentOperations(STATE_TYPE current_state){
         break;
     
       case POST_REWARD_PAUSE:
-        states[stidx_POST_REWARD_PAUSE]->run(time);
+        state_post_reward_pause.run(time);
         break;    
     
       case ERROR:
       
-        states[stidx_ERROR]->run(time);
+        state_error_timeout.run(time);
         break;
 
       case INTER_TRIAL_INTERVAL:
 
         // Announce trial_results
-        states[stidx_INTER_TRIAL_INTERVAL]->run(time);
+        state_inter_trial_interval.run(time);
         break;
     
     // need an else here
   }
-
-  
 }
 
 
-//define function for isntantiating states (to be called from main sketch)
-TimedState ** getStates(){
-  
-  static StimPeriod stim_period(param_values[tpidx_STIM_DUR]);
-  static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
-  static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
-  static StateInterTrialInterval state_inter_trial_interval(
-    param_values[tpidx_ITI]);
-  static StateErrorTimeout state_error_timeout(
-    param_values[tpidx_ERROR_TIMEOUT]);
-  static StatePostRewardPause state_post_reward_pause(
-        param_values[tpidx_INTER_REWARD_INTERVAL]);
 
-  static TimedState * states[] = { &stim_period, &srw, &sfrw, &state_inter_trial_interval, &state_error_timeout, &state_post_reward_pause};
-  return states;
-}
 
-////Utility functions
-boolean checkLicks(){
-  boolean licking;
-  int aIn = analogRead(LICK_DETECTOR_PIN);
-    if ( aIn > lickThresh ){
-      licking = 1;
-    }
-    else {
-      licking = 0;
-    }
-  return licking;
-}
 
-//// State definitions
 extern Stepper* stimStepper;
 
 
-////StimPeriod
-void StimPeriod::s_setup(){
 
+/* Definitions for the various TimedState sub-classes invoked in 
+ * stateDependentOperations. Each of these sub-classes can re-define the virtual 
+ * s_setup(), loop(), s_finish() and update() functions they inherit from 
+ * TimedState - although they do not need to, as these functions are defined
+ * in TimedState as merely virtual rather than pure virtual, meaning that
+ * they do already have an implementation in TimedState (they mostly just do 
+ * nothing by default). 
+ */
+ 
+//StimPeriod definitions:
+void StimPeriod::s_setup(){
   duration = param_values[tpidx_REW_DUR];  
   licked = 0;
-  
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devFcns[i] = param_values[devIndices[i]]; 
   }
 }
 
 void StimPeriod::loop(){
-
   unsigned long time = millis();
-  
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> loop(devFcns[i]);
   }
-
   //on rewarded trials, make reward coterminous with stimulus
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
@@ -270,9 +281,7 @@ void StimPeriod::s_finish()
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> s_finish();
   }
-
   digitalWrite(SOLENOID_PIN, LOW);
-
   //if the mouse licked during the stimulus period, transition to timeout
   if ( licked == 1 ){ 
     next_state = ERROR; 
@@ -283,7 +292,8 @@ void StimPeriod::s_finish()
   }
 }
 
-//// StateResponseWindow
+
+// StateResponseWindow definitions:
 void StateResponseWindow::update()
 {
  my_licking = checkLicks();
@@ -297,11 +307,9 @@ void StateResponseWindow::loop()
 {
   int current_response;
   bool licking;
-  
   // get the licking state 
   // overridden in FakeResponseWindow
   set_licking_variables(licking);
-  
   // transition if max rewards reached
   if (my_rewards_this_trial >= param_values[tpidx_MRT])
   {
@@ -309,7 +317,6 @@ void StateResponseWindow::loop()
     flag_stop = 1;
     return;
   }
-
   // Do nothing if both or neither are being licked.
   // Otherwise, assign current_response.
   if (!licking)
@@ -318,11 +325,9 @@ void StateResponseWindow::loop()
     current_response = GO;
   else
     Serial.println("ERR this should never happen");
-
   // Only assign result if this is the first response
   if (results_values[tridx_RESPONSE] == 0)
     results_values[tridx_RESPONSE] = current_response;
-  
   // Move to reward state, or error if TOE is set, or otherwise stay
   if ((current_response == GO) && (param_values[tpidx_REW] == GO))
   { // Hit
@@ -375,7 +380,7 @@ void StateResponseWindow::set_licking_variables(bool &licking)
 }
 
 
-//// StateFakeResponsewindow
+// StateFakeResponsewindow definitions:
 // Differs only in that it randomly fakes a response
 void StateFakeResponseWindow::set_licking_variables(bool &licking)
 { /* Fakes a response by randomly choosing lick status for each */
@@ -383,7 +388,7 @@ void StateFakeResponseWindow::set_licking_variables(bool &licking)
 }
 
 
-//// Inter-trial interval
+// Inter-trial interval definitions:
 void StateInterTrialInterval::s_setup()
 {
   duration = param_values[tpidx_ITI];
@@ -403,13 +408,15 @@ void StateInterTrialInterval::s_finish()
   next_state = WAIT_TO_START_TRIAL;   
 }
 
-//// Post-reward state
+
+// Post-reward state definitions:
 void StatePostRewardPause::s_finish()
 {
   next_state = RESPONSE_WINDOW;
 }
 
-//// StateErrorTimeout
+
+// StateErrorTimeout definitions:
 void StateErrorTimeout::s_finish()
 {
   next_state = INTER_TRIAL_INTERVAL;
@@ -420,8 +427,11 @@ void StateErrorTimeout::s_setup(){
 }
 
 
-//// Non-class states
-// The reward states use delay because they need to be millisecond-precise
+
+/* Definitions for non-class functions for handling states that can be dispatched
+ * on a single pass of the main .ino file's main loop() function (i.e., last no
+ * more than a few ms). 
+ */
 int state_reward(STATE_TYPE& next_state)
 {
   digitalWrite(SOLENOID_PIN, HIGH);
@@ -429,4 +439,19 @@ int state_reward(STATE_TYPE& next_state)
   digitalWrite(SOLENOID_PIN, LOW); 
   next_state = POST_REWARD_PAUSE;
   return 0;  
+}
+
+
+
+/* Utility functions */
+boolean checkLicks(){
+  boolean licking;
+  int aIn = analogRead(LICK_DETECTOR_PIN);
+    if ( aIn > lickThresh ){
+      licking = 1;
+    }
+    else {
+      licking = 0;
+    }
+  return licking;
 }
