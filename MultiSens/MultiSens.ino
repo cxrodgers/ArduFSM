@@ -80,9 +80,6 @@ Here are the things that the user should have to change for each protocol:
 #include "TimedState.h"
 #include "States.h"
 
-// Make this true to generate random responses for debugging
-#define FAKE_RESPONDER 0
-
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern bool param_report_ET[N_TRIAL_PARAMS];

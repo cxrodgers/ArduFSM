@@ -72,6 +72,9 @@ Defines the following:
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
+// Make this true to generate random responses for debugging
+#define FAKE_RESPONDER 0
+
 extern STATE_TYPE next_state;
 extern bool flag_start_trial;
 
