@@ -20,10 +20,8 @@
  * folder. In addition to this file, the MultiSens directory should contain
  * the following files:
  * 
- * 1. config.h
- * 2. config.cpp
- * 3. States.cpp
- * 4. MultiSens.ino
+ * 1. States.cpp
+ * 2. MultiSens.ino
  * 
  * In addition, the local computer's Arduino sketchbook library must contain 
  * the following libraries:
