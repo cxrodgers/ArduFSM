@@ -145,6 +145,9 @@ enum STATE_TYPE
   POST_REWARD_PAUSE,
 };
 
+//Declare function for handling state-dependent operations:
+STATE_TYPE stateDependentOperations(STATE_TYPE current_state);
+
 // Declare utility functions
 boolean checkLicks();
 
