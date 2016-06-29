@@ -88,7 +88,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   };
 long param_values[N_TRIAL_PARAMS] = {
   0, 0, 2000, 0, 50, 
-  500, 6000, 3000, 45000, 1,
+  500, 6000, 3000, 3000, 1,
   1   
   };
 
