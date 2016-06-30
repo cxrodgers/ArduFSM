@@ -1,13 +1,6 @@
-# Main script to run to run TwoChoice behavior
-# Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
-# enough that the response is quick, but not so low that it takes up all the
-# CPU power.
-# Right now, it does this on each loop
-# * Update chatter (timeout)
-# * Update UI (timeout)
-# * do other things, like reading logfile and setting next trial
-# So, if the timeouts are too low, it spends a lot more time reading the
-# logfile and there is more overhead overall.
+# Main script to run to run CalibrateStepper behavior
+# Only sets parameters concerning stepper motor and servo motor movements
+# Receives voltage values from hall sensor and plots in a graph
 
 import time
 import json

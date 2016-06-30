@@ -1,17 +1,12 @@
-/* A two-alternative choice behavior with left and right lick ports.
+/*
+  * A protocol that rotates the stepper motor to a position designated by the maximum voltage
+    of a hall sensor
 
-TODO
-----
-* Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
-  as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
-* move definitions of trial_params to header file, so can be auto-generated
-* diagnostics: which state it is in on each call (or subset of calls)
+  * findStepperPeak() sets horizontal_position equal to the position corressponding to the maximum
+    voltage
 
-Here are the things that the user should have to change for each protocol:
-* Enum of states
-* User-defined states in switch statement
-* param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
 */
+
 #include "chat.h"
 #include "hwconstants.h"
 #include <Servo.h>
@@ -140,7 +135,7 @@ void setup()
   // find maximum voltage position of stepper
   findStepperPeak();
   delay(300);
-  
+
 
   
 }

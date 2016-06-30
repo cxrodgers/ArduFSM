@@ -1,15 +1,5 @@
-/* Header file for declaring protocol-specific states.
-This implements a two-alternative choice task with two lick ports.
+/* Header file for declaring rotation functions.
 
-Defines the following
-* tpidx_ macros ... these allow you to index into trial_params
-* tridx_ macros ... same, but for trial results
-* the STATE_TYPE enum, which defines all possible states
-* declarations for state functions and state objects, especially those derived
-  from TimedState.
-
-To define a new state, you should declare it here and put its implementation
-into States.cpp.
 */
 
 

@@ -4,8 +4,7 @@ This implements a two-alternative choice task with two lick ports.
 Defines the following:
 * param_abbrevs, which defines the shorthand for the trial parameters
 * param_values, which define the defaults for those parameters
-* results_abbrevs, results_values, default_results_values
-* implements the state functions and state objects
+* contains stepper rotation functions
 
 */
 
@@ -144,6 +143,7 @@ int steps_to_max(int a[], int size) {
 
 int rotate_to_sensor2() {
   //Rotate to pre-recorded Hall sensor peak
+  //Alternate method
   if (sticky_stepper_position > horizontal_position) {
     rotate(horizontal_position - sticky_stepper_position);
   }
