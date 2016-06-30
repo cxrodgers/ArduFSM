@@ -242,7 +242,7 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
  
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
-  duration = param_values[tpidx_REW_DUR];  
+  duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devFcns[i] = param_values[devIndices[i]]; 
