@@ -95,7 +95,27 @@ def get_box_parameters(box):
                 'serial_port': '/dev/ttyACM4',
                 'subprocess_window_ypos': 990,
             },
-        }           
+        } 
+    if box == 'CR6':
+        return {
+            'C': {},
+            'Python': {
+                'video_device': '/dev/video0',
+                'video_window_position': (500, 0),
+                'gui_window_position': (700, 0),
+                'window_position_IR_plot': (2000, 0),                
+                'video_brightness': 0,
+                'video_gain': 0,
+                'video_exposure': 8,
+                'l_reward_duration': 60,
+                'r_reward_duration': 55,                
+                'timeout': 6000,
+            },
+            'build': {
+                'serial_port': '/dev/tty.usbmodem1421',
+                'subprocess_window_ypos': 0,                
+            },
+        }          
     
     raise ValueError("unknown box: %s" % box)
 
