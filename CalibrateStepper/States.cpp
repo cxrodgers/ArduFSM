@@ -26,27 +26,18 @@ Defines the following:
 // include this one just to get __TRIAL_SPEAK_YES
 #include "chat.h"
 
-//#define EXTRA_180DEG_ROT
 
-extern STATE_TYPE next_state;
 
 // These should go into some kind of Protocol.h or something
+
+
 char* param_abbrevs[N_TRIAL_PARAMS] = {
-  "STPPOS", "MRT", "RWSD", "SRVPOS", "ITI",
-  "2PSTP", "SRVFAR", "SRVTT", "RWIN", "IRI",
-  "RD_L", "RD_R", "SRVST", "PSW", "TOE",
-  "TO", "STPSPD", "STPFR", "STPIP", "ISRND",
-  "TOUT", "RELT", "STPHAL", "HALPOS", "DIRDEL",
-  "OPTO",
-  };
+  "SRVFAR", "SRVST", "STPSPD", "STPIP",
+};
+
 long param_values[N_TRIAL_PARAMS] = {
-  1, 1, 1, 1, 3000,
-  0, 1900, 4500, 45000, 500,
-  40, 40, 1000, 1, 1,
-  6000, 20, 50, 50, 0,
-  6, 3, 0, 50, 0,
-  0,
-  };
+  1900, 1000, 20, 50,
+};
 
 // Whether to report on each trial  
 // Currently, manually match this up with Python-side
@@ -54,17 +45,9 @@ long param_values[N_TRIAL_PARAMS] = {
 // Similarly, find out which are required on each trial, and error if they're
 // not set. Currently all that are required_ET are also reported_ET.
 bool param_report_ET[N_TRIAL_PARAMS] = {
-  1, 0, 1, 1, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 1,
-  0, 0, 0, 0, 1,
-  1,
+  1, 1, 1, 1,
 };
   
-char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
-long results_values[N_TRIAL_RESULTS] = {0, 0};
-long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 
 // Global, persistent variable to remember where the stepper is
 long sticky_stepper_position = 0;

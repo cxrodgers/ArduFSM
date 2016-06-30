@@ -20,13 +20,7 @@ Here are the things that the user should have to change for each protocol:
 #include <Stepper.h>
 #endif
 
-#include "TimedState.h"
 #include "States.h"
-
-#ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-#include "mpr121.h"
-#include <Wire.h> // also for mpr121
-#endif
 
 
 // Make this true to generate random responses for debugging
@@ -35,9 +29,7 @@ Here are the things that the user should have to change for each protocol:
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern bool param_report_ET[N_TRIAL_PARAMS];
-extern char* results_abbrevs[N_TRIAL_RESULTS];
-extern long results_values[N_TRIAL_RESULTS];
-extern long default_results_values[N_TRIAL_RESULTS];
+
 
 //// Miscellaneous globals
 // flag to remember whether we've received the start next trial signal
@@ -50,11 +42,8 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 
 //// User-defined variables, etc, go here
-/// these should all be staticked into loop()
-STATE_TYPE next_state; 
+/// these should all be staticked into loop() 
 
-// touched monitor
-uint16_t sticky_touched = 0;
 
 // initial position of stim arm .. user must ensure this is correct
 extern long sticky_stepper_position;
@@ -80,25 +69,6 @@ void setup()
   Serial.print(time);
   Serial.println(" DBG begin setup");
 
-  //// Begin user protocol code
-  //// Put this in a user_setup1() function?
-  
-  // MPR121 touch sensor setup
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  pinMode(TOUCH_IRQ, INPUT);
-  digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
-  Wire.begin();
-  #endif
-  
-  // output pins
-  pinMode(L_REWARD_VALVE, OUTPUT);
-  pinMode(R_REWARD_VALVE, OUTPUT);
-  pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
-  pinMode(__HWCONSTANTS_H_BACK_LIGHT, OUTPUT);
-  
-  // initialize the house light to ON
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
   
   // random number seed
   randomSeed(analogRead(3));
@@ -150,18 +120,8 @@ void setup()
     TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
   #endif
 
-
-  // Opto (collides with one of the 4-pin setups)
-  pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
-  digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
   
   
-  // thresholds for MPR121
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
-  #endif
-
 
   #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   // Set the speed of the stepper
@@ -180,6 +140,7 @@ void setup()
   // find maximum voltage position of stepper
   findStepperPeak();
   delay(300);
+  
 
   
 }
@@ -265,24 +226,7 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
       }
     }
   }   
-
-  else if (strncmp(protocol_cmd, "ACT\0", 4) == 0)
-  {
-    // Dispatch
-    if (strncmp(argument1, "REWARD_L\0", 9) == 0) {
-      asynch_action_reward_l();
-    } else if (strncmp(argument1, "REWARD_R\0", 9) == 0) {
-      asynch_action_reward_r();
-    } else if (strncmp(argument1, "REWARD\0", 7) == 0) {
-      asynch_action_reward();
-    } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
-      asynch_action_set_thresh();
-    } else if (strncmp(argument1, "HLON\0", 5) == 0) {
-      asynch_action_light_on();
-    } 
-    else
-      return 6;
-  }      
+    
   else
   {
     // unknown command
@@ -324,55 +268,4 @@ int safe_int_convert(char *string_data, long &variable)
     Serial.println("-");
     return 1;
   }
-}
-
-
-void asynch_action_reward_l()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAR_L");
-  digitalWrite(L_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_L]);
-  digitalWrite(L_REWARD_VALVE, LOW); 
-}
-
-void asynch_action_reward_r()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAR_R");
-  digitalWrite(R_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_R]);
-  digitalWrite(R_REWARD_VALVE, LOW); 
-}
-
-void asynch_action_reward()
-{
-  if (param_values[tpidx_REWSIDE] == LEFT)
-    asynch_action_reward_l();
-  else if (param_values[tpidx_REWSIDE] == RIGHT)
-    asynch_action_reward_r();
-  else
-    Serial.println("ERR unknown rewside");
-}
-
-void asynch_action_set_thresh()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAST");
-
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
-  #endif
-}
-
-void asynch_action_light_on()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV HLON");
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
 }

@@ -41,15 +41,6 @@ def move_figure(f, x, y):
         f.canvas.manager.window.move(x, y)
     plt.show()
 
-def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
-    """Loads and returns the trial types file"""
-    
-    filename = os.path.join(os.path.expanduser(directory), name)
-    try:
-        trial_types = pandas.read_csv(filename)
-    except IOError:
-        raise ValueError("cannot find trial type file %s" % name)
-    return trial_types
 
 # Load the parameters file
 with file('parameters.json') as fi:
@@ -62,67 +53,10 @@ if not os.path.exists(runner_params['serial_port']):
 
 
 
-
-## Only show the IR_plot if use_ir_detector
-SHOW_IR_PLOT = runner_params.get('use_ir_detector', False)
-
 # sensor plot
 SHOW_SENSOR_PLOT = True
 
 
-## Various window positions
-video_window_position = runner_params.get('video_window_position', None)
-gui_window_position = runner_params.get('gui_window_position', None)
-window_position_IR_plot = runner_params.get(
-    'window_position_IR_plot', None)
-    
-## Set up params_table
-# First we load the table of protocol-specific parameters that is used by the UI
-# Then we assign a few that were set by the runner
-params_table = ParamsTable.get_params_table()
-params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
-params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
-params_table.loc['STPHAL', 'init_val'] = 3 if runner_params['has_side_HE_sensor'] else 2
-params_table.loc['STPFR', 'init_val'] = runner_params['step_first_rotation']
-try:
-    params_table.loc['TO', 'init_val'] = runner_params['timeout']
-except KeyError:
-    pass
-if runner_params['use_ir_detector']:
-    params_table.loc['TOUT', 'init_val'] = runner_params['l_ir_detector_thresh']    
-    params_table.loc['RELT', 'init_val'] = runner_params['r_ir_detector_thresh']   
-
-# Set the current-value to be equal to the init_val
-params_table['current-value'] = params_table['init_val'].copy()
-
-
-## Load the specified trial types
-trial_types_name = runner_params['stimulus_set'] + '_r'
-trial_types = get_trial_types(trial_types_name)
-
-
-## User interaction
-session_results = {}
-# Print out the results from last time
-print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
-    runner_params.get('recent_date_s', '?'),
-    runner_params['mouse'],
-    runner_params.get('recent_weight', 0),
-    runner_params.get('recent_board', '?'),
-    runner_params.get('recent_left_perf', -1),
-    runner_params.get('recent_right_perf', -1),
-    runner_params.get('recent_pipe', -1),
-    )
-
-
-## Set up the scheduler
-if runner_params['scheduler'] == 'Auto':
-    scheduler_obj = Scheduler.Auto
-elif runner_params['scheduler'] == 'ForcedAlternation':
-    scheduler_obj = Scheduler.ForcedAlternation
-
-# Do all scheduler objects accept reverse_srvpos?
-scheduler = scheduler_obj(trial_types=trial_types, reverse_srvpos=True)
 
 
 ## Create Chatter
@@ -132,11 +66,16 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     serial_port=runner_params['serial_port'])
 logfilename = chatter.ofi.name
 
+params = {
+            'SRVFAR' : 1100,
+            'SRVST'  : 1000,
+            'STPSPD' : 30,
+            'STPIP'  : 50,
+         }
 
-## Trial setter
-ts_obj = trial_setter.TrialSetter(chatter=chatter, 
-    params_table=params_table,
-    scheduler=scheduler)
+trial_setter.send_params_and_release(params, chatter)
+
+
 
 ## Initialize UI
 RUN_UI = False
@@ -198,11 +137,6 @@ try:
         logfile_lines = TrialSpeak.read_lines_from_file(logfilename)
         splines = TrialSpeak.split_by_trial(logfile_lines)
 
-        # Run the trial setting logic
-        # This try/except is no good because it conflates actual
-        # ValueError like sending a zero
-        #~ try:
-        translated_trial_matrix = ts_obj.update(splines, logfile_lines)
         #~ except ValueError:
             #~ raise ValueError("cannot get any lines; try reuploading protocol")
         
@@ -224,65 +158,6 @@ try:
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
 
-except trial_setter_ui.QuitException as qe:
-    final_message = qe.message
-
-    rewdict = ArduFSM.plot.count_rewards(splines)
-    nlrew = (rewdict['left auto'].sum() + 
-        rewdict['left manual'].sum() + rewdict['left direct'].sum())
-    nrrew = (rewdict['right auto'].sum() + 
-        rewdict['right manual'].sum() + rewdict['right direct'].sum())
-    
-    # Get volumes and pipe position
-    print "Preparing to save. Press CTRL+C to abort save."
-    if session_results.get('mouse_mass') in ['', None]:
-        session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
-    
-    choice = 'N'
-    while choice.upper().strip() == 'N':
-        session_results['l_volume'] = raw_input("Enter L water volume: ")
-        session_results['r_volume'] = raw_input("Enter R water volume: ")
-        
-        bad_data = False
-        try:
-            if nlrew == 0:
-                lmean = 0.
-            else:
-                lmean = float(session_results['l_volume']) / nlrew
-            if nrrew == 0:
-                rmean = 0.
-            else:
-                rmean = float(session_results['r_volume']) / nrrew
-        except ValueError:
-            print "warning: cannot convert to float"
-            bad_data = True
-        
-        if not bad_data:
-            print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
-            choice = raw_input("Confirm? [Y/n] ")
-
-    session_results['l_valve_mean'] = lmean
-    session_results['r_valve_mean'] = rmean
-    
-    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
-    
-    # Dump the results
-    logfile_dir = os.path.split(logfilename)[0]
-    with file(os.path.join(logfile_dir, 'results'), 'w') as fi:
-        json.dump(session_results, fi, indent=4)
-    
-    # Rename the directory with the mouse name
-    def ignore_fifo(src, names):
-        return 'TO_DEV'
-    session_dir = os.path.split(os.path.split(logfile_dir)[0])[0]
-    shutil.copytree(session_dir, session_dir + '-saved', ignore=ignore_fifo)
-    final_message += "\n" + "rename %s to %s" % (
-        session_dir, session_dir + '-saved')
-
-except curses.error as err:
-    raise Exception(
-        "UI error. Most likely the window is, or was, too small.\n"
-        "Quit Python, type resizewin to set window to 80x23, and restart.")
 
 except:
     raise
@@ -290,10 +165,7 @@ except:
 finally:
     chatter.close()
     print "chatter closed"
-    
-    if RUN_UI:
-        ui.close()
-        print "UI closed"
+
     
     if RUN_GUI:
         plt.show()
