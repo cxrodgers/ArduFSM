@@ -46,13 +46,13 @@ logfilename = chatter.ofi.name
 # Set the parameters
 # In this example, LIGHTON designates duration in which house light stays on in ms, and
 # LIGHTOFF designates duration in which house light stays off in ms
-cmd = TrialSpeak.command_set_parameter('LIGHTON', 1000) 
+cmd = TrialSpeak.command_set_parameter('LIGHTON', 500) 
 chatter.queued_write_to_device(cmd)
-cmd = TrialSpeak.command_set_parameter('LIGHTOFF', 4000) 
+cmd = TrialSpeak.command_set_parameter('LIGHTOFF', 500) 
 chatter.queued_write_to_device(cmd)
 
 PARAMS_SET = False
-start_message = "Parameters set. Press CTRL+C to start."
+start_message = "Parameters set. Press enter to start."
 ## Main loop
 try:
     while True:
@@ -60,19 +60,23 @@ try:
         # Update chatter
         chatter.update(echo_to_stdout=True)
 
+        #Wait for all parameters to be set
         if not PARAMS_SET and len(chatter.queued_writes) == 0:
-            # time.sleep(4)
+            for i in range(20):
+                chatter.update(echo_to_stdout=True)
             PARAMS_SET = True
-            print start_message
+            #Wait for keyboard press then start updating again
+            raw_input(start_message)
+
+            chatter.queued_write_to_device(TrialSpeak.command_release_trial()) 
+            while True:
+                chatter.update(echo_to_stdout=True)
 
         
 
 except KeyboardInterrupt:
-    chatter.queued_write_to_device(TrialSpeak.command_release_trial()) 
-    while True:
-        chatter.update(echo_to_stdout=True)
+    print "Keyboard interrupt received"
 
 except:
     raise
 
-print "The rest of the code goes here."
