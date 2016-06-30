@@ -1,6 +1,8 @@
 /*
- A simple protocol that sets received parameters and waits for a start signal in order to
- begin loop()
+  * A simple protocol that sets received parameters and waits for a start signal in order to
+    begin loop()
+  * As an example, user-defined variables set house light duration period
+
 */
 #include "chat.h"
 #include "hwconstants.h"

@@ -6,6 +6,8 @@
     the behavior once the user presses enter.
     This works by sending a start signal
 
+    As an example, user-defined variables LIGHTON and LIGHTOFF set House Light duration
+
     In each loop:
         * Updates chatter until two set variables are set on arduino side
         * Once variables set, wait for Keyboard Input to send start signal
@@ -46,9 +48,9 @@ logfilename = chatter.ofi.name
 # Set the parameters
 # In this example, LIGHTON designates duration in which house light stays on in ms, and
 # LIGHTOFF designates duration in which house light stays off in ms
-cmd = TrialSpeak.command_set_parameter('LIGHTON', 500) 
+cmd = TrialSpeak.command_set_parameter('LIGHTON', 10000) 
 chatter.queued_write_to_device(cmd)
-cmd = TrialSpeak.command_set_parameter('LIGHTOFF', 500) 
+cmd = TrialSpeak.command_set_parameter('LIGHTOFF', 10000) 
 chatter.queued_write_to_device(cmd)
 
 PARAMS_SET = False
