@@ -1,46 +1,15 @@
-/* A two-alternative choice behavior with left and right lick ports.
+/*
+  * A simple protocol that sets received parameters and waits for a start signal in order to
+    begin loop()
+  * As an example, user-defined variables set house light duration period
 
-TODO
-----
-* Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
-  as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
-* move definitions of trial_params to header file, so can be auto-generated
-* diagnostics: which state it is in on each call (or subset of calls)
-
-Here are the things that the user should have to change for each protocol:
-* Enum of states
-* User-defined states in switch statement
-* param_abbrevs, param_values, tpidx_*, N_TRIAL_PARAMS
 */
 #include "chat.h"
 #include "hwconstants.h"
-#include <Servo.h>
-
-#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-#include <Stepper.h>
-#endif
-
-#include "TimedState.h"
 #include "States.h"
-
-#ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-#include "mpr121.h"
-#include <Wire.h> // also for mpr121
-#endif
-
-#ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
-#include "ir_detector.h"
-#endif
-
-// Make this true to generate random responses for debugging
-#define FAKE_RESPONDER 0
 
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
-extern bool param_report_ET[N_TRIAL_PARAMS];
-extern char* results_abbrevs[N_TRIAL_RESULTS];
-extern long results_values[N_TRIAL_RESULTS];
-extern long default_results_values[N_TRIAL_RESULTS];
 
 //// Miscellaneous globals
 // flag to remember whether we've received the start next trial signal
@@ -54,24 +23,7 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2);
 
 //// User-defined variables, etc, go here
 /// these should all be staticked into loop()
-STATE_TYPE next_state; 
 
-// touched monitor
-uint16_t sticky_touched = 0;
-
-// initial position of stim arm .. user must ensure this is correct
-extern long sticky_stepper_position;
-
-
-/// not sure how to static these since they are needed by both loop and setup
-// Servo
-Servo linServo;
-
-// Stepper
-// We won't assign till we know if it's 2pin or 4pin
-#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-Stepper *stimStepper = 0;
-#endif
 
 //// Setup function
 void setup()
@@ -85,36 +37,18 @@ void setup()
 
   //// Begin user protocol code
   //// Put this in a user_setup1() function?
-  
-  // MPR121 touch sensor setup
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  pinMode(TOUCH_IRQ, INPUT);
-  digitalWrite(TOUCH_IRQ, HIGH); //enable pullup resistor
-  Wire.begin();
-  #endif
-  
   // output pins
-  pinMode(L_REWARD_VALVE, OUTPUT);
-  pinMode(R_REWARD_VALVE, OUTPUT);
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
-  pinMode(__HWCONSTANTS_H_BACK_LIGHT, OUTPUT);
   
   // initialize the house light to ON
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
-  
-  // random number seed
-  randomSeed(analogRead(3));
-
-  // attach servo
-  linServo.attach(LINEAR_SERVO);
-  //linServo.write(1850); // move close for measuring
-
   
   //// Run communications until we've received all setup info
-  // Later make this a new flag. For now wait for first trial release.
-  while (!flag_start_trial)
-  {
+  while (!flag_start_trial) {
+    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+    delay(1000);
+    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+    delay(1000);
     status = communications(time);
     if (status != 0)
     {
@@ -123,80 +57,10 @@ void setup()
     }
   }
 
-  
-  flag_start_trial = 0;
-  Serial.print("Parameters set. Press enter to start.");
-  
-
-  
-  while (!flag_start_trial) {
-    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
-    delay(1000);
-    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-    delay(1000);
-
-    status = communications(time);
-  }
-
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
 
-
-  
-  
   //// Now finalize the setup using the received initial parameters
   // user_setup2() function?
-
-
-
-  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
-  pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
-  pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
-  
-  // Make sure it's off    
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW); 
-  digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
-  #endif
-  
-  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
-  pinMode(TWOPIN_STEPPER_1, OUTPUT);
-  pinMode(TWOPIN_STEPPER_2, OUTPUT);
-  
-  // Make sure it's off    
-  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
-  
-  // Initialize
-  stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-    TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
-  #endif
-
-
-  // Opto (collides with one of the 4-pin setups)
-  pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
-  digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
-  
-  
-  // thresholds for MPR121
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
-  #endif
-
-
-  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
-  #endif
-
-
-  // initial position of the stepper
-  sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
-  
-  // linear servo setup
-  linServo.write(param_values[tpidx_SRV_FAR]);
-  delay(param_values[tpidx_SERVO_SETUP_T]);
 }
 
 
@@ -204,6 +68,11 @@ void setup()
 //// Loop function
 void loop()
 {
+  // alternate house light state based on designated durations
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  delay(param_values[tpidx_LIGHTON]);
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  delay(param_values[tpidx_LIGHTOFF]);
 }
 
 
@@ -280,23 +149,6 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
     }
   }   
 
-  else if (strncmp(protocol_cmd, "ACT\0", 4) == 0)
-  {
-    // Dispatch
-    if (strncmp(argument1, "REWARD_L\0", 9) == 0) {
-      asynch_action_reward_l();
-    } else if (strncmp(argument1, "REWARD_R\0", 9) == 0) {
-      asynch_action_reward_r();
-    } else if (strncmp(argument1, "REWARD\0", 7) == 0) {
-      asynch_action_reward();
-    } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
-      asynch_action_set_thresh();
-    } else if (strncmp(argument1, "HLON\0", 5) == 0) {
-      asynch_action_light_on();
-    } 
-    else
-      return 6;
-  }      
   else
   {
     // unknown command
@@ -340,53 +192,3 @@ int safe_int_convert(char *string_data, long &variable)
   }
 }
 
-
-void asynch_action_reward_l()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAR_L");
-  digitalWrite(L_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_L]);
-  digitalWrite(L_REWARD_VALVE, LOW); 
-}
-
-void asynch_action_reward_r()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAR_R");
-  digitalWrite(R_REWARD_VALVE, HIGH);
-  delay(param_values[tpidx_REWARD_DUR_R]);
-  digitalWrite(R_REWARD_VALVE, LOW); 
-}
-
-void asynch_action_reward()
-{
-  if (param_values[tpidx_REWSIDE] == LEFT)
-    asynch_action_reward_l();
-  else if (param_values[tpidx_REWSIDE] == RIGHT)
-    asynch_action_reward_r();
-  else
-    Serial.println("ERR unknown rewside");
-}
-
-void asynch_action_set_thresh()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV AAST");
-
-  #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
-  mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
-    param_values[tpidx_REL_THRESH]);
-  #endif
-}
-
-void asynch_action_light_on()
-{
-  unsigned long time = millis();
-  Serial.print(time);
-  Serial.println(" EV HLON");
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-}
