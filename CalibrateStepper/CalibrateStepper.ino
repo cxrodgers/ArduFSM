@@ -28,9 +28,6 @@ Here are the things that the user should have to change for each protocol:
 #include <Wire.h> // also for mpr121
 #endif
 
-#ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
-#include "ir_detector.h"
-#endif
 
 // Make this true to generate random responses for debugging
 #define FAKE_RESPONDER 0

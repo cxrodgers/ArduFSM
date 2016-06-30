@@ -61,20 +61,6 @@ if not os.path.exists(runner_params['serial_port']):
         runner_params['serial_port'])
 
 
-## Determine how to set up the webcam
-# Get controls from runner_params
-webcam_controls = {}
-for webcam_param in ['brightness', 'gain', 'exposure']:
-    rp_key = 'video_' + webcam_param
-    if rp_key in runner_params:
-        webcam_controls[webcam_param] = runner_params[rp_key]
-
-# Determine whether we can show it
-video_device = runner_params.get('video_device', None)
-if video_device is None:
-    SHOW_WEBCAM = False
-else:
-    SHOW_WEBCAM = True
 
 
 ## Only show the IR_plot if use_ir_detector
@@ -128,17 +114,6 @@ print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
     runner_params.get('recent_pipe', -1),
     )
 
-# Get weight
-session_results['mouse_mass'] = \
-    raw_input("Enter mass of %s: " % runner_params['mouse'])
-
-# Get stepper in correct position
-if not runner_params['has_side_HE_sensor']:
-    # Note this may not be a stimulus we're using in this stimulus set
-    raw_input("Rotate stepper to position %s" % 
-        params_table.loc['STPIP', 'init_val'])
-
-raw_input("Fill water reservoirs and press Enter to start")
 
 ## Set up the scheduler
 if runner_params['scheduler'] == 'Auto':
@@ -156,12 +131,6 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir='./logfiles',
     baud_rate=115200, serial_timeout=.1, 
     serial_port=runner_params['serial_port'])
 logfilename = chatter.ofi.name
-
-
-## Reset video filename
-date_s = os.path.split(logfilename)[1].split('.')[1]
-video_filename = os.path.join(os.path.expanduser('~/Videos'), 
-    '%s-%s.mkv' % (runner_params['box'], date_s))
 
 
 ## Trial setter
@@ -198,21 +167,6 @@ if RUN_UI:
 ## Main loop
 final_message = None
 try:
-    ## Initialize webcam
-    if SHOW_WEBCAM:
-        window_title = os.path.split(video_filename)[1]
-        try:
-            wc = my.video.WebcamController(device=video_device, 
-                output_filename=video_filename,
-                window_title=window_title,
-                image_controls=webcam_controls,)
-            wc.start()
-        except IOError:
-            print "cannot find webcam at port", video_device
-            wc = None
-            SHOW_WEBCAM = False
-    else:
-        wc = None
     
     ## Initialize GUI
     if RUN_GUI:
@@ -233,16 +187,7 @@ try:
             sensor_plotter.init_handles()
         
         last_updated_trial = 0
-    
-    # Move the webcam window once it appears
-    if SHOW_WEBCAM:
-        cmd = 'xdotool search --name %s windowmove %d %d' % (
-            window_title, video_window_position[0], video_window_position[1])
-        while os.system(cmd) != 0:
-            # Should test here if it's been too long and then give up
-            print "Waiting for webcam window"
-            time.sleep(.5)
-    
+        
     while True:
         ## Chat updates
         # Update chatter
@@ -343,9 +288,6 @@ except:
     raise
 
 finally:
-    if SHOW_WEBCAM:
-        wc.stop()
-        wc.cleanup()
     chatter.close()
     print "chatter closed"
     
@@ -354,7 +296,7 @@ finally:
         print "UI closed"
     
     if RUN_GUI:
-        pass
+        plt.show()
         #~ plt.close(plotter.graphics_handles['f'])
         #~ print "GUI closed"
     

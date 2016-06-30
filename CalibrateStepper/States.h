@@ -128,7 +128,7 @@ int rotate(long n_steps);
 int rotate_to_sensor(int step_size, bool positive_peak, long set_position,
   int hall_sensor_id);
 int rotate_to_sensor2();
-int findPeak();
+int findStepperPeak();
 int steps_to_max(int a[], int size);
 
 #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
