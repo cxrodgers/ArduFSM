@@ -1,5 +1,6 @@
 /*
-
+ A simple protocol that sets received parameters and waits for a start signal in order to
+ begin loop()
 */
 #include "chat.h"
 #include "hwconstants.h"
@@ -65,6 +66,11 @@ void setup()
 //// Loop function
 void loop()
 {
+  // alternate house light state based on designated durations
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  delay(param_values[tpidx_LIGHTON]);
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  delay(param_values[tpidx_LIGHTOFF]);
 }
 
 

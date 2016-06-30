@@ -1,7 +1,16 @@
-# Main script to run to run WaitToStart behavior
-# This is an example of how to write a protocol that sends parameters
-# to the Arduino, then displays a message to the user, then starts
-# the behavior once the user presses enter.
+
+"""
+    Main script to run to run WaitToStart behavior
+    This is an example of how to write a protocol that sends parameters
+    to the Arduino, then displays a message to the user, then starts
+    the behavior once the user presses enter.
+    This works by sending a start signal
+
+    In each loop:
+        * Updates chatter until two set variables are set on arduino side
+        * Once variables set, wait for Keyboard Input to send start signal
+
+"""
 
 import time
 import json
@@ -35,9 +44,11 @@ logfilename = chatter.ofi.name
 ## Initialize UI
 
 # Set the parameters
-cmd = TrialSpeak.command_set_parameter('VAR0', 100) 
+# In this example, LIGHTON designates duration in which house light stays on in ms, and
+# LIGHTOFF designates duration in which house light stays off in ms
+cmd = TrialSpeak.command_set_parameter('LIGHTON', 1000) 
 chatter.queued_write_to_device(cmd)
-cmd = TrialSpeak.command_set_parameter('VAR1', 200) 
+cmd = TrialSpeak.command_set_parameter('LIGHTOFF', 4000) 
 chatter.queued_write_to_device(cmd)
 
 PARAMS_SET = False
