@@ -131,10 +131,11 @@ class Chatter:
         # 0.01 takes a noticeable but small amount of CPU time
         self.ser = serial.Serial(serial_port, baud_rate, timeout=serial_timeout)
 
-        #This should reset arduino with new serial connection
-        self.ser.setDTR(False)
-        time.sleep(0.022)
-        self.ser.setDTR(True)
+        # This should reset arduino with new serial connection
+        if (platform.system().lower() == "darwin"):
+            self.ser.setDTR(False)
+            time.sleep(0.022)
+            self.ser.setDTR(True)
 
         # Wait for it to initialize the arduino
         time.sleep(1) # without this sleep, still leftover input from previous run
