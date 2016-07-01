@@ -1,3 +1,37 @@
+/* Last updated DDK 6/7/16
+ * 
+ * OVERVIEW: 
+ * This is a header file containing declarations for the functions defined in the 
+ * States.cpp file of the ArduFSM protocol MultiSens. These functions constitute 
+ * most of the state-dependent operations for the ArduFSM protocol MultiSens. This 
+ * includes much of the protocol's state-transition logic.
+ * 
+ * This is also where the `STATE_TYPE` variable and its values (i.e. the protocol's
+ * states) are declared. 
+ * 
+ * This file also defines a number of macros for indexing into the trial parameter
+ * and trial results arrays defined in States.cpp, thereby precluding the need
+ * to memorize numeric indices for each trial and results parameter.
+ * 
+ * 
+ * REQUIREMENTS:
+ * This sketch must be located in the MultiSens protocol directory within
+ * a copy of the ArduFSM repository on the local computer's Arduino sketchbook
+ * folder. In addition to this file, the MultiSens directory should contain
+ * the following files:
+ * 
+ * 1. States.cpp
+ * 2. MultiSens.ino
+ * 
+ * In addition, the local computer's Arduino sketchbook library must contain 
+ * the following libraries:
+ *  
+ * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+ * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+ * 3. devices, available at https://github.com/danieldkato/devices
+ */
+
+
 /* Header file for declaring protocol-specific states.
 This implements a two-alternative choice task with two lick ports.
 
@@ -18,7 +52,6 @@ into States.cpp.
 
 #include "TimedState.h"
 #include "devices.h"
-#include "config.h"
 
 //// Global trial parameters structure. This holds the current value of
 // all parameters. Should probably also make a copy to hold the latched
@@ -81,8 +114,6 @@ into States.cpp.
 #define tridx_RESPONSE 0
 #define tridx_OUTCOME 1
 
-
-
 //// Defines for commonly used things
 // Move this to TrialSpeak, and rename CHOICE_LEFT etc
 #define GO 1
@@ -93,7 +124,24 @@ into States.cpp.
 #define OUTCOME_MISS 3
 #define OUTCOME_CR 4 
 
-TimedState ** getStates();
+//MultiSens-specific macros:
+#include "devices.h"                    
+#define NUM_DEVICES 2
+
+#define STPR1_PIN1 8
+#define STPR1_PIN2 6      
+#define ENBL1_PIN 7
+#define HALL1_PIN 1
+#define SPKR_PIN 13
+#define SOLENOID_PIN 2
+#define LICK_DETECTOR_PIN 10
+
+#define NUM_STEPS 200
+#define HALL1_THRESH 50
+#define STPR1_SPEED 80
+#define STPR1_CW -20
+#define STPR1_CCW 20
+#define HALL1_VAL 500  
 
 //// States
 // Defines the finite state machine for this protocol
@@ -108,6 +156,9 @@ enum STATE_TYPE
   INTER_TRIAL_INTERVAL,
   POST_REWARD_PAUSE,
 };
+
+//Declare function for handling state-dependent operations:
+void stateDependentOperations(STATE_TYPE current_state, unsigned long time);
 
 // Declare utility functions
 boolean checkLicks();
@@ -184,5 +235,7 @@ class StatePostRewardPause : public TimedState {
   public:
     StatePostRewardPause(unsigned long d) : TimedState(d) { };
 };
+
+Device ** config_hw();
 
 #endif

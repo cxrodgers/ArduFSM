@@ -1,6 +1,62 @@
-/* A two-alternative choice behavior with left and right lick ports.
+/* Last updated DDK 6/7/16
+ * 
+ * OVERVIEW:
+ * This file is the main Arduino sketch for the ArduFSM protocol MultiSens. This 
+ * protocol is used for presenting simultaneous multi-sensory stimuli under the 
+ * control of an Arduino microcontroller and records licks measured on a 
+ * capacitative touch sensor. Arbitrary stimulus presentations (determined by a 
+ * host PC-side program) can be paired with coterminous dispensation of a 
+ * liquid reward , and licks during non-rewarded stimuli will result in a timeout 
+ * error period.
+ *  
+ *  
+ * REQUIREMENTS:
+ * This sketch must be located in the MultiSens protocol directory within
+ * a copy of the ArduFSM repository on the local computer's Arduino sketchbook
+ * folder. In addition to this file, the MultiSens directory should contain
+ * the following files:
+ *  
+ * 1. States.h
+ * 2. States.cpp
+ *  
+ * In addition, the local computer's Arduino sketchbook library must contain 
+ * the following libraries:
+ *  
+ * 1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+ * 2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+ * 3. devices, available at https://github.com/danieldkato/devices
+ *  
+ * This sketch is largely agnostic with respect to how the host PC-side code is
+ * implemented; the only requirements are that both programs specify the same
+ * baud rate for the serial connection, and that the host PC-side code send
+ * certain specific messages comprised of byte arrays terminated by a newline
+ * ('\n') character over a serial connection to the Arduino. The syntax and
+ * semantics of these messages are described in this protocol's README.md.
+ * 
+ * 
+ * INSTRUCTIONS:
+ * Compile and upload this sketch along with States.h and States.cpp to an 
+ * Arduino over a connected serial port. See this protocol's README.md for 
+ * instructions on running the corresponding computer-side code. 
+ * 
+ * 
+ * DESCRIPTION:
+ * This main sketch is responsible for defining behavior that the Arduino should
+ * repeatedly perform continuously for the duration of the experiment, defined
+ * in the main `loop` function. This includes: 1) getting the current time, 2)
+ * checking for messages from the computer, 3) checking for licks, and 4) 
+ * performing state-dependent operations. 
+ * 
+ * Code for some of these state-dependent operations, is contained in this 
+ * protocol's States.h and States.cpp files.  
+ * 
+ * Because this sketch itself does not define the state-dependent operations,
+ * it should be totally protocol-independent.
+ */ 
 
-TODO
+
+
+/* TODO
 ----
 * Move the required states, like TRIAL_START and WAIT_FOR_NEXT_TRIAL,
   as well as all required variables like flag_start_trial, into TrialSpeak.cpp.
@@ -18,9 +74,6 @@ Here are the things that the user should have to change for each protocol:
 #include "TimedState.h"
 #include "States.h"
 
-// Make this true to generate random responses for debugging
-#define FAKE_RESPONDER 0
-
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 extern bool param_report_ET[N_TRIAL_PARAMS];
@@ -33,7 +86,6 @@ extern long default_results_values[N_TRIAL_RESULTS];
 // currently being used in both setup() and loop() so it can't be staticked
 bool flag_start_trial = 0;
 
-TimedState ** states = getStates();
 
 //// Declarations
 int take_action(char *protocol_cmd, char *argument1, char *argument2);
@@ -120,102 +172,7 @@ void loop()
     sticky_licking = licking;
   }  
   
-  //// Begin state-dependent operations
-  // Try to replace every case with a single function or object call
-  // Ultimately this could be a dispatch table.
-  // Also, eventually we'll probably want them to return next_state,
-  // but currently it's generally passed by reference.
-  switch (current_state)
-  {
-    //// Wait till the trial is released. Same for all protocols.
-    case WAIT_TO_START_TRIAL:
-      // Wait until we receive permission to continue  
-      if (flag_start_trial)
-      {
-        // Announce that we have ended the trial and reset the flag
-        Serial.print(time);
-        Serial.println(" TRL_RELEASED");
-        flag_start_trial = 0;
-        
-        // Proceed to next trial
-        next_state = TRIAL_START;
-      }
-      break;
-
-    //// TRIAL_START. Same for all protocols.
-    case TRIAL_START:
-    
-      // Set up the trial based on received trial parameters
-      Serial.print(time);
-      Serial.println(" TRL_START");
-      for(int i=0; i < N_TRIAL_PARAMS; i++)
-      {
-        if (param_report_ET[i]) 
-        {
-          // Buffered write would be nice here
-          Serial.print(time);
-          Serial.print(" TRLP ");
-          Serial.print(param_abbrevs[i]);
-          Serial.print(" ");
-          Serial.println(param_values[i]);
-        }
-      }
-    
-      // Set up trial_results to defaults
-      for(int i=0; i < N_TRIAL_RESULTS; i++)
-      {
-        results_values[i] = default_results_values[i];
-      }      
-      
-      
-      //// User-defined code goes here
-      // declare the states. Here we're both updating the parameters
-      // in case they've changed, and resetting all timers.
-    
-      next_state = STIM_PERIOD;
-      break;
-
-    case STIM_PERIOD:
-      states[stidx_STIM_PERIOD]->run(time);
-      break;
-    
-    case RESPONSE_WINDOW:
-      if (FAKE_RESPONDER)
-      {
-        states[stidx_FAKE_RESPONSE_WINDOW]->update();
-        states[stidx_FAKE_RESPONSE_WINDOW]->run(time);
-      } 
-      else 
-      {
-        states[stidx_RESPONSE_WINDOW]->update();
-        states[stidx_RESPONSE_WINDOW]->run(time);
-      }
-      break;
-    
-    case REWARD:
-      Serial.print(time);
-      Serial.println(" EV R_L");
-      state_reward(next_state);
-      break;
-    
-    case POST_REWARD_PAUSE:
-      states[stidx_POST_REWARD_PAUSE]->run(time);
-      break;    
-    
-    case ERROR:
-      
-      states[stidx_ERROR]->run(time);
-      break;
-
-    case INTER_TRIAL_INTERVAL:
-
-      // Announce trial_results
-      states[stidx_INTER_TRIAL_INTERVAL]->run(time);
-      break;
-    
-    // need an else here
-  }
-  
+  stateDependentOperations(current_state, time);
   
   //// Update the state variable
   if (next_state != current_state)
