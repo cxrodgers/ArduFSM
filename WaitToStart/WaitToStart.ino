@@ -1,4 +1,7 @@
 /*
+  * A simple protocol that sets received parameters and waits for a start signal in order to
+    begin loop()
+  * As an example, user-defined variables set house light duration period
 
 */
 #include "chat.h"
@@ -46,7 +49,7 @@ void setup()
     delay(1000);
     digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
     delay(1000);
-
+    status = communications(time);
     if (status != 0)
     {
       Serial.println("comm error in setup");
@@ -65,6 +68,11 @@ void setup()
 //// Loop function
 void loop()
 {
+  // alternate house light state based on designated durations
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  delay(param_values[tpidx_LIGHTON]);
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  delay(param_values[tpidx_LIGHTOFF]);
 }
 
 
@@ -141,23 +149,6 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
     }
   }   
 
-  else if (strncmp(protocol_cmd, "ACT\0", 4) == 0)
-  {
-    // Dispatch
-    if (strncmp(argument1, "REWARD_L\0", 9) == 0) {
-      asynch_action_reward_l();
-    } else if (strncmp(argument1, "REWARD_R\0", 9) == 0) {
-      asynch_action_reward_r();
-    } else if (strncmp(argument1, "REWARD\0", 7) == 0) {
-      asynch_action_reward();
-    } else if (strncmp(argument1, "THRESH\0", 7) == 0) {
-      asynch_action_set_thresh();
-    } else if (strncmp(argument1, "HLON\0", 5) == 0) {
-      asynch_action_light_on();
-    } 
-    else
-      return 6;
-  }      
   else
   {
     // unknown command

@@ -4,7 +4,7 @@
 #include "hwconstants.h"
 
 #define N_TRIAL_PARAMS 2
-#define tpidx_VAR0 0
-#define tpidx_VAR1 1
+#define tpidx_LIGHTON 0
+#define tpidx_LIGHTOFF 1
 
 #endif
