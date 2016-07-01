@@ -1,8 +1,12 @@
-/*
-  * A simple protocol that sets received parameters and waits for a start signal in order to
-    begin loop()
-  * As an example, user-defined variables set house light duration period
+/* Simple protocol that receives parameters and a signal to start running.
 
+This protocol is intended to demonstrate the following functionality:
+* Receives parameters from a Python script (LIGHTON and LIGHTOFF)
+* Waits for a signal before finishing setup() and entering loop()
+
+Once loop() is entered, a digital input is raised for LIGHTON milliseconds
+and lowered for LIGHTOFF milliseconds, to demonstrate that the parameter
+was set correctly.
 */
 #include "chat.h"
 #include "hwconstants.h"
@@ -11,19 +15,11 @@
 extern char* param_abbrevs[N_TRIAL_PARAMS];
 extern long param_values[N_TRIAL_PARAMS];
 
-//// Miscellaneous globals
-// flag to remember whether we've received the start next trial signal
-// currently being used in both setup() and loop() so it can't be staticked
+// flag to remember whether we've received the start signal
 bool flag_start_trial = 0;
-
 
 //// Declarations
 int take_action(char *protocol_cmd, char *argument1, char *argument2);
-
-
-//// User-defined variables, etc, go here
-/// these should all be staticked into loop()
-
 
 //// Setup function
 void setup()
@@ -75,8 +71,8 @@ void loop()
   delay(param_values[tpidx_LIGHTOFF]);
 }
 
-
-//// Take protocol action based on user command (ie, setting variable)
+//// Helper functions for setting parameters
+// Take protocol action based on user command (ie, setting variable)
 int take_action(char *protocol_cmd, char *argument1, char *argument2)
 { /* Protocol action.
   
