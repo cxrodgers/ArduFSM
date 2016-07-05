@@ -38,3 +38,6 @@ nosetests.xml
 
 # CR
 #hwconstants.h
+
+#Logfiles
+WaitToStart/logfiles/
