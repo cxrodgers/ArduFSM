@@ -3,6 +3,7 @@
 This protocol is intended to demonstrate the following functionality:
 * Receives parameters from a Python script (LIGHTON and LIGHTOFF)
 * Waits for a signal before finishing setup() and entering loop()
+The signal is the string "TRL_RELEASED" sent over the serial port.
 
 Once loop() is entered, a digital input is raised for LIGHTON milliseconds
 and lowered for LIGHTOFF milliseconds, to demonstrate that the parameter
@@ -32,7 +33,6 @@ void setup()
   Serial.println(" DBG begin setup");
 
   //// Begin user protocol code
-  //// Put this in a user_setup1() function?
   // output pins
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
   
@@ -41,22 +41,22 @@ void setup()
   
   //// Run communications until we've received all setup info
   while (!flag_start_trial) {
-    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
-    delay(1000);
-    digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-    delay(1000);
+    // Receive input from computer
+    // If TRL_RELEASED is sent from computer, then this function
+    // will set flag_start_trial to True
     status = communications(time);
+    
+    // communications returns non-zero value if some error occurred
     if (status != 0)
     {
       Serial.println("comm error in setup");
       delay(1000);
     }
   }
-
+  
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-
-  //// Now finalize the setup using the received initial parameters
-  // user_setup2() function?
+  Serial.print(millis());
+  Serial.println(" ending setup()");  
 }
 
 
@@ -65,6 +65,8 @@ void setup()
 void loop()
 {
   // alternate house light state based on designated durations
+  Serial.print(millis());
+  Serial.println(" flashing houselight");
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   delay(param_values[tpidx_LIGHTON]);
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
