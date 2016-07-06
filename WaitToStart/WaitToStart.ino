@@ -11,10 +11,22 @@ was set correctly.
 */
 #include "chat.h"
 #include "hwconstants.h"
-#include "States.h"
 
-extern char* param_abbrevs[N_TRIAL_PARAMS];
-extern long param_values[N_TRIAL_PARAMS];
+// This defines the number and order of the parameters
+#define N_TRIAL_PARAMS 2
+#define tpidx_LIGHTON 0 // first parameter
+#define tpidx_LIGHTOFF 1 // second parameter
+
+// These are the names of the parameters
+char const* param_abbrevs[N_TRIAL_PARAMS] = {
+  "LIGHTON", "LIGHTOFF",
+  };
+
+// This array stores the values of the parameters
+// We start with some simple defaults
+long param_values[N_TRIAL_PARAMS] = {
+  100, 200,
+  };
 
 // flag to remember whether we've received the start signal
 bool flag_start_trial = 0;
