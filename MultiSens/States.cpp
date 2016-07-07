@@ -128,7 +128,7 @@ int devIndices[NUM_DEVICES] = { tpidx_STPRIDX, tpidx_SPKRIDX };
  * These objects will be invoked from stateDependentOperations, the function for 
  * deciding how the Arduino should behave based on the current state. 
  */
-static StimPeriod stim_period(param_values[tpidx_STIM_DUR]);
+static StimPeriod stim_period(param_values[tpidx_STIM_DUR], TIMER_PIN);
 static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
 static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
 static StateInterTrialInterval state_inter_trial_interval(param_values[tpidx_ITI]);
@@ -247,6 +247,9 @@ void StimPeriod::s_setup(){
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devFcns[i] = param_values[devIndices[i]]; 
   }
+  digitalWrite(_timerPin, HIGH);
+  delay(10);
+  digitalWrite(_timerPin, LOW);
 }
 
 void StimPeriod::loop(){
