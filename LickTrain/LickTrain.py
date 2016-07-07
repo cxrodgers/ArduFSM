@@ -280,6 +280,14 @@ except trial_setter_ui.QuitException as qe:
     logfile_dir = os.path.split(logfilename)[0]
     with file(os.path.join(logfile_dir, 'results'), 'w') as fi:
         json.dump(session_results, fi, indent=4)
+    
+    # Rename the directory with the mouse name
+    def ignore_fifo(src, names):
+        return 'TO_DEV'
+    session_dir = os.path.split(os.path.split(logfile_dir)[0])[0]
+    shutil.copytree(session_dir, session_dir + '-saved', ignore=ignore_fifo)
+    final_message += "\n" + "rename %s to %s" % (
+        session_dir, session_dir + '-saved')
 
 except curses.error as err:
     raise Exception(
