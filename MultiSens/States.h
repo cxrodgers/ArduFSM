@@ -135,6 +135,7 @@ into States.cpp.
 #define SPKR_PIN 13
 #define SOLENOID_PIN 2
 #define LICK_DETECTOR_PIN 10
+#define TIMER_PIN 11
 
 #define NUM_STEPS 200
 #define HALL1_THRESH 50
@@ -176,6 +177,7 @@ int state_reward(STATE_TYPE& next_state);
 // s_setup, loop(), and s_finish() that you are going to define.
 class StimPeriod : public TimedState {
   protected:
+    int _timerPin;
     void s_setup();
     void loop();
     void s_finish();
@@ -183,7 +185,7 @@ class StimPeriod : public TimedState {
 
   public: 
     int devFcns[NUM_DEVICES];
-    StimPeriod(unsigned long d) : TimedState(d) { };
+    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin){ pinMode(_timerPin, OUTPUT); }
 };
 
 class StateResponseWindow : public TimedState {
