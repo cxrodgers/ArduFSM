@@ -84,7 +84,7 @@ random.seed()
 
 #set general trial timing parameters; we don't need to change these from trial to trial for this protocol
 stimDur = 2
-responseWindow = 3
+responseWindow = 0
 minITI = 3 #seconds; let's make this slightly longer than the Arduino's ITI to be safe
 maxITI = 6
 
@@ -98,20 +98,20 @@ condition3 = [ 1, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
 condition4 = [ 0, 1 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. stepper only
 
 #set the trials per condition for each phase (phase 3 is identical to phase1, so we need not set its parameters explicity)
-p1trialsPerStim = 30
-p2trialsPerStim = 100
+p1trialsPerStim = 2
+p2trialsPerStim = 10
 
 #each phase will be represented by a list of trials, each of which will in turn will be represented by a pair (STPRIDX and SPKRIDX) of parameters, different specific values of which we have already assigned to condition1, condition2, etc...
 phase1 = []
 phase2 =[]
 
 #populate the lists representing phases
-for i in range(1,p1trialsPerStim):
+for i in range(1,p1trialsPerStim+1):
     phase1.append(condition1)
     phase1.append(condition3)
     phase1.append(condition4)
 
-for j in range(1,p2trialsPerStim):
+for j in range(1,p2trialsPerStim+1):
     phase2.append(condition1)
     
 #phase 3 will consist of the same number and types of trials as phase 1
@@ -125,7 +125,7 @@ random.shuffle(phase3)
 experiment = [phase1, phase2, phase3]
 
 #We'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
-chtr = chat.Chatter(serial_port='COM9', baud_rate=115200)
+chtr = chat.Chatter(serial_port='COM5', baud_rate=115200)
 
 #iterate through every phase of the experiment
 for phase in experiment: 
