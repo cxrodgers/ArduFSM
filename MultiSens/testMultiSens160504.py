@@ -1,21 +1,50 @@
 """
-Use this script to test the ArduFSM protocol MultiSens. Run in conjunction with an Arduino running all of the .ino, .h and .cpp files in ArduFSM/MultiSens. 
+Last updated DDK 7/11/16
 
-As of 160405, this program appears to work and produces output that one would reasonably expect (see testMultiSens_output160504 in this directory).
+OVERVIEW:
+This file is the main Python script for the ArduFSM protocol MultiSens. This protocol is used for presenting simultaneous multi-sensory stimuli under the control of an Arduino microcontroller. It can also record licks using a capacitative touch sensor. Arbitrary stimulus presentations (determined by this host PC-side program) can be paired with coterminous dispensation of a liquid reward , and licks during non-rewarded stimuli will result in a timeout error period.
 
-To run this program, after uploading MultiSens.ino to the Arduino, navigate to the directory containing this script in a command window an enter:
+This particular instantiation of the MultiSens protocol is just for testing that the Arduino-side code is working and that the ost-PC side code and the Arduino-side code are communicating appropriately.
 
-python testMultiSens.py
 
-Python's job in the ArduFSM framework is just to send instructions to the Arduino. Specifically, it must a) send the Arduino the parameters for the upcoming trial and b) signal permission to begin executing the upcoming trial.
+REQUIREMENTS: 
+This script should be located in the MultiSens protocol directory of the ArduFSM repository, which should in turn be located in the local system's Arduino sketchbook folder. In addition to this file, the MultiSens directory must also contain the following files:
 
-The Arduino is expecting each line from the computer to follow a certain syntax and semantics. Across all (or at any rate most) protocols, the syntax for setting upcoming trial parameters should be: 
+1. MultiSens.ino
+2. States.h
+3. States.cpp
 
-SET <parameter abbreviation> <parameter value>
+In addition, the local system's Arduino sketchbook library must contain the following libraries:
+
+1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+3. devices, available at https://github.com/danieldkato/devices
+
+The local system's Python directory must include the pySerial module, which is documented at pythonhosted.org/pyserial/pyserial.html. The baud rates specified by this script and the Arduino-side code must agree.
+
+If this script is not used to dynamically update timing parameters on each trial, then the timing parameters set here should match the default timing parameters set in the Arduino code. 
+
+
+INSTRUCTIONS:
+Set the desired hardware and trial parameters in the lines indicated by comments. Compile and upload MultiSens.ino, States.h and States.cpp to an Arduino microcontroller. Then, run this script by either using a command window to navigate to the directory containing this script and enter:
+
+python multiSens.py
+
+or open this script in a text editor like SciTE and press F5.
+
+
+DESCRIPTION:
+This host PC-side script is responsible for deciding the parameters of each trial, sending them over a serial port to the Arduino microcontroller, and giving the Arduino permission to commence the subsequent trial. The trial will commence as soon as permission is received as long as the Arduino has completed the previous trial, so this script is also repsonsible for timing the permission signal appropriately. Every line sent by this script must terminate in a newline ('\n') character.
+
+In addition, this host PC-side script listens for messages sent back from the Arduino and records them in a text file saved in the MultiSens directory. These include acknowledgements of trial parameters sent from the host PC, lick data, trial outcome data, all FSM state changes, and periodic debug statements. 
+
+The Arduino expects each line from the host PC to follow a certain syntax and semantics. Across all (or at any rate most) protocols, the syntax for setting upcoming trial parameters should be: 
+
+SET <parameter abbreviation> <parameter value>\n
 
 where <parameter abbreviation> stands in for some parameter abbreviation and <parameter value> stands in for the value of that parameter on the upcoming trial. <parameter value> must be numeric or Boolean. The Arduino expects all times to be in milliseconds. 
 
-As far as the semantics, the parameter abbreviations sent by the computer must match the possible parameter abbreviations that the Arduino is expecting. The parameters are specific to a given protocol (because different protocols may require different parameters). For the protocol MultiSens, the parameter abbreviations are:
+As far as the semantics, the parameter abbreviations sent by the host PC must match the possible parameter abbreviations that the Arduino is expecting. The parameters are specific to a given protocol (because different protocols may require different parameters). For the protocol MultiSens, the parameter abbreviations are:
 
 STPRIDX - function index for the stepper motor; used by an object representing the stepper motor to determine what actions to take during the stimulus period. 0 means do nothing, 1 means extend the stepper at the beginning of the trial. 
 
@@ -41,7 +70,7 @@ TOE - terminate on error; whether or not the trial will end immediately followin
 
 Once the trial parameters are received, the Arduino will wait to begin the upcoming trial until it receives the message
 
-RELEASE_TRL
+RELEASE_TRL\n
 """
 
 import chat
@@ -67,7 +96,7 @@ responseWindow = 3
 ITI = 3 #seconds; let's make this slightly longer than the Arduino's ITI to be safe
 
 #We'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
-chtr = chat.Chatter(serial_port='COM3', baud_rate=115200)
+chtr = chat.Chatter(serial_port='COM5', baud_rate=115200)
 
 for trial in experiment: 
     
