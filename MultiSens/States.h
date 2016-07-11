@@ -140,8 +140,8 @@ into States.cpp.
 #define NUM_STEPS 200
 #define HALL1_THRESH 50
 #define STPR1_SPEED 100
-#define STPR1_CW -50
-#define STPR1_CCW 50
+#define STPR1_CW 50
+#define STPR1_CCW -50
 #define HALL1_VAL 500  
 
 //// States
