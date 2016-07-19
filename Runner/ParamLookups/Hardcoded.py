@@ -112,7 +112,7 @@ def get_box_parameters(box):
                 'timeout': 6000,
             },
             'build': {
-                'serial_port': '/dev/tty.usbmodem1421',
+                'serial_port': '/dev/tty.usbmodem1411',
                 'subprocess_window_ypos': 0,                
             },
         }          
@@ -277,8 +277,8 @@ def get_mouse_parameters(mouse):
                 'scheduler': 'Auto',
             },
             'build': {
-                'protocol_name': 'CalibrateStepper',
-                'script_name': 'CalibrateStepper.py',
+                'protocol_name': 'Modular',
+                'script_name': 'Modular.py',
             },        
         }
 

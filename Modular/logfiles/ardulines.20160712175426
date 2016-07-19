@@ -1,0 +1,33 @@
+0 DBG begin setup
+495 ACK SET LIGHTON_DUR 1000
+605 ACK SET LIGHTOFF_DUR 1000
+4541 ACK RELEASE_TRL
+4542 ending setup()
+4542 DBG
+LightOn
+LightOff
+4543 DBG
+4543 DBG
+4543 DBG
+5000 DBG
+LightOn
+LightOff
+6000 DBG
+LightOn
+LightOff
+7000 DBG
+LightOn
+LightOff
+8000 DBG
+LightOn
+LightOff
+9000 DBG
+LightOn
+LightOff
+10000 DBG
+LightOn
+LightOff
+11000 DBG
+LightOn
+LightOff
+12000 DBG
