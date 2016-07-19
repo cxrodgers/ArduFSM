@@ -32,8 +32,10 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time) {
     switch(current_state) {
       case LIGHT_ON:
         state_light_on.run(time);
+        break;
       case LIGHT_OFF:
         state_light_off.run(time);
+        break;
     };
 };
 
@@ -42,8 +44,10 @@ void StateLightOn::s_setup()
 {
 //  Serial.println(duration);
   duration = param_values[tpidx_LIGHTON_DUR];
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH); 
+
 };
+
 
 void StateLightOn::s_finish()
 {
@@ -51,11 +55,13 @@ void StateLightOn::s_finish()
 };
 
 void StateLightOff::s_setup()
-{
-//  Serial.println(duration);
+{  
   duration = param_values[tpidx_LIGHTOFF_DUR];
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
+  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW); 
+//  Serial.println(duration);
 };
+
+
 
 void StateLightOff::s_finish()
 {

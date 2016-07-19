@@ -58,7 +58,8 @@ void setup()
   }
   
   Serial.print(millis());
-  Serial.println(" ending setup()");  
+  Serial.println(" ending setup()");
+    
 }
 
 
@@ -66,10 +67,11 @@ void setup()
 //// Loop function
 void loop()
 {
+  Serial.println("Can I print now?"); 
+  
   unsigned long time = millis();
 
   static STATE_TYPE current_state = LIGHT_ON;
-
 
   next_state = current_state;
 

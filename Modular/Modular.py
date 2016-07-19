@@ -20,7 +20,7 @@ if not os.path.exists(logfile_dir):
     os.mkdir(logfile_dir)
 
 # Set this to be the correct serial port
-serial_port = '/dev/tty.usbmodem1421'
+serial_port = '/dev/tty.usbmodem1411'
 
 # Create Chatter
 logfilename = None # autodate
@@ -34,9 +34,9 @@ logfilename = chatter.ofi.name
 # stays on in ms, and LIGHTOFF_DUR designates duration in which house light 
 # stays off in ms
 # These commands will be stored in the chatter's queue until they are sent
-cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTON_DUR', 1000) 
+cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTON_DUR', 5000) 
 chatter.queued_write_to_device(cmd)
-cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTOFF_DUR',1000) 
+cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTOFF_DUR',5000) 
 chatter.queued_write_to_device(cmd)
 
 # Main loop
@@ -58,6 +58,7 @@ try:
     chatter.queued_write_to_device(ArduFSM.TrialSpeak.command_release_trial()) 
     
     # Wait until it is received and acknowledged
+    # For some reason, program gets stuck in this loop.
     while(len(chatter.queued_writes) > 0 or 
         not chatter.last_sent_line_acknowledged):
         # Update the chatter
