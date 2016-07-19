@@ -184,8 +184,9 @@ class StimPeriod : public TimedState {
     boolean licked;
 
   public: 
+    int trialNumber;
     int devFcns[NUM_DEVICES];
-    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin){ pinMode(_timerPin, OUTPUT); }
+    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin), trialNumber(1){ pinMode(_timerPin, OUTPUT); }
 };
 
 class StateResponseWindow : public TimedState {

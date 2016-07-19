@@ -165,7 +165,10 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
     
         // Set up the trial based on received trial parameters
         Serial.print(time);
-        Serial.println(" TRL_START");
+        Serial.print(" TRL_");
+        Serial.print(String(stim_period.trialNumber));
+        Serial.println("_START");        
+        //Serial.println(" TRL_START");
         for(int i=0; i < N_TRIAL_PARAMS; i++)
         {
           if (param_report_ET[i]) 
@@ -277,6 +280,7 @@ void StimPeriod::s_finish()
   else {
     next_state = RESPONSE_WINDOW;
   }
+  trialNumber++;
 }
 
 
@@ -446,7 +450,7 @@ boolean checkLicks(){
 
 Device ** config_hw(){ 
     
-    bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
+    bool debug = 1; // set to 0 if using real hardware devices; set to 1 if using dummy devices
     
     if ( debug == 0 ){
         static myStepper myStp1( NUM_STEPS, STPR1_PIN1, STPR1_PIN2, ENBL1_PIN, HALL1_PIN, HALL1_THRESH, STPR1_SPEED, STPR1_CW, STPR1_CCW, HALL1_VAL );  
