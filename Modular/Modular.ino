@@ -67,7 +67,7 @@ void setup()
 //// Loop function
 void loop()
 {
-  Serial.println("Can I print now?"); 
+   
   
   unsigned long time = millis();
 
@@ -80,6 +80,7 @@ void loop()
   status = communications(time);
 
   stateDependentOperations(current_state, time);
+
 
 //// Update the state variable
   if (next_state != current_state)

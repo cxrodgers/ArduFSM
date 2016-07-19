@@ -58,7 +58,7 @@ try:
     chatter.queued_write_to_device(ArduFSM.TrialSpeak.command_release_trial()) 
     
     # Wait until it is received and acknowledged
-    # For some reason, program gets stuck in this loop.
+    # For some reason, program gets stuck at update if there is a line to be read
     while(len(chatter.queued_writes) > 0 or 
         not chatter.last_sent_line_acknowledged):
         # Update the chatter
