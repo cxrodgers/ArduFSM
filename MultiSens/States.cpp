@@ -245,6 +245,7 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
  
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
+  pinMode(SPKR_PIN, OUTPUT);
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
   for ( int i = 0; i < NUM_DEVICES; i++ ){
@@ -263,6 +264,9 @@ void StimPeriod::loop(){
   //on rewarded trials, make reward coterminous with stimulus
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
+  }
+  if (timer-time<2){
+    pinMode(SPKR_PIN, INPUT);
   }
 }
 
@@ -450,7 +454,7 @@ boolean checkLicks(){
 
 Device ** config_hw(){ 
     
-    bool debug = 1; // set to 0 if using real hardware devices; set to 1 if using dummy devices
+    bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
     
     if ( debug == 0 ){
         static myStepper myStp1( NUM_STEPS, STPR1_PIN1, STPR1_PIN2, ENBL1_PIN, HALL1_PIN, HALL1_THRESH, STPR1_SPEED, STPR1_CW, STPR1_CCW, HALL1_VAL );  
