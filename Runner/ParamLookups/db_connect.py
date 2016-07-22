@@ -1,10 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import MultipleResultsFound
+import os.path as path
+import sys
+
 
 
 #Heroku Postgres credentials that should be stored on disk
-credentials = open("db_credentials", "r").read().strip()
+this_directory = path.dirname(path.abspath(__file__))
+credentials = open(path.join(this_directory,"db_credentials"), "r").read().strip()
 
 engine = create_engine(credentials, echo=False)
 Base = declarative_base(engine)
@@ -43,7 +49,16 @@ class Mouses(Base):
   __table_args__ = {'autoload' : True}
 
 def getByName(table, name, session):
-  return session.query(table).filter(table.name == name).one()
+  try:
+    return session.query(table).filter(table.name == name).one()
+  except NoResultFound:
+    print "'%s' not found in %s" % (name, table.__name__)
+    sys.exit(1)
+  except MultipleResultsFound:
+    print "'%s' found more than once in %s" % (name, table.__name__)
+    sys.exit(1)
+
+
 
 def loadSession():
   """ Begin session """
