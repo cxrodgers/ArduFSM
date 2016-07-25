@@ -66,6 +66,7 @@ int findStepperPeak() {
   long nondirectional_steps = 0;
   int sensor_history[200] = {0};
   int sensor;
+  int step_size = 1;
 
   #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
   #ifdef __HWCONSTANTS_H_INVERT_STEPPER_DIRECTION
