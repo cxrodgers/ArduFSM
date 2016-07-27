@@ -7,7 +7,7 @@ enter before it finishes setup() and starts loop().
 This works by sending a start signal (which is the string "TRL_RELEASED")
 over the serial port.
 
-As an example, user-defined variables LIGHTON and LIGHTOFF set 
+As an example, user-defined variables LIGHTON_DUR and LIGHTOFF_DUR set 
 House Light duration.
 """
 
@@ -20,7 +20,7 @@ if not os.path.exists(logfile_dir):
     os.mkdir(logfile_dir)
 
 # Set this to be the correct serial port
-serial_port = '/dev/ttyACM2'
+serial_port = '/dev/tty.usbmodem1411'
 
 # Create Chatter
 logfilename = None # autodate
@@ -30,13 +30,13 @@ chatter = ArduFSM.chat.Chatter(to_user=logfilename, to_user_dir=logfile_dir,
 logfilename = chatter.ofi.name
 
 # Set the parameters
-# In this example, LIGHTON designates duration in which house light 
-# stays on in ms, and LIGHTOFF designates duration in which house light 
+# In this example, LIGHTON_DUR designates duration in which house light 
+# stays on in ms, and LIGHTOFF_DUR designates duration in which house light 
 # stays off in ms
 # These commands will be stored in the chatter's queue until they are sent
-cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTON', 1000) 
+cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTON_DUR', 5000) 
 chatter.queued_write_to_device(cmd)
-cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTOFF', 500) 
+cmd = ArduFSM.TrialSpeak.command_set_parameter('LIGHTOFF_DUR',5000) 
 chatter.queued_write_to_device(cmd)
 
 # Main loop
@@ -58,6 +58,7 @@ try:
     chatter.queued_write_to_device(ArduFSM.TrialSpeak.command_release_trial()) 
     
     # Wait until it is received and acknowledged
+    # For some reason, program gets stuck at update if there is a line to be read
     while(len(chatter.queued_writes) > 0 or 
         not chatter.last_sent_line_acknowledged):
         # Update the chatter

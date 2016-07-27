@@ -1,4 +1,13 @@
-# Main script to run to run LickTrain_v2 behavior
+# Main script to run to run TwoChoice behavior
+# Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
+# enough that the response is quick, but not so low that it takes up all the
+# CPU power.
+# Right now, it does this on each loop
+# * Update chatter (timeout)
+# * Update UI (timeout)
+# * do other things, like reading logfile and setting next trial
+# So, if the timeouts are too low, it spends a lot more time reading the
+# logfile and there is more overhead overall.
 
 import time
 import json
@@ -11,8 +20,6 @@ import time
 import curses
 import matplotlib.pyplot as plt
 import ArduFSM
-import ArduFSM.chat
-import ArduFSM.plot
 from ArduFSM import TrialSpeak, TrialMatrix
 from ArduFSM import trial_setter_ui
 from ArduFSM import Scheduler
@@ -69,6 +76,7 @@ if video_device is None:
 else:
     SHOW_WEBCAM = True
 
+SHOW_WEBCAM = False
 
 ## Only show the IR_plot if use_ir_detector
 SHOW_IR_PLOT = runner_params.get('use_ir_detector', False)
@@ -80,6 +88,8 @@ SHOW_SENSOR_PLOT = False
 ## Various window positions
 video_window_position = runner_params.get('video_window_position', None)
 gui_window_position = runner_params.get('gui_window_position', None)
+window_position_IR_plot = runner_params.get(
+    'window_position_IR_plot', None)
     
 ## Set up params_table
 # First we load the table of protocol-specific parameters that is used by the UI
@@ -87,7 +97,12 @@ gui_window_position = runner_params.get('gui_window_position', None)
 params_table = ParamsTable.get_params_table()
 params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
 params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
-params_table.loc['MRT', 'init_val'] = runner_params['max_rewards_per_trial']
+params_table.loc['STPHAL', 'init_val'] = 3 if runner_params['has_side_HE_sensor'] else 2
+params_table.loc['STPFR', 'init_val'] = runner_params['step_first_rotation']
+try:
+    params_table.loc['TO', 'init_val'] = runner_params['timeout']
+except KeyError:
+    pass
 if runner_params['use_ir_detector']:
     params_table.loc['TOUT', 'init_val'] = runner_params['l_ir_detector_thresh']    
     params_table.loc['RELT', 'init_val'] = runner_params['r_ir_detector_thresh']   
@@ -97,20 +112,44 @@ params_table['current-value'] = params_table['init_val'].copy()
 
 
 ## Load the specified trial types
-trial_types_name = 'trial_types_licktrain'
+trial_types_name = runner_params['stimulus_set'] + '_r'
 trial_types = get_trial_types(trial_types_name)
 
 
 ## User interaction
 session_results = {}
+# Print out the results from last time
+print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
+    runner_params.get('recent_date_s', '?'),
+    runner_params['mouse'],
+    runner_params.get('recent_weight', 0),
+    runner_params.get('recent_board', '?'),
+    runner_params.get('recent_left_perf', -1),
+    runner_params.get('recent_right_perf', -1),
+    runner_params.get('recent_pipe', -1),
+    )
+
 # Get weight
 session_results['mouse_mass'] = \
     raw_input("Enter mass of %s: " % runner_params['mouse'])
+
+# Get stepper in correct position
+if not runner_params['has_side_HE_sensor']:
+    # Note this may not be a stimulus we're using in this stimulus set
+    raw_input("Rotate stepper to position %s" % 
+        params_table.loc['STPIP', 'init_val'])
+
 raw_input("Fill water reservoirs and press Enter to start")
 
+## Set up the scheduler
+if runner_params['scheduler'] == 'Auto':
+    scheduler_obj = Scheduler.Auto
+elif runner_params['scheduler'] == 'ForcedAlternation':
+    scheduler_obj = Scheduler.ForcedAlternation
 
-## Initialize the scheduler
-scheduler = Scheduler.ForcedAlternationLickTrain(trial_types=trial_types)
+# Do all scheduler objects accept reverse_srvpos?
+scheduler = scheduler_obj(trial_types=trial_types, reverse_srvpos=True)
+
 
 ## Create Chatter
 logfilename = None # autodate
@@ -124,7 +163,7 @@ logfilename = chatter.ofi.name
 date_s = os.path.split(logfilename)[1].split('.')[1]
 video_filename = os.path.join(os.path.expanduser('~/Videos'), 
     '%s-%s.mkv' % (runner_params['box'], date_s))
-video_filename = None
+
 
 ## Trial setter
 ts_obj = trial_setter.TrialSetter(chatter=chatter, 
@@ -132,11 +171,12 @@ ts_obj = trial_setter.TrialSetter(chatter=chatter,
     scheduler=scheduler)
 
 ## Initialize UI
-RUN_UI = True
-RUN_GUI = True
+RUN_UI = False
+RUN_GUI = False
 ECHO_TO_STDOUT = not RUN_UI
+ui_obj = trial_setter_ui.UI
 if RUN_UI:
-    ui = trial_setter_ui.UI(timeout=200, chatter=chatter, 
+    ui = ui_obj(timeout=200, chatter=chatter, 
         logfilename=logfilename,
         ts_obj=ts_obj)
 
@@ -161,7 +201,7 @@ final_message = None
 try:
     ## Initialize webcam
     if SHOW_WEBCAM:
-        window_title = runner_params['box'] + '_licktrain'
+        window_title = os.path.split(video_filename)[1]
         try:
             wc = my.video.WebcamController(device=video_device, 
                 output_filename=video_filename,
@@ -181,6 +221,17 @@ try:
         plotter.init_handles()
         move_figure(plotter.graphics_handles['f'],
             gui_window_position[0], gui_window_position[1])
+        
+        if SHOW_IR_PLOT:
+            plotter2 = ArduFSM.plot.LickPlotter()
+            plotter2.init_handles()
+            if window_position_IR_plot is not None:
+                move_figure(plotter2.handles['f'],
+                    window_position_IR_plot[0], window_position_IR_plot[1])
+        
+        if SHOW_SENSOR_PLOT:
+            sensor_plotter = ArduFSM.plot.SensorPlotter()
+            sensor_plotter.init_handles()
         
         last_updated_trial = 0
     
@@ -223,6 +274,9 @@ try:
                 # update plot
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
+            
+                if SHOW_SENSOR_PLOT:
+                    sensor_plotter.update(logfile_lines)
                 
                 # When there are multiple figures to show, it can be
                 # hard to make it update both of them. this seems to
@@ -230,6 +284,16 @@ try:
                 # https://gist.github.com/rlabbe/ea3444ef48641678d733
                 plotter.graphics_handles['f'].canvas.draw()
 
+            if SHOW_IR_PLOT:
+                plotter2.update(logfile_lines)
+                
+                #~ plt.pause(.01)
+                plotter2.handles['f'].canvas.draw()
+                
+            
+            plt.pause(.01)
+            
+                
 
 except KeyboardInterrupt:
     print "Keyboard interrupt received"
