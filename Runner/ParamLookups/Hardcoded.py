@@ -236,7 +236,7 @@ def get_board_parameters(board):
                 'invert_stepper_direction': '1',                
             },
             'Python': {
-                'has_side_HE_sensor': True,            
+                'has_side_HE_sensor': False,            
                 'use_ir_detector': True,                        
                 'l_ir_detector_thresh': 50,
                 'r_ir_detector_thresh': 50,
