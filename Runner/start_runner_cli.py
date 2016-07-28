@@ -40,7 +40,17 @@ import ParamLookups.base
 import argparse
 import sys
 
-def main(mouse, board, box):
+def main(mouse, board, box, **other_python_parameters):
+    """Get specific parameters, create sandbox, and call the python script.
+    
+    mouse, board, box : session parameters as strings
+        These are used to collect the specific parameters using
+        ParamLookups.base.get_specific_parameters_from_user_input
+    
+    All other keyword arguments will be added to the Python parameters,
+    so they will be written to the json file that is available to the 
+    Python script.
+    """
     # Create a place to keep sandboxes
     sandbox_root = os.path.expanduser('~/sandbox_root')
     if not os.path.exists(sandbox_root):
@@ -55,6 +65,9 @@ def main(mouse, board, box):
     # Look up the specific parameters
     specific_parameters = \
         ParamLookups.base.get_specific_parameters_from_user_input(user_input)
+    
+    # Add in the other python parameters
+    specific_parameters['Python'].update(other_python_parameters)
 
     # Use the sandbox parameters to create the sandbox
     sandbox_paths = Sandbox.create_sandbox(user_input, sandbox_root=sandbox_root)

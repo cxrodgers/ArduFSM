@@ -103,6 +103,21 @@ trial_types = get_trial_types(trial_types_name)
 
 ## User interaction
 session_results = {}
+# Print out the results from last time
+try:
+    recent_pipe = float(runner_params['recent_pipe'])
+except (ValueError, KeyError):
+    recent_pipe = -1.0
+try:
+    recent_weight = float(runner_params['recent_weight'])
+except (ValueError, KeyError):
+    recent_weight = -1.0
+print "Previously mouse %s weighed %0.1fg and the pipe was at %0.2f" % (
+    runner_params['mouse'],
+    recent_weight,
+    recent_pipe,
+    )
+
 # Get weight
 session_results['mouse_mass'] = \
     raw_input("Enter mass of %s: " % runner_params['mouse'])
