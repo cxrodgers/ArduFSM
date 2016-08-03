@@ -223,7 +223,7 @@ def get_trial_start_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].irow(0)) / 1000.
+        return int(rows['time'].iat[0]) / 1000.
     
 def get_trial_release_time(parsed_lines):
     """Returns the time of trial release in seconds"""
@@ -233,7 +233,7 @@ def get_trial_release_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].irow(0)) / 1000.
+        return int(rows['time'].iat[0]) / 1000.
 
 def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     """Returns the value of trial parameters"""
