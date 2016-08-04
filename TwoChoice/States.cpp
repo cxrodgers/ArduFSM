@@ -71,6 +71,9 @@ long default_results_values[N_TRIAL_RESULTS] = {0, 0};
 // Global, persistent variable to remember where the stepper is
 long sticky_stepper_position = 0;
 
+// Same to remember whether opto is on or off
+bool opto_is_on = 0;
+
 
 //// State definitions
 #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
@@ -97,8 +100,9 @@ void StateResponseWindow::loop()
   
   // Turn off laser if we've been in the state for long enough
   if ((time - (timer - duration)) > 3000) {
-    if (digitalRead(__HWCONSTANTS_H_OPTO) == LOW) {
+    if (opto_is_on) {
       digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+      opto_is_on = 0;
       Serial.print(time);
       Serial.println(" EV OPTO_TO");
     }
@@ -170,8 +174,9 @@ void StateResponseWindow::loop()
 void StateResponseWindow::s_finish()
 {
   // Turn off laser, if it was on
-  if (digitalRead(__HWCONSTANTS_H_OPTO) == LOW) {
+  if (opto_is_on) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+    opto_is_on = 0;
     Serial.print(time_of_last_call);
     Serial.println(" EV OPTO_XRWIN");
   }
@@ -231,8 +236,9 @@ void StateErrorTimeout::s_finish()
 void StateErrorTimeout::s_setup()
 {
   // Turn off laser, if it was on
-  if (digitalRead(__HWCONSTANTS_H_OPTO) == LOW) {
+  if (opto_is_on) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+    opto_is_on = 0;
     Serial.print(time_of_last_call);
     Serial.println(" EV OPTO_ERR");
   }
@@ -262,9 +268,9 @@ void StateWaitForServoMove::loop()
   if (
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
     ((time - timer) > -2000) &&
-    (digitalRead(__HWCONSTANTS_H_OPTO) == HIGH)
-    ) {
+    !opto_is_on) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+    opto_is_on = 1;
     Serial.print(time);
     Serial.println(" EV OPTO_ON");
   }
@@ -303,8 +309,9 @@ void StateWaitForServoMove::s_finish()
 void StateInterTrialInterval::s_setup()
 {
   // Turn off laser, if it was on
-  if (digitalRead(__HWCONSTANTS_H_OPTO) == LOW) {
+  if (opto_is_on) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
+    opto_is_on = 0;
     Serial.print(time_of_last_call);
     Serial.println(" EV OPTO_ITI");
   }
