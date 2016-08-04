@@ -181,7 +181,13 @@ ui_obj = trial_setter_ui.UI
 if RUN_UI:
     ui = ui_obj(timeout=200, chatter=chatter, 
         logfilename=logfilename,
-        ts_obj=ts_obj)
+        ts_obj=ts_obj,
+        banner='Port: %s. Mouse: %s. Logfile: %s.' % (
+            runner_params['serial_port'],
+            runner_params['mouse'],
+            os.path.split(logfilename)[1],
+        ),
+    )
 
     try:
         ui.start()
