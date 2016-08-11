@@ -286,9 +286,10 @@ def call_python_script(script_path, script_name, ncols=80, nrows=23,
             os.path.abspath(script_path),
             script_name
         )
-        subprocess.Popen(shlex.split(cmd))
+        proc = subprocess.Popen(shlex.split(cmd))
+        ret = proc.wait()
     else:
-        subprocess.Popen([
+        proc = subprocess.Popen([
             'gnome-terminal', 
             '--working-directory=%s' % os.path.abspath(script_path),
             '--geometry=%dx%d+%d+%d' % (ncols, nrows, xpos, ypos),
@@ -297,3 +298,5 @@ def call_python_script(script_path, script_name, ncols=80, nrows=23,
             'bash', '-l', '-c',
             "ipython --pylab=qt -i %s" % script_name,
             ])
+        ret = proc.wait()
+        
