@@ -216,10 +216,10 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
             
             # Kill if necessary
             if 'avrdude: stk500_recv(): programmer is not responding' in stderr_temp:
-                print "not responding, hit CTRL+C to end this"
-                compile_proc.terminate()
+                #~ print "not responding, hit CTRL+C to end this"
+                #~ compile_proc.terminate()
                 killed = True
-                compile_proc.poll()
+                #~ compile_proc.poll()
                 break
         
         # compile process either completed or was killed

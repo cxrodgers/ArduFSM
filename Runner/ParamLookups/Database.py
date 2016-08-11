@@ -122,6 +122,7 @@ def get_mouse_parameters(mouse_name):
             'step_first_rotation': mouse.step_first_rotation,
             'timeout': mouse.timeout,
             'scheduler': mouse.scheduler,
+            'max_rewards_per_trial': mouse.max_rewards_per_trial,
         },
         'build': {
             'protocol_name': mouse.protocol_name,
