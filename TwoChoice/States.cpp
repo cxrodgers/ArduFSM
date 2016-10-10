@@ -98,8 +98,6 @@ void StateResponseWindow::loop()
   // Turn off laser if we've been in the state for long enough
   if ((time - (timer - duration)) > 3000) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
-    Serial.print(time);
-    Serial.println(" EV OPTO_TO");
   }
     
   // transition if max rewards reached
@@ -169,8 +167,6 @@ void StateResponseWindow::s_finish()
 {
   // Turn off laser, if it was on
   digitalWrite(__HWCONSTANTS_H_OPTO, 1);
-  Serial.print(time_of_last_call);
-  Serial.println(" EV OPTO_XRWIN");
   
   // If response is still not set, mark as a nogo response
   if (results_values[tridx_RESPONSE] == 0)
@@ -228,8 +224,6 @@ void StateErrorTimeout::s_setup()
 {
   // Turn off laser, if it was on
   digitalWrite(__HWCONSTANTS_H_OPTO, 1);
-  Serial.print(time_of_last_call);
-  Serial.println(" EV OPTO_ERR");
   
   my_linServo.write(param_values[tpidx_SRV_FAR]);
 }
@@ -257,8 +251,6 @@ void StateWaitForServoMove::loop()
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
     ((time - timer) > -2000)) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
-    Serial.print(time);
-    Serial.println(" EV OPTO_ON");
   }
   
   // Now set direct delivery  
@@ -296,8 +288,6 @@ void StateInterTrialInterval::s_setup()
 {
   // Turn off laser, if it was on
   digitalWrite(__HWCONSTANTS_H_OPTO, 1);
-  Serial.print(time_of_last_call);
-  Serial.println(" EV OPTO_ITI");
     
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
