@@ -280,6 +280,10 @@ void StateWaitForServoMove::loop()
 
 void StateWaitForServoMove::s_finish()
 {
+  // Finalize the abrupt protocol
+  rotate(__HWCONSTANTS_H_ABRUPT_STEPS);
+  
+  // Transition to response window
   next_state = RESPONSE_WINDOW;   
 }
 
@@ -341,7 +345,8 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
     sticky_stepper_position;
   int step_size = 1;
   int actual_steps = remaining_rotation;
-  
+
+  // turn on the house light
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
     
   // Take a shorter negative rotation, if available
@@ -389,6 +394,11 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
     // This is the old rotation function
     rotate(remaining_rotation);
   }
+  
+  // Now implement the abrupt protocol
+  // This can't be done above because the sensors are only located at
+  // the stimulus positions
+  rotate(-__HWCONSTANTS_H_ABRUPT_STEPS);
   
   next_state = MOVE_SERVO;
   return 0;    
