@@ -1,38 +1,58 @@
-/* Simple protocol that receives parameters and a signal to start running.
+/*
+  * A protocol that rotates the stepper motor to a position designated by the maximum voltage
+    of a hall sensor
 
-This protocol is intended to demonstrate the following functionality:
-* Receives parameters from a Python script (LIGHTON and LIGHTOFF)
-* Waits for a signal before finishing setup() and entering loop()
-The signal is the string "TRL_RELEASED" sent over the serial port.
+  * findStepperPeak() sets horizontal_position equal to the position corressponding to the maximum
+    voltage
 
-Once loop() is entered, a digital input is raised for LIGHTON milliseconds
-and lowered for LIGHTOFF milliseconds, to demonstrate that the parameter
-was set correctly.
 */
+
 #include "chat.h"
 #include "hwconstants.h"
+#include <Servo.h>
 
-// This defines the number and order of the parameters
-#define N_TRIAL_PARAMS 2
-#define tpidx_LIGHTON 0 // first parameter
-#define tpidx_LIGHTOFF 1 // second parameter
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+#include <Stepper.h>
+#endif
 
-// These are the names of the parameters
-char const* param_abbrevs[N_TRIAL_PARAMS] = {
-  "LIGHTON", "LIGHTOFF",
-  };
+#include "States.h"
 
-// This array stores the values of the parameters
-// We start with some simple defaults
-long param_values[N_TRIAL_PARAMS] = {
-  100, 200,
-  };
 
-// flag to remember whether we've received the start signal
+// Make this true to generate random responses for debugging
+#define FAKE_RESPONDER 0
+
+extern char* param_abbrevs[N_TRIAL_PARAMS];
+extern long param_values[N_TRIAL_PARAMS];
+extern bool param_report_ET[N_TRIAL_PARAMS];
+
+
+//// Miscellaneous globals
+// flag to remember whether we've received the start next trial signal
+// currently being used in both setup() and loop() so it can't be staticked
 bool flag_start_trial = 0;
+
 
 //// Declarations
 int take_action(char *protocol_cmd, char *argument1, char *argument2);
+
+
+//// User-defined variables, etc, go here
+/// these should all be staticked into loop() 
+
+
+// initial position of stim arm .. user must ensure this is correct
+extern long sticky_stepper_position;
+
+
+/// not sure how to static these since they are needed by both loop and setup
+// Servo
+Servo linServo;
+
+// Stepper
+// We won't assign till we know if it's 2pin or 4pin
+#ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+Stepper *stimStepper = 0;
+#endif
 
 //// Setup function
 void setup()
@@ -44,21 +64,20 @@ void setup()
   Serial.print(time);
   Serial.println(" DBG begin setup");
 
-  //// Begin user protocol code
-  // output pins
-  pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
   
-  // initialize the house light to ON
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  // random number seed
+  randomSeed(analogRead(3));
+
+  // attach servo
+  linServo.attach(LINEAR_SERVO);
+  //linServo.write(1850); // move close for measuring
+
   
   //// Run communications until we've received all setup info
-  while (!flag_start_trial) {
-    // Receive input from computer
-    // If TRL_RELEASED is sent from computer, then this function
-    // will set flag_start_trial to True
+  // Later make this a new flag. For now wait for first trial release.
+  while (!flag_start_trial)
+  {
     status = communications(time);
-    
-    // communications returns non-zero value if some error occurred
     if (status != 0)
     {
       Serial.println("comm error in setup");
@@ -66,9 +85,59 @@ void setup()
     }
   }
   
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  Serial.print(millis());
-  Serial.println(" ending setup()");  
+  
+  //// Now finalize the setup using the received initial parameters
+  // user_setup2() function?
+
+
+
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
+  pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
+  pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
+  
+  // Make sure it's off    
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW); 
+  digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
+  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
+  #endif
+  
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
+  pinMode(TWOPIN_STEPPER_1, OUTPUT);
+  pinMode(TWOPIN_STEPPER_2, OUTPUT);
+  
+  // Make sure it's off    
+  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
+  
+  // Initialize
+  stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
+    TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
+  #endif
+
+  
+  
+
+  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  // Set the speed of the stepper
+  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
+  #endif
+
+  
+
+  // initial position of the stepper
+  sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
+  
+  // linear servo setup
+  linServo.write(param_values[tpidx_SRV_FAR]);
+  delay(param_values[tpidx_SERVO_SETUP_T]);
+
+  // find maximum voltage position of stepper
+  findStepperPeak();
+  delay(300);
+
+
+  
 }
 
 
@@ -76,17 +145,11 @@ void setup()
 //// Loop function
 void loop()
 {
-  // alternate house light state based on designated durations
-  Serial.print(millis());
-  Serial.println(" flashing houselight");
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  delay(param_values[tpidx_LIGHTON]);
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
-  delay(param_values[tpidx_LIGHTOFF]);
+  rotate_to_sensor2();
 }
 
-//// Helper functions for setting parameters
-// Take protocol action based on user command (ie, setting variable)
+
+//// Take protocol action based on user command (ie, setting variable)
 int take_action(char *protocol_cmd, char *argument1, char *argument2)
 { /* Protocol action.
   
@@ -158,7 +221,7 @@ int take_action(char *protocol_cmd, char *argument1, char *argument2)
       }
     }
   }   
-
+    
   else
   {
     // unknown command
@@ -201,4 +264,3 @@ int safe_int_convert(char *string_data, long &variable)
     return 1;
   }
 }
-

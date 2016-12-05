@@ -32,7 +32,9 @@ from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
 n_dd_trials = 4
-N_OPTO_TRIALS = 4
+N_OPTO_TRIALS = 4 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()
+OPTO_PERIODIC = False
+OPTO_FORCED = True
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -107,9 +109,18 @@ class ForcedAlternation:
                     np.all(trial_matrix['outcome'].values[-n_dd_trials:] == 'error')):
                     res['DIRDEL'] = TrialSpeak.YES
             
-            # Opto on every Nth trial
-            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
-                res['OPTO'] = YES
+            # Only do opto on forced if requested
+            if OPTO_FORCED:
+                # Opto either periodic or random
+                if OPTO_PERIODIC: 
+                    # Every Nth trial exactly
+                    if np.mod(len(trial_matrix), N_OPTO_TRIALS) == (
+                        N_OPTO_TRIALS - 1):
+                        res['OPTO'] = YES
+                else:
+                    # With probability 1/N
+                    if np.random.rand() < (1. / N_OPTO_TRIALS):
+                        res['OPTO'] = YES
         
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -293,10 +304,16 @@ class RandomStim:
         res['DIRDEL'] = TrialSpeak.NO
         res['OPTO'] = NO
 
-        # Opto on every Nth trial
-        if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
-            res['OPTO'] = YES
-        
+        # Opto either periodic or random
+        if OPTO_PERIODIC: 
+            # Every Nth trial exactly
+            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == (
+                N_OPTO_TRIALS - 1):
+                res['OPTO'] = YES
+        else:
+            # With probability 1/N
+            if np.random.rand() < (1. / N_OPTO_TRIALS):
+                res['OPTO'] = YES
         
         # Save current side for display
         self.params['side'] = res['RWSD']
@@ -414,7 +431,7 @@ class ForcedSide:
             if force_on_2afc or force_on_gng:
                 res['DIRDEL'] = TrialSpeak.YES
         
-        # Opto on every Nth trial
+            # Opto on every Nth trial
             if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
                 res['OPTO'] = YES
             

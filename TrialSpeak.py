@@ -223,7 +223,7 @@ def get_trial_start_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].irow(0)) / 1000.
+        return int(rows['time'].iat[0]) / 1000.
     
 def get_trial_release_time(parsed_lines):
     """Returns the time of trial release in seconds"""
@@ -233,7 +233,7 @@ def get_trial_release_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].irow(0)) / 1000.
+        return int(rows['time'].iat[0]) / 1000.
 
 def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     """Returns the value of trial parameters"""
@@ -594,6 +594,9 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
         if col not in ordered_cols:
             ordered_cols.append(col)
     res = res[ordered_cols]
+    
+    # Avoid SettingWithCopyWarning below
+    res = res.copy()
     
     # Insert always_insert
     for col in always_insert:

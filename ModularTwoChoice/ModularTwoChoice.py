@@ -76,6 +76,7 @@ if video_device is None:
 else:
     SHOW_WEBCAM = True
 
+SHOW_WEBCAM = False
 
 ## Only show the IR_plot if use_ir_detector
 SHOW_IR_PLOT = runner_params.get('use_ir_detector', False)
@@ -118,18 +119,14 @@ trial_types = get_trial_types(trial_types_name)
 ## User interaction
 session_results = {}
 # Print out the results from last time
-try:
-    recent_pipe = float(runner_params['recent_pipe'])
-except (ValueError, KeyError):
-    recent_pipe = -1.0
-try:
-    recent_weight = float(runner_params['recent_weight'])
-except (ValueError, KeyError):
-    recent_weight = -1.0
-print "Previously mouse %s weighed %0.1fg and the pipe was at %0.2f" % (
+print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
+    runner_params.get('recent_date_s', '?'),
     runner_params['mouse'],
-    recent_weight,
-    recent_pipe,
+    runner_params.get('recent_weight', 0),
+    runner_params.get('recent_board', '?'),
+    runner_params.get('recent_left_perf', -1),
+    runner_params.get('recent_right_perf', -1),
+    runner_params.get('recent_pipe', -1),
     )
 
 # Get weight
@@ -174,20 +171,14 @@ ts_obj = trial_setter.TrialSetter(chatter=chatter,
     scheduler=scheduler)
 
 ## Initialize UI
-RUN_UI = True
-RUN_GUI = True
+RUN_UI = False
+RUN_GUI = False
 ECHO_TO_STDOUT = not RUN_UI
 ui_obj = trial_setter_ui.UI
 if RUN_UI:
     ui = ui_obj(timeout=200, chatter=chatter, 
         logfilename=logfilename,
-        ts_obj=ts_obj,
-        banner='Port: %s. Mouse: %s. Logfile: %s.' % (
-            runner_params['serial_port'],
-            runner_params['mouse'],
-            os.path.split(logfilename)[1],
-        ),
-    )
+        ts_obj=ts_obj)
 
     try:
         ui.start()
@@ -219,10 +210,6 @@ try:
             wc.start()
         except IOError:
             print "cannot find webcam at port", video_device
-            wc = None
-            SHOW_WEBCAM = False
-        except OSError:
-            print "something went wrong with webcam process"
             wc = None
             SHOW_WEBCAM = False
     else:
@@ -351,7 +338,6 @@ except trial_setter_ui.QuitException as qe:
     session_results['l_valve_mean'] = lmean
     session_results['r_valve_mean'] = rmean
     
-    print "Previous pipe position was %s" % recent_pipe
     session_results['final_pipe'] = raw_input("Enter final pipe position: ")
     
     # Dump the results

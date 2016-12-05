@@ -10,26 +10,18 @@ and lowered for LIGHTOFF milliseconds, to demonstrate that the parameter
 was set correctly.
 */
 #include "chat.h"
-#include "hwconstants.h"
+#include "TimedState.h"
+#include "States.h"
 
-// This defines the number and order of the parameters
-#define N_TRIAL_PARAMS 2
-#define tpidx_LIGHTON 0 // first parameter
-#define tpidx_LIGHTOFF 1 // second parameter
+extern char* param_abbrevs[N_TRIAL_PARAMS];
+extern long param_values[N_TRIAL_PARAMS];
 
-// These are the names of the parameters
-char const* param_abbrevs[N_TRIAL_PARAMS] = {
-  "LIGHTON", "LIGHTOFF",
-  };
 
-// This array stores the values of the parameters
-// We start with some simple defaults
-long param_values[N_TRIAL_PARAMS] = {
-  100, 200,
-  };
 
 // flag to remember whether we've received the start signal
 bool flag_start_trial = 0;
+
+STATE_TYPE next_state;
 
 //// Declarations
 int take_action(char *protocol_cmd, char *argument1, char *argument2);
@@ -47,9 +39,8 @@ void setup()
   //// Begin user protocol code
   // output pins
   pinMode(__HWCONSTANTS_H_HOUSE_LIGHT, OUTPUT);
-  
-  // initialize the house light to ON
   digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
+  
   
   //// Run communications until we've received all setup info
   while (!flag_start_trial) {
@@ -66,9 +57,9 @@ void setup()
     }
   }
   
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
   Serial.print(millis());
-  Serial.println(" ending setup()");  
+  Serial.println(" ending setup()");
+    
 }
 
 
@@ -76,13 +67,44 @@ void setup()
 //// Loop function
 void loop()
 {
-  // alternate house light state based on designated durations
-  Serial.print(millis());
-  Serial.println(" flashing houselight");
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, HIGH);
-  delay(param_values[tpidx_LIGHTON]);
-  digitalWrite(__HWCONSTANTS_H_HOUSE_LIGHT, LOW);
-  delay(param_values[tpidx_LIGHTOFF]);
+   
+  
+  unsigned long time = millis();
+
+  static STATE_TYPE current_state = LIGHT_ON;
+
+  next_state = current_state;
+
+  int status = 1;
+
+  status = communications(time);
+
+  stateDependentOperations(current_state, time);
+
+
+//// Update the state variable
+  if (next_state != current_state)
+  {
+      
+    Serial.print(time);
+    Serial.print(" ST_CHG ");
+    Serial.print(current_state);
+    Serial.print(" ");
+    Serial.println(next_state);
+    
+    Serial.print(millis());
+    Serial.print(" ST_CHG2 ");
+    Serial.print(current_state);
+    Serial.print(" ");
+    Serial.println(next_state);
+  }
+  current_state = next_state;
+
+//  Serial.print(time);
+//  Serial.print(" DBG ");
+//  Serial.println(current_state);
+  
+  return;
 }
 
 //// Helper functions for setting parameters

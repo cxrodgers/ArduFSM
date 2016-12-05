@@ -74,9 +74,19 @@ class UIActionTaker:
             #~ raise QuitException("quitting without saving %s" % filename)
     
     def set_param(self):
-        # Get name and value
-        param_name = self.ui.get_additional_input("Enter param name: ").strip().upper()
-        param_value = self.ui.get_additional_input("Enter param value: ").strip()
+        # Get param name
+        # Some weird issue where the param name is sometimes received as
+        # a new line the first time, even though subsequent times are fine
+        # So we loop till it's not blank
+        param_name = ''
+        while param_name == '':
+            param_name = self.ui.get_additional_input(
+                "Enter param name, or 'oops' to abort: ").strip().upper()
+        if param_name == 'OOPS':
+            return
+        
+        param_value = self.ui.get_additional_input(
+            "Enter value for param %s: " % param_name).strip()
         
         # simple error check for empty param
         # what if it is a non-int string?
@@ -157,8 +167,14 @@ class UIActionTaker:
 
 
 class UI(object):
-    def __init__(self, chatter, logfilename, ts_obj, timeout=1000):
+    def __init__(self, chatter, logfilename, ts_obj, timeout=1000, banner=None):
         """Create new UI object.
+        
+        chatter : chatter object
+        logfilename : log file 
+        ts_obj : Trial Setter object
+        timeout : time between updates
+        banner : text that will be displayed on the top line
         
         Actions are taken by directly modifying params and scheduler
         within ts_obj.
@@ -167,6 +183,7 @@ class UI(object):
         self.logfilename = logfilename
         self.ts_obj = ts_obj
         self.timeout = timeout
+        self.banner = banner
 
         # Create default positioning tables
         self.element_row = {
@@ -369,8 +386,14 @@ class UI(object):
     
     def write_banner(self):
         """Write a simple banner at the top"""
-        s = "Behavior control UI. Port: %s. Logfile: %s." % (
-            self.chatter.ser.port, self.logfilename)
+        if self.banner is None:
+            s = "Port: %s. Logfile: %s." % (
+                self.chatter.ser.port, 
+                os.path.split(self.logfilename)[1]
+            )
+        else:
+            s = self.banner
+        
         self.stdscr.addstr(self.element_row['banner'], 0, s)
     
     def write_headings(self):

@@ -19,6 +19,20 @@ from ArduFSM import Scheduler
 from ArduFSM import trial_setter
 from ArduFSM import mainloop
 import ParamsTable
+import shutil
+
+def move_figure(f, x, y):
+    """Move figure's upper left corner to pixel (x, y)"""
+    backend = matplotlib.get_backend()
+    if backend == 'TkAgg':
+        f.canvas.manager.window.wm_geometry("+%d+%d" % (x, y))
+    elif backend == 'WXAgg':
+        f.canvas.manager.window.SetPosition((x, y))
+    else:
+        # This works for QT and GTK
+        # You can also use window.setGeometry
+        f.canvas.manager.window.move(x, y)
+    plt.show()
 
 def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
     """Loads and returns the trial types file"""
@@ -66,8 +80,6 @@ SHOW_SENSOR_PLOT = False
 ## Various window positions
 video_window_position = runner_params.get('video_window_position', None)
 gui_window_position = runner_params.get('gui_window_position', None)
-window_position_IR_detector = runner_params.get(
-    'window_position_IR_detector', None)
     
 ## Set up params_table
 # First we load the table of protocol-specific parameters that is used by the UI
@@ -75,7 +87,7 @@ window_position_IR_detector = runner_params.get(
 params_table = ParamsTable.get_params_table()
 params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
 params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
-params_table.loc['MRT', 'init_val'] = runner_params['MRT']
+params_table.loc['MRT', 'init_val'] = runner_params['max_rewards_per_trial']
 if runner_params['use_ir_detector']:
     params_table.loc['TOUT', 'init_val'] = runner_params['l_ir_detector_thresh']    
     params_table.loc['RELT', 'init_val'] = runner_params['r_ir_detector_thresh']   
@@ -91,6 +103,21 @@ trial_types = get_trial_types(trial_types_name)
 
 ## User interaction
 session_results = {}
+# Print out the results from last time
+try:
+    recent_pipe = float(runner_params['recent_pipe'])
+except (ValueError, KeyError):
+    recent_pipe = -1.0
+try:
+    recent_weight = float(runner_params['recent_weight'])
+except (ValueError, KeyError):
+    recent_weight = -1.0
+print "Previously mouse %s weighed %0.1fg and the pipe was at %0.2f" % (
+    runner_params['mouse'],
+    recent_weight,
+    recent_pipe,
+    )
+
 # Get weight
 session_results['mouse_mass'] = \
     raw_input("Enter mass of %s: " % runner_params['mouse'])
@@ -124,7 +151,7 @@ RUN_UI = True
 RUN_GUI = True
 ECHO_TO_STDOUT = not RUN_UI
 if RUN_UI:
-    ui = trial_setter_ui.UI(timeout=100, chatter=chatter, 
+    ui = trial_setter_ui.UI(timeout=200, chatter=chatter, 
         logfilename=logfilename,
         ts_obj=ts_obj)
 
@@ -160,6 +187,10 @@ try:
             print "cannot find webcam at port", video_device
             wc = None
             SHOW_WEBCAM = False
+        except OSError:
+            print "something went wrong with webcam process"
+            wc = None
+            SHOW_WEBCAM = False
     else:
         wc = None
     
@@ -167,17 +198,8 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
-        if True:# rigname in ['L0', 'B1', 'B2', 'B3', 'B4',]:
-            # for backend tk
-            #~ plotter.graphics_handles['f'].canvas.manager.window.wm_geometry("+700+0")
-            plotter.graphics_handles['f'].canvas.manager.window.wm_geometry(
-                "+%d+%d" % (gui_window_position[0], gui_window_position[1]))
-            plt.show()
-            plt.draw()
-        else:
-            # for backend gtk
-            plotter.graphics_handles['f'].canvas.manager.window.move(
-                gui_window_position[0], gui_window_position[1])
+        move_figure(plotter.graphics_handles['f'],
+            gui_window_position[0], gui_window_position[1])
         
         last_updated_trial = 0
     
@@ -221,9 +243,11 @@ try:
                 plotter.update(logfilename)     
                 last_updated_trial = len(translated_trial_matrix)
                 
-                # don't understand why these need to be here
-                plt.show()
-                plt.draw()
+                # When there are multiple figures to show, it can be
+                # hard to make it update both of them. this seems to
+                # work:
+                # https://gist.github.com/rlabbe/ea3444ef48641678d733
+                plotter.graphics_handles['f'].canvas.draw()
 
 
 except KeyboardInterrupt:
@@ -231,13 +255,58 @@ except KeyboardInterrupt:
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
+
+    rewdict = ArduFSM.plot.count_rewards(splines)
+    nlrew = (rewdict['left auto'].sum() + 
+        rewdict['left manual'].sum() + rewdict['left direct'].sum())
+    nrrew = (rewdict['right auto'].sum() + 
+        rewdict['right manual'].sum() + rewdict['right direct'].sum())
     
-    # Get weight
-    session_results['l_volume'] = raw_input("Enter L water volume: ")
-    session_results['r_volume'] = raw_input("Enter R water volume: ")
+    # Get volumes and pipe position
+    print "Preparing to save. Press CTRL+C to abort save."
+    if session_results.get('mouse_mass') in ['', None]:
+        session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
+    
+    choice = 'N'
+    while choice.upper().strip() == 'N':
+        session_results['l_volume'] = raw_input("Enter L water volume: ")
+        session_results['r_volume'] = raw_input("Enter R water volume: ")
+        
+        bad_data = False
+        try:
+            if nlrew == 0:
+                lmean = 0.
+            else:
+                lmean = float(session_results['l_volume']) / nlrew
+            if nrrew == 0:
+                rmean = 0.
+            else:
+                rmean = float(session_results['r_volume']) / nrrew
+        except ValueError:
+            print "warning: cannot convert to float"
+            bad_data = True
+        
+        if not bad_data:
+            print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
+            choice = raw_input("Confirm? [Y/n] ")
+
+    session_results['l_valve_mean'] = lmean
+    session_results['r_valve_mean'] = rmean
+    
     session_results['final_pipe'] = raw_input("Enter final pipe position: ")
-    with file(os.path.join(os.path.split(logfilename)[0], 'results'), 'w') as fi:
+    
+    # Dump the results
+    logfile_dir = os.path.split(logfilename)[0]
+    with file(os.path.join(logfile_dir, 'results'), 'w') as fi:
         json.dump(session_results, fi, indent=4)
+    
+    # Rename the directory with the mouse name
+    def ignore_fifo(src, names):
+        return 'TO_DEV'
+    session_dir = os.path.split(os.path.split(logfile_dir)[0])[0]
+    shutil.copytree(session_dir, session_dir + '-saved', ignore=ignore_fifo)
+    final_message += "\n" + "rename %s to %s" % (
+        session_dir, session_dir + '-saved')
 
 except curses.error as err:
     raise Exception(

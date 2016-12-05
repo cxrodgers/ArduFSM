@@ -21,7 +21,7 @@ def is_current_trial_incomplete(translated_trial_matrix):
     if 'choice' not in translated_trial_matrix.columns:
         raise ValueError("need translated matrix")
     
-    return translated_trial_matrix['choice'].irow(-1) == 'curr'
+    return translated_trial_matrix['choice'].iat[-1] == 'curr'
 
 
 def generate_trial_types():
@@ -65,7 +65,7 @@ class TrialSetter:
             if not self.initial_params_sent:
                 # Send each initial param
                 iparams = self.params_table[self.params_table['send_on_init']]
-                for param_name, param_val in iparams['init_val'].iterkv():
+                for param_name, param_val in iparams['init_val'].iteritems():
                     cmd = TrialSpeak.command_set_parameter(param_name, param_val) 
                     self.chatter.queued_write_to_device(cmd)
                     self.params_table.loc[
