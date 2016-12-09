@@ -128,21 +128,24 @@ into States.cpp.
 #include "devices.h"                    
 #define NUM_DEVICES 2
 
-#define STPR1_PIN1 8
-#define STPR1_PIN2 6      
-#define ENBL1_PIN 7
-#define HALL1_PIN 1
+#define STPR_PIN 6
+#define DIR_PIN 8
+//#define STPR1_PIN2 6      
+//#define ENBL1_PIN 7
+#define HALL_PIN 0
 #define SPKR_PIN 13
 #define SOLENOID_PIN 2
 #define LICK_DETECTOR_PIN 10
 #define TIMER_PIN 11
 
 #define NUM_STEPS 200
-#define HALL1_THRESH 50
+#define HALL_THRESH 50
 #define STPR1_SPEED 100
 #define STPR1_CW 50
 #define STPR1_CCW -50
-#define HALL1_VAL 500  
+#define HALL_VAL 500  
+#define STEP_HALFDELAY_US 4000
+#define MICROSTEP 8
 
 //// States
 // Defines the finite state machine for this protocol
