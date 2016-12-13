@@ -10,6 +10,9 @@ import platform
 def read_from_device(device):
     """Receives information from device and appends"""
     new_lines = device.readlines()
+    if sys.version_info>=(3,1):
+    for i, line in enumerate(new_lines):
+        new_lines[i] = line.decode(encoding = 'UTF-8')
     return new_lines
 
 def write_to_user(buffer, data):
