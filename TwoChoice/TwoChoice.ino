@@ -156,7 +156,7 @@ void setup()
 
   // Opto (collides with one of the 4-pin setups)
   pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
-  digitalWrite(__HWCONSTANTS_H_OPTO, HIGH);
+  digitalWrite(__HWCONSTANTS_H_OPTO, LOW);
   
   
   // thresholds for MPR121
