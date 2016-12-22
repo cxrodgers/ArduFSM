@@ -71,6 +71,8 @@ extern bool flag_start_trial;
 
 int lickThresh = 900;
 int Device::deviceCounter = 0;
+int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
+String stprState = "RETRACTED";
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -248,6 +250,7 @@ void StimPeriod::s_setup(){
   pinMode(SPKR_PIN, OUTPUT);
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
+ 
   
  /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
@@ -255,6 +258,10 @@ void StimPeriod::s_setup(){
   }
   */
   
+  if(param_values[tpidx_STPRIDX]==1){
+        rotate_to_sensor();
+      }
+
   digitalWrite(_timerPin, HIGH);
   delay(10);
   digitalWrite(_timerPin, LOW);
@@ -263,6 +270,10 @@ void StimPeriod::s_setup(){
 void StimPeriod::loop(){
   unsigned long time = millis();
   
+  if(param_values[tpidx_SPKRIDX==1]){
+      tone(SPKR_PIN,random(10000,20000));
+  }
+    
   /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> loop(devFcns[i]);
@@ -280,9 +291,17 @@ void StimPeriod::loop(){
 
 void StimPeriod::s_finish()
 {
+  
+  /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> s_finish();
   }
+  */
+  
+   if(stprState == "EXTENDED"){
+       rotate_back();
+   }
+    
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
   if ( licked == 1 ){ 
@@ -295,6 +314,33 @@ void StimPeriod::s_finish()
   trialNumber++;
 }
 
+void rotate_to_sensor(){
+    digitalWrite(DIR_PIN, HIGH);
+    //int hall_val = analogRead(HALL_PIN);
+    while(analogRead(HALL_PIN)>HALL_THRESH){
+        rotate_one_step(); //how to deal with direction??
+        //delay(1);
+        //hall_val = analogRead(HALL_PIN);
+  }
+  Serial.println("stepper extended");
+  stprState  = "EXTENDED";
+}
+
+void rotate_one_step()
+{
+  digitalWrite(STPR_PIN, HIGH);
+  delayMicroseconds( STEP_HALFDELAY_US / MICROSTEP );
+  digitalWrite(STPR_PIN, LOW);
+  delayMicroseconds( STEP_HALFDELAY_US / MICROSTEP );
+}
+
+void rotate_back(){
+  digitalWrite(DIR_PIN, LOW);
+  //delay(1);
+  for(int i = 0; i < numSteps; i++){rotate_one_step();}
+  Serial.println("stepper retracted");
+  stprState = "RETRACTED";
+}
 
 // StateResponseWindow definitions:
 void StateResponseWindow::update()

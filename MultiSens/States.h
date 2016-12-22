@@ -245,4 +245,8 @@ class StatePostRewardPause : public TimedState {
 
 Device ** config_hw();
 
+void rotate_to_sensor();
+void rotate_one_step();
+void rotate_back();
+
 #endif
