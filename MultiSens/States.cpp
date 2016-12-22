@@ -247,7 +247,7 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
  
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
-  pinMode(SPKR_PIN, OUTPUT);
+
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
  
@@ -257,14 +257,18 @@ void StimPeriod::s_setup(){
     devFcns[i] = param_values[devIndices[i]]; 
   }
   */
-  
+    
   if(param_values[tpidx_STPRIDX]==1){
         rotate_to_sensor();
       }
-
+      
   digitalWrite(_timerPin, HIGH);
   delay(10);
   digitalWrite(_timerPin, LOW);
+      
+  if(param_values[tpidx_SPKRIDX]==1){
+    pinMode(SPKR_PIN, OUTPUT);
+    }
 }
 
 void StimPeriod::loop(){
