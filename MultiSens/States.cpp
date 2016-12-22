@@ -457,7 +457,7 @@ Device ** config_hw(){
     bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
     
     if ( debug == 0 ){
-        static myStepper myStp1( STPR_PIN,  DIR_PIN, HALL_PIN, HALL_THRESH, HALL_VAL, STEP_HALFDELAY_US, MICROSTEP );  
+        static myStepper myStp1( STPR_PIN,  DIR_PIN, HALL_PIN, HALL_THRESH, HALL_VAL, STEP_HALFDELAY_US, MICROSTEP, REVERSE_ROTATION_DEGREES );  
         static mySpeaker spkr1( SPKR_PIN );
   
         static Device * devPtrs[] = { &myStp1, &spkr1 };
