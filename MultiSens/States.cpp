@@ -248,9 +248,13 @@ void StimPeriod::s_setup(){
   pinMode(SPKR_PIN, OUTPUT);
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
+  
+ /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devFcns[i] = param_values[devIndices[i]]; 
   }
+  */
+  
   digitalWrite(_timerPin, HIGH);
   delay(10);
   digitalWrite(_timerPin, LOW);
@@ -258,9 +262,13 @@ void StimPeriod::s_setup(){
 
 void StimPeriod::loop(){
   unsigned long time = millis();
+  
+  /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> loop(devFcns[i]);
   }
+  */
+  
   //on rewarded trials, make reward coterminous with stimulus
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
