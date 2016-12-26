@@ -319,7 +319,7 @@ void StimPeriod::s_finish()
 }
 
 void rotate_to_sensor(){
-    digitalWrite(DIR_PIN, HIGH);
+    digitalWrite(DIR_PIN, LOW);
     //int hall_val = analogRead(HALL_PIN);
     while(analogRead(HALL_PIN)>HALL_THRESH){
         rotate_one_step(); //how to deal with direction??
@@ -339,7 +339,7 @@ void rotate_one_step()
 }
 
 void rotate_back(){
-  digitalWrite(DIR_PIN, LOW);
+  digitalWrite(DIR_PIN, HIGH);
   //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
