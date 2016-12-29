@@ -248,20 +248,20 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
 
+
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
  
-  
- /*
-  for ( int i = 0; i < NUM_DEVICES; i++ ){
-    devFcns[i] = param_values[devIndices[i]]; 
-  }
-  */
     
   if(param_values[tpidx_STPRIDX]==1){
         rotate_to_sensor();
       }
       
+  
+  digitalWrite(LED_PIN, HIGH);
+  delay(5);
+  digitalWrite(LED_PIN, LOW);
+  
   digitalWrite(_timerPin, HIGH);
   delay(10);
   digitalWrite(_timerPin, LOW);

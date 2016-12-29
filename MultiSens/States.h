@@ -137,6 +137,7 @@ into States.cpp.
 #define SOLENOID_PIN 2
 #define LICK_DETECTOR_PIN 10
 #define TIMER_PIN 11
+#define LED_PIN 9
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
