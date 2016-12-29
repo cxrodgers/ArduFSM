@@ -246,11 +246,17 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
   pinMode(SPKR_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devFcns[i] = param_values[devIndices[i]]; 
   }
+  
+  digitalWrite(LED_PIN, HIGH);
+  delay(5);
+  digitalWrite(LED_PIN, LOW);
+  
   digitalWrite(_timerPin, HIGH);
   delay(10);
   digitalWrite(_timerPin, LOW);
