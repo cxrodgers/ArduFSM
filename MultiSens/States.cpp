@@ -258,12 +258,10 @@ void StimPeriod::s_setup(){
       }
       
   
-  digitalWrite(LED_PIN, HIGH);
-  delay(5);
-  digitalWrite(LED_PIN, LOW);
-  
   digitalWrite(_timerPin, HIGH);
+  digitalWrite(LED_PIN, HIGH);
   delay(10);
+  digitalWrite(LED_PIN, LOW);
   digitalWrite(_timerPin, LOW);
       
   if(param_values[tpidx_SPKRIDX]==1){
