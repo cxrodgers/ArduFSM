@@ -251,18 +251,16 @@ void StimPeriod::s_setup(){
 
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
- 
-    
-  if(param_values[tpidx_STPRIDX]==1){
-        rotate_to_sensor();
-      }
-      
-  
+
   digitalWrite(_timerPin, HIGH);
   digitalWrite(LED_PIN, HIGH);
   delay(10);
   digitalWrite(LED_PIN, LOW);
   digitalWrite(_timerPin, LOW);
+    
+  if(param_values[tpidx_STPRIDX]==1){
+        rotate_to_sensor();
+      }
       
   if(param_values[tpidx_SPKRIDX]==1){
     pinMode(SPKR_PIN, OUTPUT);
