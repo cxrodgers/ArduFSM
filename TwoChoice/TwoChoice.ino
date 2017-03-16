@@ -110,7 +110,37 @@ void setup()
   linServo.attach(LINEAR_SERVO);
   //linServo.write(1850); // move close for measuring
 
+  // Set up stepper driver
+  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
+  pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
+  pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
+  pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
+
+  // Set directions
+  digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
+  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
   
+  // Active reset the stepper driver to get it into "Home" position
+  // This probably happens anyway during upload but be explicit
+  delay(10);
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, HIGH);
+  delay(500);
+  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW);
+  
+  // Stepper driver always inits to "Home position", which can be 0-3
+  // steps off from true horizontal.
+  if (__HWCONSTANTS_H_STEPPER_OFFSET_STEPS > 0) {
+    delay(10);
+    for(int i=0; i < __HWCONSTANTS_H_STEPPER_OFFSET_STEPS; i++) {
+      rotate_one_step();
+    }
+  }
+  #endif
+
+  // Opto
+  pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
+  digitalWrite(__HWCONSTANTS_H_OPTO, LOW);
+
   //// Run communications until we've received all setup info
   // Later make this a new flag. For now wait for first trial release.
   while (!flag_start_trial)
@@ -123,54 +153,13 @@ void setup()
     }
   }
   
-  
   //// Now finalize the setup using the received initial parameters
   // user_setup2() function?
-
-
-
-  #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
-  pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
-  pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
-  
-  // Make sure it's off    
-  digitalWrite(__HWCONSTANTS_H_STEP_ENABLE, LOW); 
-  digitalWrite(__HWCONSTANTS_H_STEP_PIN, LOW);
-  digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
-  #endif
-  
-  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  pinMode(TWOPIN_ENABLE_STEPPER, OUTPUT);
-  pinMode(TWOPIN_STEPPER_1, OUTPUT);
-  pinMode(TWOPIN_STEPPER_2, OUTPUT);
-  
-  // Make sure it's off    
-  digitalWrite(TWOPIN_ENABLE_STEPPER, LOW); 
-  
-  // Initialize
-  stimStepper = new Stepper(__HWCONSTANTS_H_NUMSTEPS, 
-    TWOPIN_STEPPER_1, TWOPIN_STEPPER_2);
-  #endif
-
-
-  // Opto (collides with one of the 4-pin setups)
-  pinMode(__HWCONSTANTS_H_OPTO, OUTPUT);
-  digitalWrite(__HWCONSTANTS_H_OPTO, LOW);
-  
-  
   // thresholds for MPR121
   #ifndef __HWCONSTANTS_H_USE_IR_DETECTOR
   mpr121_setup(TOUCH_IRQ, param_values[tpidx_TOU_THRESH], 
     param_values[tpidx_REL_THRESH]);
   #endif
-
-
-  #ifndef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  // Set the speed of the stepper
-  stimStepper->setSpeed(param_values[tpidx_STEP_SPEED]);
-  #endif
-
 
   // initial position of the stepper
   sticky_stepper_position = param_values[tpidx_STEP_INITIAL_POS];
