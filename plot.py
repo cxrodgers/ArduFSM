@@ -299,13 +299,13 @@ class Plotter(object):
         cached in cached_anova_text3 and cached_anova_len3
         """
         side2perf = count_hits_by_type_from_trials_info(
-            translated_trial_matrix.iloc[-100:], split_key='rewside')     
+            translated_trial_matrix.iloc[-60:], split_key='rewside')     
         
         string_perf_by_side = self.form_string_perf_by_side(side2perf)
         
         if len(translated_trial_matrix) > self.cached_anova_len3 or self.cached_anova_text3 == '':
             numericated_trial_matrix = TrialMatrix.numericate_trial_matrix(
-                translated_trial_matrix.iloc[-100:])
+                translated_trial_matrix.iloc[-60:])
             anova_stats = TrialMatrix.run_anova(numericated_trial_matrix)
             self.cached_anova_text3 = anova_stats
             self.cached_anova_len3 = len(translated_trial_matrix)
