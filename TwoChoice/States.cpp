@@ -282,7 +282,7 @@ void StateWaitForServoMove::loop()
 void StateWaitForServoMove::s_finish()
 {
   // Finalize the abrupt protocol
-  #if __HWCONSTANTS_H_TASK_REACTION_TIME
+  #ifdef __HWCONSTANTS_H_TASK_REACTION_TIME
   if (abrupt_direction == 1) {
     rotate(-__HWCONSTANTS_H_ABRUPT_STEPS);
   } else {
@@ -402,7 +402,7 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
     rotate(remaining_rotation);
   }
   
-  #if __HWCONSTANTS_H_TASK_REACTION_TIME
+  #ifdef __HWCONSTANTS_H_TASK_REACTION_TIME
   // Now implement the abrupt protocol
   // This can't be done above because the sensors are only located at
   // the stimulus positions
