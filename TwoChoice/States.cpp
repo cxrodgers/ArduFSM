@@ -288,10 +288,10 @@ void StateWaitForServoMove::s_finish()
   } else {
     rotate(__HWCONSTANTS_H_ABRUPT_STEPS);
   }
+  #endif
   
   // Transition to response window
   next_state = RESPONSE_WINDOW;   
-  #endif
 }
 
 //// Inter-trial interval
