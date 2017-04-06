@@ -141,6 +141,16 @@ void setup()
         i++) {
       rotate_one_step();
     }
+  } else if (__HWCONSTANTS_H_STEPPER_OFFSET_STEPS < 0) {
+    // Do it backwards
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, HIGH);  
+    delay(10);
+    for(int i=0; 
+        i < (__HWCONSTANTS_H_MICROSTEP * -__HWCONSTANTS_H_STEPPER_OFFSET_STEPS); 
+        i++) {
+      rotate_one_step();
+    }  
+    digitalWrite(__HWCONSTANTS_H_STEP_DIR, LOW);  
   }
   #endif
 
