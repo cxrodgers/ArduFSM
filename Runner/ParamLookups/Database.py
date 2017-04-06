@@ -111,6 +111,7 @@ def get_mouse_parameters(mouse_name):
 
     res = {
         'C': {
+            'task_reaction_time': mouse.task_reaction_time,
         },
         'Python': {
             'stimulus_set': mouse.stimulus_set,

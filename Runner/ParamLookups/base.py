@@ -109,5 +109,7 @@ def translate_c_parameter_name(name):
         return '__HWCONSTANTS_H_INVERT_STEPPER_DIRECTION'
     elif name == 'stepper_offset_steps':
         return '__HWCONSTANTS_H_STEPPER_OFFSET_STEPS'        
+    elif name == 'task_reaction_time':
+        return '__HWCONSTANTS_H_TASK_REACTION_TIME'        
     else:
         return None
