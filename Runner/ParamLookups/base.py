@@ -107,5 +107,7 @@ def translate_c_parameter_name(name):
         return '__HWCONSTANTS_H_MICROSTEP'
     elif name == 'invert_stepper_direction':
         return '__HWCONSTANTS_H_INVERT_STEPPER_DIRECTION'
+    elif name == 'stepper_offset_steps':
+        return '__HWCONSTANTS_H_STEPPER_OFFSET_STEPS'        
     else:
         return None

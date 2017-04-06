@@ -10,9 +10,6 @@
 //// DIGITAL
 // Stepper control
 
-// Number of steps to overshoot/undershoot for the abrupt protocol
-#define __HWCONSTANTS_H_ABRUPT_STEPS 15
-
 // This is only for stepper driver
 #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
 #define __HWCONSTANTS_H_STEP_ENABLE 7
@@ -62,9 +59,6 @@
 // Will get bugs if this value is more than 16383
 // With eg 1/4 stepping, this delay is 1/4 as long
 #define __HWCONSTANTS_H_STEP_HALFDELAY_US 4000
-
-// Necessary for implementing stepper offset
-#define __HWCONSTANTS_H_STEP_RESET 9
 #endif
 
 

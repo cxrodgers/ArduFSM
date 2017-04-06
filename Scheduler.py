@@ -545,7 +545,7 @@ class Auto:
             self.n_trials_sticky = 6
             self.n_trials_recent_win = 32
             self.n_trials_recent_random_thresh = 8
-            self.n_trials_recent_for_side_bias = 100
+            self.n_trials_recent_for_side_bias = 60
         
         if n_trials_forced_alt is not None:
             self.n_trials_forced_alt = n_trials_forced_alt

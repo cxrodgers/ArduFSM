@@ -83,6 +83,7 @@ def get_board_parameters(board_name):
             'side_HE_sensor_thresh': board.side_HE_sensor_thresh,
             'microstep': board.microstep,
             'invert_stepper_direction': board.invert_stepper_direction,
+            'stepper_offset_steps': board.stepper_offset_steps,
         },
         'Python': {
             'has_side_HE_sensor': board.has_side_HE_sensor,            

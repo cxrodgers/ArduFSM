@@ -595,6 +595,9 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
             ordered_cols.append(col)
     res = res[ordered_cols]
     
+    # Avoid SettingWithCopyWarning below
+    res = res.copy()
+    
     # Insert always_insert
     for col in always_insert:
         if col not in res:

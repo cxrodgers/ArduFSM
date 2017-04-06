@@ -187,6 +187,10 @@ try:
             print "cannot find webcam at port", video_device
             wc = None
             SHOW_WEBCAM = False
+        except OSError:
+            print "something went wrong with webcam process"
+            wc = None
+            SHOW_WEBCAM = False
     else:
         wc = None
     

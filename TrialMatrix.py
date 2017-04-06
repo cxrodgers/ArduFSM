@@ -262,3 +262,13 @@ def calculate_safe_perf(df):
     """Returns nhits / ntots, unless NaN, in which case 0."""
     nhit, ntot = calculate_nhit_ntot(df)
     return nhit / float(ntot) if ntot > 0 else 0.
+
+def add_rwin_and_choice_times_to_trial_matrix(tm, bfile):
+    """Add choice_time, rwin_time, and rt to trial matrix"""
+    # Get the choice time and reaction time
+    tm['choice_time'] = TrialSpeak.identify_state_change_times_new(
+        bfile, state0=7) / 1000.
+    tm['rwin_time'] = TrialSpeak.identify_state_change_times_new(
+        bfile, state1=7) / 1000.
+    tm['rt'] = (tm['choice_time'] - tm['rwin_time'])  
+    return tm

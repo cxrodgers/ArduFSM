@@ -74,9 +74,19 @@ class UIActionTaker:
             #~ raise QuitException("quitting without saving %s" % filename)
     
     def set_param(self):
-        # Get name and value
-        param_name = self.ui.get_additional_input("Enter param name: ").strip().upper()
-        param_value = self.ui.get_additional_input("Enter param value: ").strip()
+        # Get param name
+        # Some weird issue where the param name is sometimes received as
+        # a new line the first time, even though subsequent times are fine
+        # So we loop till it's not blank
+        param_name = ''
+        while param_name == '':
+            param_name = self.ui.get_additional_input(
+                "Enter param name, or 'oops' to abort: ").strip().upper()
+        if param_name == 'OOPS':
+            return
+        
+        param_value = self.ui.get_additional_input(
+            "Enter value for param %s: " % param_name).strip()
         
         # simple error check for empty param
         # what if it is a non-int string?
