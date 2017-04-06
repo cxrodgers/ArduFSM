@@ -31,6 +31,7 @@ Defines the following:
 //#define EXTRA_180DEG_ROT
 
 extern STATE_TYPE next_state;
+int abrupt_direction = 1;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -281,7 +282,11 @@ void StateWaitForServoMove::loop()
 void StateWaitForServoMove::s_finish()
 {
   // Finalize the abrupt protocol
-  rotate(__HWCONSTANTS_H_ABRUPT_STEPS);
+  if (abrupt_direction == 1) {
+    rotate(-__HWCONSTANTS_H_ABRUPT_STEPS);
+  } else {
+    rotate(__HWCONSTANTS_H_ABRUPT_STEPS);
+  }
   
   // Transition to response window
   next_state = RESPONSE_WINDOW;   
@@ -398,7 +403,14 @@ int state_rotate_stepper2(STATE_TYPE& next_state)
   // Now implement the abrupt protocol
   // This can't be done above because the sensors are only located at
   // the stimulus positions
-  rotate(-__HWCONSTANTS_H_ABRUPT_STEPS);
+  // Rotate in the same direction as above
+  if (step_size == 1) {
+    rotate(__HWCONSTANTS_H_ABRUPT_STEPS);
+    abrupt_direction = 1; // a flag so we can undo this later
+  } else {
+    rotate(-__HWCONSTANTS_H_ABRUPT_STEPS);
+    abrupt_direction = -1;
+  }
   
   next_state = MOVE_SERVO;
   return 0;    
