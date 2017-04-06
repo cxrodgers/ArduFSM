@@ -11,7 +11,7 @@
 // Stepper control
 
 // Number of steps to overshoot/undershoot for the abrupt protocol
-#define __HWCONSTANTS_H_ABRUPT_STEPS 15
+#define __HWCONSTANTS_H_ABRUPT_STEPS 25
 
 // This is only for stepper driver
 #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
