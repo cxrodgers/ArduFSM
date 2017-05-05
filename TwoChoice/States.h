@@ -99,10 +99,6 @@ into States.cpp.
 #define OUTCOME_ERROR 2
 #define OUTCOME_SPOIL 3
 
-//// Defines for state specific stuff
-#define __STATES_H_MAX_NOLICK_WAIT_MS 2000
-#define __STATES_H_REQD_NO_LICK_MS 500
-
 //// States
 // Defines the finite state machine for this protocol
 enum STATE_TYPE

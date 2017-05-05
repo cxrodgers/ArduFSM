@@ -207,7 +207,7 @@ void loop()
   static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
   static StateInterRotationPause state_interrotation_pause(50);
   static StateWaitForServoMove state_wait_for_servo_move(
-    param_values[tpidx_SRV_TRAVEL_TIME] + __STATES_H_MAX_NOLICK_WAIT_MS);
+    param_values[tpidx_SRV_TRAVEL_TIME] + __STATES_H_NOLICK_MAX_WAIT_MS);
   static StateInterTrialInterval state_inter_trial_interval(
     param_values[tpidx_ITI]);
   static StateErrorTimeout state_error_timeout(
@@ -319,7 +319,7 @@ void loop()
       sfrw = StateFakeResponseWindow(param_values[tpidx_RESP_WIN_DUR]);
       state_interrotation_pause = StateInterRotationPause(50);
       state_wait_for_servo_move = StateWaitForServoMove(
-        param_values[tpidx_SRV_TRAVEL_TIME] + __STATES_H_MAX_NOLICK_WAIT_MS);
+        param_values[tpidx_SRV_TRAVEL_TIME] + __STATES_H_NOLICK_MAX_WAIT_MS);
       state_inter_trial_interval = StateInterTrialInterval(
         param_values[tpidx_ITI]);
       state_error_timeout = StateErrorTimeout(

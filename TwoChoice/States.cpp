@@ -242,34 +242,43 @@ void StateWaitForServoMove::s_setup()
 {
   my_linServo.write(param_values[tpidx_SRVPOS]);
   //~ next_state = ROTATE_STEPPER1;   
+  flag_stop = 0;
 }
 
 void StateWaitForServoMove::loop()
 {
-  unsigned long time = millis();
+  long time = millis();
 
   // First set opto
-  // Now needs to be -2000 - __STATES_H_MAX_NOLICK_WAIT_MS in order to
+  // Now needs to be -2000 - __STATES_H_NOLICK_MAX_WAIT_MS in order to
   // turn on at the same point in the servo move cycle
-  // Because the timer is __STATES_H_MAX_NOLICK_WAIT_MS longer
+  // Because the timer is __STATES_H_NOLICK_MAX_WAIT_MS longer
   if (
     (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
-    ((time - timer) > (-2000 - __STATES_H_MAX_NOLICK_WAIT_MS))) { 
+    ((time - (long) timer) > (-2000 - __STATES_H_NOLICK_MAX_WAIT_MS))) { 
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   }
   
-  // If we are past -MAX_NOLICK_WAIT, AND EITHER
-  // 1) there hasn't been a lick for REQD_NOLICK, OR
+  // If we are past -__STATES_H_NOLICK_MAX_WAIT_MS, AND EITHER
+  // 1) there hasn't been a lick for __STATES_H_NOLICK_REQUIRED_INTERVAL_MS, OR
   // 2) direct_delivery_delivered on this trial
   // then stop.
   // Direct delivery should occur before the nolick_wait begins, and it
   // also makes nolick_wait pointless, so we just skip the check.
   if (
-    ((time - timer) > -__STATES_H_MAX_NOLICK_WAIT_MS) && (
-      ((time - my_time_of_last_touch) > __STATES_H_REQD_NO_LICK_MS) ||
+    ((time - (long) timer) > -__STATES_H_NOLICK_MAX_WAIT_MS) && (
+      ((time - my_time_of_last_touch) > __STATES_H_NOLICK_REQUIRED_INTERVAL_MS) ||
       (direct_delivery_delivered > 0)
     )) {
     flag_stop = 1;
+    Serial.print("0 DBG FS ");
+    Serial.print(time);
+    Serial.print(" ");
+    Serial.print(timer);
+    Serial.print(" ");
+    Serial.print(time - timer);
+    Serial.print(" ");
+    Serial.println(__STATES_H_NOLICK_MAX_WAIT_MS);
     return;
   }
   
@@ -282,7 +291,7 @@ void StateWaitForServoMove::loop()
   // Deliver direct delivery
   // 500 ms before the beginning of nolick_wait, which will be cancelled
   // on this trial.
-  if ((time - timer) > (-500 - __STATES_H_MAX_NOLICK_WAIT_MS)) {
+  if ((time - timer) > (-500 - __STATES_H_NOLICK_MAX_WAIT_MS)) {
     if (param_values[tpidx_REWSIDE] == LEFT) {
       Serial.print(time);
       Serial.println(" EV DDR_L");

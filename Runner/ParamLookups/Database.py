@@ -112,6 +112,8 @@ def get_mouse_parameters(mouse_name):
     res = {
         'C': {
             'task_reaction_time': mouse.task_reaction_time,
+            'nolick_max_wait_ms': mouse.nolick_max_wait_ms,
+            'nolick_required_interval_ms': mouse.nolick_required_interval_ms,
         },
         'Python': {
             'stimulus_set': mouse.stimulus_set,

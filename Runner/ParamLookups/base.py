@@ -110,6 +110,10 @@ def translate_c_parameter_name(name):
     elif name == 'stepper_offset_steps':
         return '__HWCONSTANTS_H_STEPPER_OFFSET_STEPS'        
     elif name == 'task_reaction_time':
-        return '__HWCONSTANTS_H_TASK_REACTION_TIME'        
+        return '__HWCONSTANTS_H_TASK_REACTION_TIME'   
+    elif name =='nolick_max_wait_ms':
+        return '__STATES_H_NOLICK_MAX_WAIT_MS'
+    elif name =='nolick_required_interval_ms':
+        return '__STATES_H_NOLICK_REQUIRED_INTERVAL_MS'
     else:
         return None
