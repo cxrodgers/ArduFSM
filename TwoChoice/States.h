@@ -157,14 +157,13 @@ int state_reward_r(STATE_TYPE& next_state);
 class StateResponseWindow : public TimedState {
   protected:
     uint16_t my_touched = 0;
-    unsigned long my_time_of_last_touch = 0;
     unsigned int my_rewards_this_trial = 0;
     void loop();
     void s_finish();
     virtual void set_licking_variables(bool &, bool &);
   
   public:
-    void update(uint16_t touched, unsigned long time_of_last_touch);
+    void update(uint16_t touched);
     StateResponseWindow(unsigned long d) : TimedState(d) { };
 };
 
@@ -204,12 +203,14 @@ class StateWaitForServoMove : public TimedState {
   protected:
     Servo my_linServo;
     bool direct_delivery_delivered = 0;
+    unsigned long my_time_of_last_touch = 0;
+  
     void s_setup();
     void s_finish();
     void loop();
   
   public:
-    void update(Servo linServo);
+    void update(Servo linServo, unsigned long time_of_last_touch);
     StateWaitForServoMove(unsigned long d) : TimedState(d) { };
 };
 
