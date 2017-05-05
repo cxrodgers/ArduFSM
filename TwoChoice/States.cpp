@@ -90,14 +90,14 @@ void StateResponseWindow::loop()
   int current_response;
   bool licking_l;
   bool licking_r;
-  unsigned long time = millis();
+  long time = millis();
   
   // get the licking state 
   // overridden in FakeResponseWindow
   set_licking_variables(licking_l, licking_r);
   
   // Turn off laser if we've been in the state for long enough
-  if ((time - (timer - duration)) > 3000) {
+  if ((time - ((long) timer - (long) duration)) > 3000) {
     digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   }
     
@@ -267,7 +267,7 @@ void StateWaitForServoMove::loop()
   // also makes nolick_wait pointless, so we just skip the check.
   if (
     ((time - (long) timer) > -__STATES_H_NOLICK_MAX_WAIT_MS) && (
-      ((time - my_time_of_last_touch) > __STATES_H_NOLICK_REQUIRED_INTERVAL_MS) ||
+      ((time - (long) my_time_of_last_touch) > __STATES_H_NOLICK_REQUIRED_INTERVAL_MS) ||
       (direct_delivery_delivered > 0)
     )) {
     flag_stop = 1;
@@ -276,7 +276,7 @@ void StateWaitForServoMove::loop()
     Serial.print(" ");
     Serial.print(timer);
     Serial.print(" ");
-    Serial.print(time - timer);
+    Serial.print(time - (long) timer);
     Serial.print(" ");
     Serial.println(__STATES_H_NOLICK_MAX_WAIT_MS);
     return;
@@ -291,7 +291,7 @@ void StateWaitForServoMove::loop()
   // Deliver direct delivery
   // 500 ms before the beginning of nolick_wait, which will be cancelled
   // on this trial.
-  if ((time - timer) > (-500 - __STATES_H_NOLICK_MAX_WAIT_MS)) {
+  if ((time - (long) timer) > (-500 - __STATES_H_NOLICK_MAX_WAIT_MS)) {
     if (param_values[tpidx_REWSIDE] == LEFT) {
       Serial.print(time);
       Serial.println(" EV DDR_L");
