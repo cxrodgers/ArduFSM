@@ -99,6 +99,10 @@ into States.cpp.
 #define OUTCOME_ERROR 2
 #define OUTCOME_SPOIL 3
 
+//// Defines for state specific stuff
+#define __STATES_H_MAX_NOLICK_WAIT_MS 2000
+#define __STATES_H_REQD_NO_LICK_MS 500
+
 //// States
 // Defines the finite state machine for this protocol
 enum STATE_TYPE
@@ -153,13 +157,14 @@ int state_reward_r(STATE_TYPE& next_state);
 class StateResponseWindow : public TimedState {
   protected:
     uint16_t my_touched = 0;
+    unsigned long my_time_of_last_touch = 0;
     unsigned int my_rewards_this_trial = 0;
     void loop();
     void s_finish();
     virtual void set_licking_variables(bool &, bool &);
   
   public:
-    void update(uint16_t touched);
+    void update(uint16_t touched, unsigned long time_of_last_touch);
     StateResponseWindow(unsigned long d) : TimedState(d) { };
 };
 

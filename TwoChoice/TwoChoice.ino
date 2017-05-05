@@ -214,6 +214,10 @@ void loop()
     param_values[tpidx_ERROR_TIMEOUT], linServo);
   static StatePostRewardPause state_post_reward_pause(
         param_values[tpidx_INTER_REWARD_INTERVAL]);
+  
+  // persistent time of last touch
+  // passed to wait_for_servo_move
+  static unsigned long time_of_last_touch = 0;
 
   // The next state, by default the same as the current state
   next_state = current_state;
@@ -253,6 +257,7 @@ void loop()
     Serial.print(" TCH ");
     Serial.println(touched);
     sticky_touched = touched;
+    time_of_last_touch = time;
   }  
   
   //// Begin state-dependent operations
@@ -332,7 +337,7 @@ void loop()
       // OTOH, could argue that MOVE_SERVO and WAIT_FOR_SERVO_MOVE are 
       // the same state, and this distinction is just between the s_setup
       // and the rest of it.
-      state_wait_for_servo_move.update(linServo);
+      state_wait_for_servo_move.update(linServo, time_of_last_touch);
       state_wait_for_servo_move.run(time);
       break;
     
