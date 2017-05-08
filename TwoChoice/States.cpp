@@ -271,14 +271,6 @@ void StateWaitForServoMove::loop()
       (direct_delivery_delivered > 0)
     )) {
     flag_stop = 1;
-    Serial.print("0 DBG FS ");
-    Serial.print(time);
-    Serial.print(" ");
-    Serial.print(timer);
-    Serial.print(" ");
-    Serial.print(time - (long) timer);
-    Serial.print(" ");
-    Serial.println(__STATES_H_NOLICK_MAX_WAIT_MS);
     return;
   }
   
