@@ -540,8 +540,8 @@ class LickPlotter():
                 (l_resdf.index.max() - 10, l_resdf.index.max()))
             #self.handles['axa'][0].set_ylim((0, 1024))
             self.handles['axa'][0].set_ylim((
-                l_resdf.loc[l_resdf.index[-1], 'x'] - 400,
-                l_resdf.loc[l_resdf.index[-1], 'x'] + 600))
+                l_resdf['x'].iloc[-1] - 400,
+                l_resdf['x'].iloc[-1] + 600))
 
         # Plot left touches
         if tch_resdf is not None:
