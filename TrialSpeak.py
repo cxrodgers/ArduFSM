@@ -649,6 +649,15 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
     if not np.all(rdf.columns == all_cols):
         raise IOError("cannot read columns correctly from logfile")
     
+    # Convert time to integer and drop malformed lines
+    new_time = rdf['time'].convert_objects(convert_numeric=True)
+    if new_time.isnull().any():
+        print "warning: malformed time string at line(s) %r" % (
+            new_time.index[new_time.isnull()].values)
+    rdf['time'] = new_time
+    rdf = rdf.ix[~rdf['time'].isnull()]
+    rdf['time'] = rdf['time'].astype(np.int)
+    
     # Convert dtypes. We have to do it here, because if done during reading
     # it will crash on mal-formed dtypes. Could catch that error and then
     # run this...
@@ -658,7 +667,7 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
         try:
             rdf[col] = rdf[col].astype(dtyp)
         except ValueError:
-            print "warning: cannot coerce %s to %r" % (col, dtyp)
+            raise IOError("cannot coerce %s to %r" % (col, dtyp))
     
     # Join on trial number
     if add_trial_column:
