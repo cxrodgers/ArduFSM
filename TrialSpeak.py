@@ -650,7 +650,8 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
         raise IOError("cannot read columns correctly from logfile")
     
     # Convert time to integer and drop malformed lines
-    new_time = rdf['time'].convert_objects(convert_numeric=True)
+    #new_time = rdf['time'].convert_objects(convert_numeric=True)
+    new_time = pandas.to_numeric(rdf['time'], errors='coerce')
     if new_time.isnull().any():
         print "warning: malformed time string at line(s) %r" % (
             new_time.index[new_time.isnull()].values)
