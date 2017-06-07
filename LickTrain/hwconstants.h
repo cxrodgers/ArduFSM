@@ -30,8 +30,8 @@
 //// ANALOG
 #define __HWCONSTANTS_H_HALL 1
 
-#define __HWCONSTANTS_H_IR_L_PIN 0
-#define __HWCONSTANTS_H_IR_R_PIN 2
+#define __HWCONSTANTS_H_IR_L_PIN 2
+#define __HWCONSTANTS_H_IR_R_PIN 3
 
 //// Misc
 #define __HWCONSTANTS_H_NUMSTEPS 200
