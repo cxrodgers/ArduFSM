@@ -80,6 +80,8 @@ SHOW_SENSOR_PLOT = False
 ## Various window positions
 video_window_position = runner_params.get('video_window_position', None)
 gui_window_position = runner_params.get('gui_window_position', None)
+window_position_IR_plot = runner_params.get(
+    'window_position_IR_plot', None)
     
 ## Set up params_table
 # First we load the table of protocol-specific parameters that is used by the UI
@@ -200,6 +202,13 @@ try:
         plotter.init_handles()
         move_figure(plotter.graphics_handles['f'],
             gui_window_position[0], gui_window_position[1])
+
+        if SHOW_IR_PLOT:
+            plotter2 = ArduFSM.plot.LickPlotter()
+            plotter2.init_handles()
+            if window_position_IR_plot is not None:
+                move_figure(plotter2.handles['f'],
+                    window_position_IR_plot[0], window_position_IR_plot[1])
         
         last_updated_trial = 0
     
@@ -248,6 +257,14 @@ try:
                 # work:
                 # https://gist.github.com/rlabbe/ea3444ef48641678d733
                 plotter.graphics_handles['f'].canvas.draw()
+
+            if SHOW_IR_PLOT:
+                plotter2.update(logfile_lines)
+                
+                #~ plt.pause(.01)
+                plotter2.handles['f'].canvas.draw()
+            
+            plt.pause(.01)
 
 
 except KeyboardInterrupt:
