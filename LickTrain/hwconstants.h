@@ -1,9 +1,11 @@
+// #define macros for protocol constants, like pin numbers
+// rig-specific macros are defined in the auto-generated and included config.h
+
 #ifndef __HWCONSTANTS_H_INCLUDED__
 #define __HWCONSTANTS_H_INCLUDED__
 
-// Define all constants that are true for all rigs
-// Rig-specific changes can be made by setting parameters in the usual way
-// Otherwise we need different versions of the protocol
+
+#include "config.h"
 
 
 //// DIGITAL
@@ -12,13 +14,6 @@
 #define TWOPIN_ENABLE_STEPPER 7
 #define TWOPIN_STEPPER_1 6
 #define TWOPIN_STEPPER_2 8
-
-// Four-pin mode
-#define ENABLE_STEPPER 12
-#define PIN_STEPPER1 8
-#define PIN_STEPPER2 9
-#define PIN_STEPPER3 10
-#define PIN_STEPPER4 11
 
 // Rewards
 #define L_REWARD_VALVE 5
