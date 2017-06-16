@@ -23,9 +23,14 @@ are set to '', should we interpret this as define it without a value, or
 don't define it?
 
 """
-import django
-import runner.models
-import Hardcoded
+
+
+from db_connect import Boards, Boxes, Mouses
+from db_connect import loadSession, getByName
+
+global session
+session = loadSession()
+
 
 def remove_None_from_dict(d):
     """Remove specific parameters that are None
@@ -52,7 +57,8 @@ def remove_None_from_dict(d):
     return res
 
 def get_box_parameters(box_name):
-    box = runner.models.Box.objects.get(name=box_name)
+    
+    box = getByName(Boxes, box_name, session)
 
     return remove_None_from_dict({
             'C': {},
@@ -74,7 +80,7 @@ def get_box_parameters(box_name):
         })
 
 def get_board_parameters(board_name):
-    board = runner.models.Board.objects.get(name=board_name)
+    board = getByName(Boards, board_name, session)
     
     res = {
         'C': {
@@ -107,7 +113,7 @@ def get_board_parameters(board_name):
     
 def get_mouse_parameters(mouse_name):
     """Extract and format mouse parameters from database"""
-    mouse = runner.models.Mouse.objects.get(name=mouse_name)
+    mouse = getByName(Mouses, mouse_name, session)
 
     res = {
         'C': {
