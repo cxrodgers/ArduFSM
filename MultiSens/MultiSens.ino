@@ -97,6 +97,7 @@ STATE_TYPE next_state;
 
 // touched monitor
 boolean sticky_licking = 0;
+int last_SPKRIDX = param_values[tpidx_SPKRIDX];
 
 /// not sure how to static these since they are needed by both loop and setup
 
@@ -156,6 +157,8 @@ void loop()
   
   //// Run communications
   status = communications(time);
+  
+  //// If STPRIDX has changed, send the appropriate signal to the NI board
   
   
   //// User protocol code

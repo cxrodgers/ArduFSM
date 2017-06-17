@@ -138,6 +138,8 @@ into States.cpp.
 #define LICK_DETECTOR_PIN 10
 #define TIMER_PIN 11
 #define LED_PIN 9
+#define SPKR_COND_PIN1 4
+#define SPKR_COND_PIN2 5
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
