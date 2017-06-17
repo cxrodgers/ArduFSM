@@ -110,7 +110,8 @@ void setup()
   Serial.begin(115200);
   Serial.print(time);
   Serial.println(" DBG begin setup");
-  
+
+  pinMode(SPKR_PIN, OUTPUT);
   pinMode(SPKR_COND_PIN1, OUTPUT);
   pinMode(SPKR_COND_PIN2, OUTPUT)
   

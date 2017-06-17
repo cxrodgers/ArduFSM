@@ -216,7 +216,6 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
         state_reward(next_state);
         break;
     
-      case POST_REWARD_PAUSE:
         state_post_reward_pause.run(time);
         break;    
     
@@ -257,14 +256,16 @@ void StimPeriod::s_setup(){
   delay(10);
   digitalWrite(LED_PIN, LOW);
   digitalWrite(_timerPin, LOW);
+
+  if(param_values[tpidx_SPKRIDX]!=0  ){
+      digitalWrite(SPKR_PIN, HIGH);
+      delay(10);    
+      digitalWrite(SPKR_PIN, LOW);
+    }
     
   if(param_values[tpidx_STPRIDX]==1){
         rotate_to_sensor();
       }
-      
-  if(param_values[tpidx_SPKRIDX]==1){
-    pinMode(SPKR_PIN, OUTPUT);
-    }
 }
 
 void StimPeriod::loop(){
@@ -284,9 +285,7 @@ void StimPeriod::loop(){
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
   }
-  if (timer-time<2){
-    pinMode(SPKR_PIN, INPUT);
-  }
+
 }
 
 void StimPeriod::s_finish()
