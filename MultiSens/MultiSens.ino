@@ -159,7 +159,18 @@ void loop()
   status = communications(time);
   
   //// If STPRIDX has changed, send the appropriate signal to the NI board
-  
+  if (param_values[tpidx_SPKRIDX] != last_SPKRIDX){
+      if (param_values[tpidx_SPKRIDX] == 1){
+          digitalWrite(SPKR_COND_PIN1, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN2, LOW);          
+        } else if (param_values[tpidx_SPKRIDX] == 2){
+          digitalWrite(SPKR_COND_PIN2, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN2, LOW);
+      }
+      
+    }
   
   //// User protocol code
   // could put other user-specified every_loop() stuff here
