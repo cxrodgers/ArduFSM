@@ -111,6 +111,9 @@ void setup()
   Serial.print(time);
   Serial.println(" DBG begin setup");
   
+  pinMode(SPKR_COND_PIN1, OUTPUT);
+  pinMode(SPKR_COND_PIN2, OUTPUT)
+  
   // random number seed
   randomSeed(analogRead(3));
   
@@ -169,7 +172,7 @@ void loop()
           delay(10);
           digitalWrite(SPKR_COND_PIN2, LOW);
       }
-      
+      last_SPKRIDX = param_values[tpidx_SPKRIDX];
     }
   
   //// User protocol code
