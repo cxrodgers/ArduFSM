@@ -92,10 +92,12 @@ maxITI = 6
 paramAbbrevs = ['STPRIDX', 'SPKRIDX'] 
 
 #define the different stimulus conditions by their STPRIDX and SPKRIDX values:
-condition1 = [ 1, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. both stepper and speaker
+condition1 = [ 1, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper & tone 1
 condition2 = [ 0, 0 ] # STPRIDX will be 0, SPKRIDX will be 0, i.e. neither stepper nor speaker
-condition3 = [ 1, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
+condition3 = [ 1, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. tone 1 only
 condition4 = [ 0, 1 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. stepper only
+condition5 = [ 2, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper and tone 2
+condition6 = [ 2, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
 
 #set the trials per condition for each phase (phase 3 is identical to phase1, so we need not set its parameters explicity)
 p1trialsPerStim = 2
@@ -110,6 +112,9 @@ for i in range(1,p1trialsPerStim+1):
     phase1.append(condition1)
     phase1.append(condition3)
     phase1.append(condition4)
+    phase1.append(condition5)
+    phase1.append(condition6)    
+
 
 for j in range(1,p2trialsPerStim+1):
     phase2.append(condition1)
