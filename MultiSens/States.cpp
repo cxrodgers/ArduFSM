@@ -270,10 +270,12 @@ void StimPeriod::s_setup(){
 
 void StimPeriod::loop(){
   unsigned long time = millis();
-  
+
+  /*
   if(param_values[tpidx_SPKRIDX==1]){
       tone(SPKR_PIN,random(10000,20000));
   }
+  */
     
   /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
