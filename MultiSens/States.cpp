@@ -251,6 +251,18 @@ void StimPeriod::s_setup(){
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
 
+  if (param_values[tpidx_SPKRIDX] == 1){
+          digitalWrite(SPKR_COND_PIN1, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN1, LOW);          
+        } else if (param_values[tpidx_SPKRIDX] == 2){
+          digitalWrite(SPKR_COND_PIN2, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN2, LOW);
+  }
+
+  delay(100);
+
   digitalWrite(_timerPin, HIGH);
   digitalWrite(LED_PIN, HIGH);
   delay(10);
@@ -258,6 +270,7 @@ void StimPeriod::s_setup(){
   digitalWrite(_timerPin, LOW);
 
   if(param_values[tpidx_SPKRIDX]!=0  ){
+      Serial.println("playing audio");
       digitalWrite(SPKR_PIN, HIGH);
       delay(10);    
       digitalWrite(SPKR_PIN, LOW);
