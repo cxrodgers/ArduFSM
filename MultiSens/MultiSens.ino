@@ -113,7 +113,7 @@ void setup()
 
   pinMode(SPKR_PIN, OUTPUT);
   pinMode(SPKR_COND_PIN1, OUTPUT);
-  pinMode(SPKR_COND_PIN2, OUTPUT)
+  pinMode(SPKR_COND_PIN2, OUTPUT);
   
   // random number seed
   randomSeed(analogRead(3));
