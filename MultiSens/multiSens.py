@@ -96,8 +96,8 @@ condition1 = [ 1, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper & ton
 condition2 = [ 0, 0 ] # STPRIDX will be 0, SPKRIDX will be 0, i.e. neither stepper nor speaker
 condition3 = [ 1, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. tone 1 only
 condition4 = [ 0, 1 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. stepper only
-condition5 = [ 2, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper and tone 2
-condition6 = [ 2, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
+condition5 = [ 0, 2 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper and tone 2
+condition6 = [ 1, 2 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
 
 #set the trials per condition for each phase (phase 3 is identical to phase1, so we need not set its parameters explicity)
 p1trialsPerStim = 2
@@ -130,7 +130,7 @@ random.shuffle(phase3)
 experiment = [phase1, phase2, phase3]
 
 #We'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
-chtr = chat.Chatter(serial_port='COM5', baud_rate=115200)
+chtr = chat.Chatter(serial_port='COM3', baud_rate=115200)
 
 #iterate through every phase of the experiment
 for phase in experiment: 
