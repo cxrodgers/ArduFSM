@@ -27,6 +27,37 @@ import django
 import runner.models
 import Hardcoded
 
+def fix_ir_detector_params(res):
+    """Deal with issues relating to IR detector params
+    
+    First of all, the same parameter 'use_ir_detector' is used as both
+    a Python and C parameter. But in C this needs to be '1' or None,
+    where as in Python it needs to be True or False. We store it as True
+    or False and translate the C version to '1' or None here.
+    
+    Secondly, some files need to be added to 'skip_files' build parameter,
+    but I don't know how to store a list in the database, so hand-translating
+    it here.
+    
+    This function is called wherever use_ir_detector is stored (mouse and
+    board).    
+    """
+    if res['Python']['use_ir_detector']:
+        # Hack because a C and Python parameter have the same name
+        # True -> '1'
+        res['C']['use_ir_detector'] = '1'
+
+        # Hack because I don't know how to store a list of filenames
+        # in the django db
+        res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
+    
+    else:
+        # Hack because a C and Python parameter have the same name
+        # False -> None
+        res['C']['use_ir_detector'] = None    
+
+    return res
+
 def remove_None_from_dict(d):
     """Remove specific parameters that are None
     
@@ -95,13 +126,8 @@ def get_board_parameters(board_name):
         },
     }
     
-    # Hack because a C and Python parameter have the same name
-    res['C']['use_ir_detector'] = '1' if res['Python']['use_ir_detector'] else None
-    
-    # Hack because I don't know how to store a list of filenames
-    # in the django db
-    if not board.use_ir_detector:
-        res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
+    # Fix the ir_detector params
+    res = fix_ir_detector_params(res)
 
     return remove_None_from_dict(res)
     
@@ -111,11 +137,15 @@ def get_mouse_parameters(mouse_name):
 
     res = {
         'C': {
+            'use_ir_detector': mouse.use_ir_detector,
             'task_reaction_time': mouse.task_reaction_time,
             'nolick_max_wait_ms': mouse.nolick_max_wait_ms,
             'nolick_required_interval_ms': mouse.nolick_required_interval_ms,
         },
         'Python': {
+            'use_ir_detector': mouse.use_ir_detector,                        
+            'l_ir_detector_thresh': mouse.l_ir_detector_thresh,
+            'r_ir_detector_thresh': mouse.r_ir_detector_thresh,        
             'stimulus_set': mouse.stimulus_set,
             'step_first_rotation': mouse.step_first_rotation,
             'timeout': mouse.timeout,
@@ -129,5 +159,8 @@ def get_mouse_parameters(mouse_name):
             'default_box': mouse.default_box,
         },  
     }
+
+    # Fix the ir_detector params
+    res = fix_ir_detector_params(res)
 
     return remove_None_from_dict(res)
