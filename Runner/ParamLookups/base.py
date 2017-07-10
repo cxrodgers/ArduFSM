@@ -55,6 +55,20 @@ def get_specific_parameters_from_mouse_name(mouse_name):
 def get_specific_parameters_from_user_input(user_input):
     """Converts session parameters to specific parameters.
     
+    user_input : dict with following keys
+        'board' : name of board
+        'box' : name of box
+        'mouse' : name of mouse
+    
+    This information is passed to the Getter (Database or Hardcoded) to
+    get the corresponding C, Python, and build parameters for the
+    box, board, and mouse.
+    
+    Then this information is combined, with the following precedence order:
+    mouse > board > box.
+    
+    Finally a few build parameters (serial_port, box, mouse, baord) are 
+    copied from build to Python because they are needed for the UI.
     """
     # Convert session parameters into specific parameters
     board_parameters = Getter.get_board_parameters(user_input['board'])
@@ -67,6 +81,7 @@ def get_specific_parameters_from_user_input(user_input):
         if param_type not in specific_parameters:
             specific_parameters[param_type] = {}
         
+        # This enforces the precedence order
         specific_parameters[param_type].update(box_parameters[param_type])
         specific_parameters[param_type].update(board_parameters[param_type])
         specific_parameters[param_type].update(mouse_parameters[param_type])
