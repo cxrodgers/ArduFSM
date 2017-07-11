@@ -46,15 +46,16 @@ def fix_ir_detector_params(res):
         # Hack because a C and Python parameter have the same name
         # True -> '1'
         res['C']['use_ir_detector'] = '1'
+        res['build']['skip_files'] = []
 
-        # Hack because I don't know how to store a list of filenames
-        # in the django db
-        res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
-    
     else:
         # Hack because a C and Python parameter have the same name
         # False -> None
         res['C']['use_ir_detector'] = None    
+
+        # Hack because I don't know how to store a list of filenames
+        # in the django db
+        res['build']['skip_files'] = ['ir_detector.cpp', 'ir_detector.h']
 
     return res
 
@@ -144,8 +145,6 @@ def get_mouse_parameters(mouse_name):
         },
         'Python': {
             'use_ir_detector': mouse.use_ir_detector,                        
-            'l_ir_detector_thresh': mouse.l_ir_detector_thresh,
-            'r_ir_detector_thresh': mouse.r_ir_detector_thresh,        
             'stimulus_set': mouse.stimulus_set,
             'step_first_rotation': mouse.step_first_rotation,
             'timeout': mouse.timeout,
