@@ -15,6 +15,8 @@ as opposed to an explicit None (although maybe for video_device...).
 So probably we want to remove it from the dicts, because otherwise a None
 from mouse will trump a real value from box or board.
 
+TODO: Interpret a None in a NullBooleanField (like use_ir_detector) as a None
+(to be removed) rather than False (taking precedence over something else).
 
 Avoid using nullable char fields because then there are two possible values
 that mean null: null, and ''. The django convention is to use ''. This is 
