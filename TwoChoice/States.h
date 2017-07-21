@@ -99,6 +99,9 @@ into States.cpp.
 #define OUTCOME_ERROR 2
 #define OUTCOME_SPOIL 3
 
+//// Flag for an oracle responder, which always responds correctly
+#define __STATES_H_ORACLE_RESPONDER
+
 //// States
 // Defines the finite state machine for this protocol
 enum STATE_TYPE
