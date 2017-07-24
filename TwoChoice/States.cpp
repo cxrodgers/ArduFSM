@@ -108,6 +108,19 @@ void StateResponseWindow::loop()
     flag_stop = 1;
     return;
   }
+  
+  // If oracle, then always gives the correct response
+  #ifdef __STATES_H_ORACLE_RESPONDER
+  if (param_values[tpidx_REWSIDE] == LEFT) {
+    next_state = REWARD_LEFT;
+  } else if (param_values[tpidx_REWSIDE] == RIGHT) {
+    next_state = REWARD_RIGHT;
+  }
+  my_rewards_this_trial++;
+  results_values[tridx_OUTCOME] = OUTCOME_HIT;
+  return;
+  #endif
+  
 
   // Do nothing if both or neither are being licked.
   // Otherwise, assign current_response.
