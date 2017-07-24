@@ -112,9 +112,9 @@ void StateResponseWindow::loop()
   // If oracle, then always gives the correct response
   #ifdef __STATES_H_ORACLE_RESPONDER
   if (param_values[tpidx_REWSIDE] == LEFT) {
-    next_state = REWARD_LEFT;
+    next_state = REWARD_L;
   } else if (param_values[tpidx_REWSIDE] == RIGHT) {
-    next_state = REWARD_RIGHT;
+    next_state = REWARD_R;
   }
   my_rewards_this_trial++;
   results_values[tridx_OUTCOME] = OUTCOME_HIT;
