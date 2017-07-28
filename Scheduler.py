@@ -32,7 +32,7 @@ from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
 n_dd_trials = 4
-N_OPTO_TRIALS = 2 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()
+N_OPTO_TRIALS = 4 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()
 OPTO_PERIODIC = False
 OPTO_FORCED = True
 
