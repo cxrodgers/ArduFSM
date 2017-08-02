@@ -126,32 +126,35 @@ condition6 = [ 1, 2 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
 #########################################################################
 # Define each phase of the experiment:
 
-# define trials per condition for each phase 
-p1trialsPerStim = 100
-p2trialsPerStim = 10
+phase1 = {
+	'conditions': [condition1, condition6], 
+	'trialsPerCond': 100,
+	'trials': []
+}
 
-#each phase will be represented by a list of trials, each of which will in turn will be represented by a pair (STPRIDX and SPKRIDX) of parameters, different specific values of which we have already assigned to condition1, condition2, etc...
-phase1 = []
-phase2 =[]
+phase2 = {
+	'conditions': [condition1],
+	'trialsPerCond': 10,
+	'trials': []
+}
 
-#populate the lists representing phases
-for i in range(1,p1trialsPerStim+1):
-    phase1.append(condition1)
-    phase1.append(condition6)    
-
-
-for j in range(1,p2trialsPerStim+1):
-    phase2.append(condition1)
-    
 # phase 3 will consist of the same number and types of trials as phase 1:
 phase3 = phase1
 
-# shuffle trial order:
-random.shuffle(phase1)
-random.shuffle(phase3)
-
 # arrange all phases into a list representing the whole experiment
 experiment = [phase1]
+
+#each phase will be represented by a list of trials, each of which will in turn will be represented by a pair (STPRIDX and SPKRIDX) of parameters, different specific values of which we have already assigned to condition1, condition2, etc...
+for phase in phases:
+	for condition in phase['conditions']:
+		for t in range(1, phase['trialsPerCond']+1):
+			phase['trials'].append(condition)
+
+# shuffle trial order:
+for phase in experiment:
+	random.shuffle(phase['trials'])
+
+#random.shuffle(phase3)
 
 
 #########################################################################
@@ -165,7 +168,7 @@ chtr = chat.Chatter(serial_port='COM3', baud_rate=115200)
 # Iterate through every phase of the experiment:
 
 for phase in experiment: 
-    for trial in phase:
+    for trial in phase['trials']:
     
         for i, parameter in enumerate(paramAbbrevs):
             line = 'SET ' + parameter + ' ' + str(trial[i]) + '\n' 
