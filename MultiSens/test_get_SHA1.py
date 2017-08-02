@@ -7,7 +7,7 @@ baseDir = 'C:\\Users\\Dank\\Documents\\Arduino\\ArduFSM\\MultiSens'
 os.chdir(baseDir);
 
 # find all source code files in sketch directory
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x] 
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x] 
 
 # create a dictionary for each source code file in the sketch directory:
 srcList = []
@@ -62,13 +62,6 @@ for lib in libLines:
 		print('output:')
 		print(e.output)
 		sha1 = e.output
-	
-	"""
-	proc2 = subprocess.Popen(baseCmd, stdout=subprocess.PIPE, shell=True)
-	sha1, err = proc2.communicate()
-	print('return:')
-	print(sha1)
-	"""
 
 	# put path and SHA1 hash into dict:
 	e = {"path": libPath, "SHA1": sha1}
