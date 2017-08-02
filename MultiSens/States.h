@@ -138,6 +138,8 @@ into States.cpp.
 #define LICK_DETECTOR_PIN 10
 #define TIMER_PIN 11
 #define LED_PIN 9
+#define SPKR_COND_PIN1 4
+#define SPKR_COND_PIN2 5
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
@@ -191,7 +193,7 @@ class StimPeriod : public TimedState {
   public: 
     int trialNumber;
     int devFcns[NUM_DEVICES];
-    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin), trialNumber(1){ pinMode(_timerPin, OUTPUT); }
+    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin), trialNumber(1){ pinMode(_timerPin, OUTPUT); pinMode(LED_PIN, OUTPUT);}
 };
 
 class StateResponseWindow : public TimedState {
@@ -245,5 +247,9 @@ class StatePostRewardPause : public TimedState {
 };
 
 Device ** config_hw();
+
+void rotate_to_sensor();
+void rotate_one_step();
+void rotate_back();
 
 #endif
