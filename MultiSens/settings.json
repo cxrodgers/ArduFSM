@@ -1,0 +1,13 @@
+{
+'ArduinoBoard': 'arduino:avr:uno',
+'ArduinoShield': {
+	'ModelNo':'OM2',
+	'PowerSupply': '12V'
+	},
+'StepperModelNo':,
+'StepperDriverModelNo':,
+'StimArmLength':,
+'BaudRate': 115200,
+'SerialPort': 'COM3',
+'Speaker': 'Green',
+}
