@@ -243,7 +243,7 @@ void loop()
   #endif
   
   #ifdef __HWCONSTANTS_H_USE_IR_DETECTOR
-  if (time % 500 == 0) {
+  if (time % 2000 == 0) {
     touched = pollTouchInputs(time, 1);
   } else {
     touched = pollTouchInputs(time, 0);
