@@ -22,19 +22,66 @@ Phase 3: the same as phase 1
 #########################################################################
 II. REQUIREMENTS: 
 
-This script should be located in the MultiSens protocol directory of the local ArduFSM repository, which should in turn be located in the host PC's Arduino sketchbook folder. In addition to this file, the MultiSens directory must also contain the following files:
+1) This script should be located in the MultiSens protocol directory of the local ArduFSM repository, which should in turn be located in the host PC's Arduino sketchbook folder. In addition to this file, the MultiSens directory must also contain the following files:
 
-1. MultiSens.ino
-2. States.h
-3. States.cpp
+	a. MultiSens.ino
+	b. States.h
+	c. States.cpp
 
-In addition, the host PC's Arduino sketchbook library must contain the following libraries:
+2) The host PC's Arduino sketchbook library must contain the following libraries:
 
-1. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
-2. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
-3. devices, available at https://github.com/danieldkato/devices
+	a. chat, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/chat
+	b. TimedState, available at https://github.com/cxrodgers/ArduFSM/tree/master/libraries/TimedState
+	c. devices, available at https://github.com/danieldkato/devices
 
-The host PC's Python directory must include the pySerial module, which is documented at pythonhosted.org/pyserial/pyserial.html. The baud rates specified by this script and the Arduino-side code must agree.
+3) The directory containing this script must contain a JSON file called 'settings.json'. This file MUST define the following attributes:
+
+	a. "SerialPort" - the serial port used by the local Arduino installation to connect to the Arduino board
+	b. "BaudRate" - the baud rate used to communicate between the host PC and the Arduino. This must match the baud rate specified in MultiSens.ino
+	c. "StimDur_s" - stimulus duration, in seconds
+	d. "MinITI_s" - minimum inter-trial interval, in seconds
+	e. "MaxITI_s" - maximum inter-trial interval, in seconds
+	f. "ResponseWindow_s" - response window duration, in seconds (can be 0)
+	g. "Phases" - list of dicts defining the experiment structure. Each dict should in turn define the following attributes:
+		i. "trialsPerCond" - number of trials per condition to present throughout the course of the phase
+		ii. "conditions" - a list. Each element of this list is itself a list representing a single condition to be presented throughout the course of the phase. Each element of one such condition-list is a parameter-value pair. Each parameter-value pair is represented as a list, with the parameter name being the first element and and the parameter value being the second element. 
+		
+An example settings.json file could be as follows:
+
+{
+"BaudRate": 115200,
+"SerialPort": "COM3",
+"StimDur_s": 2,
+"ResponseWindow_s": 0,
+"MinITI_s": 3,
+"MaxITI_s": 6,
+"Phases": [
+	{"conditions":[ 
+			[["STPRIDX",1],["SPKRIDX",0]]
+			[["STPRIDX",0],["SPKRIDX",1]]
+			[["STPRIDX",0],["SPKRIDX",2]]
+			[["STPRIDX",1],["SPKRIDX",1]]
+			[["STPRIDX",1],["SPKRIDX",2]]
+			],
+	"trialsPerCond": 10},
+	{"conditions":[ 
+			[["STPRIDX",1],["SPKRIDX",1]]
+			],
+	"trialsPerCond": 300},
+	{"conditions":[ 
+			[["STPRIDX",1],["SPKRIDX",0]]
+			[["STPRIDX",0],["SPKRIDX",1]]
+			[["STPRIDX",0],["SPKRIDX",2]]
+			[["STPRIDX",1],["SPKRIDX",1]]
+			[["STPRIDX",1],["SPKRIDX",2]]
+			],
+	"trialsPerCond": 10},
+]
+}
+
+See also https://github.com/danieldkato/ArduFSM/blob/master/MultiSens/settings.json for an example settings file. 
+
+4) The host PC's Python directory must include the pySerial module, which is documented at pythonhosted.org/pyserial/pyserial.html. The baud rates specified by this script and the Arduino-side code must agree.
 
 If this script is not used to dynamically update timing parameters on each trial, then the timing parameters set here should match the default timing parameters set in the Arduino code. 
 
@@ -90,7 +137,7 @@ Once the trial parameters are received, the Arduino will wait to begin the upcom
 
 RELEASE_TRL\n
 
-Last updated DDK 2017-08-02
+Last updated DDK 2017-08-15
 
 
 ########################################################################
@@ -99,58 +146,34 @@ Last updated DDK 2017-08-02
 import chat
 import time
 import random
+import json
 random.seed()
 
 
 #########################################################################
+# Define experiment parameters:
+
+# Load settings from settings.json into Python dict object:
+with open('settings.json') as json_data:
+	settings = json.load(json_data)
+	
 # Define some general trial timing parameters (in seconds):    
-stimDur = 2 
-responseWindow = 0 
-minITI = 3 # let's make this slightly longer than the Arduino's ITI to be safe
-maxITI = 6 
+stimDur = settings['StimDur_s']
+responseWindow = settings['ResponseWindow_s']
+minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
+maxITI = settings['MaxITI_s']  
+	
+# Extract the experiment structure from the dict object:
+experiment = settings['Phases'] 
 
-
-#########################################################################
-# Define the different stimulus conditions by their STPRIDX and SPKRIDX values:
-
-paramAbbrevs = ['STPRIDX', 'SPKRIDX'] 
-
-condition1 = [ 1, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper & tone 1
-condition2 = [ 0, 0 ] # STPRIDX will be 0, SPKRIDX will be 0, i.e. neither stepper nor speaker
-condition3 = [ 1, 0 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. tone 1 only
-condition4 = [ 0, 1 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. stepper only
-condition5 = [ 0, 2 ] # STPRIDX will be 0, SPKRIDX will be 2, i.e. tone 2 only
-condition6 = [ 1, 2 ] # STPRIDX will be 1, SPKRIDX will be 2, i.e. stepper & tone 2
-
-
-#########################################################################
-# Define each phase of the experiment:
-
-phase1 = {
-	'conditions': [condition4, condition5], 
-	'trialsPerCond': 100,
-	'trials': []
-}
-
-phase2 = {
-	'conditions': [condition1],
-	'trialsPerCond': 10,
-	'trials': []
-}
-
-# phase 3 will consist of the same number and types of trials as phase 1:
-phase3 = phase1
-
-# arrange all phases into a list representing the whole experiment
-experiment = [phase1]
-
-#each phase will be represented by a list of trials, each of which will in turn will be represented by a pair (STPRIDX and SPKRIDX) of parameters, different specific values of which we have already assigned to condition1, condition2, etc...
+# Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
 for phase in experiment:
+	phase['trials'] = []
 	for condition in phase['conditions']:
 		for t in range(1, phase['trialsPerCond']+1):
 			phase['trials'].append(condition)
 
-# shuffle trial order:
+# Shuffle trial order:
 for phase in experiment:
 	random.shuffle(phase['trials'])
 
@@ -158,10 +181,8 @@ for phase in experiment:
 
 
 #########################################################################
-# Establish serial connection with Arduino:
-
-#We'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
-chtr = chat.Chatter(serial_port='COM3', baud_rate=115200)
+# Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
+chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'])
 
 
 #########################################################################
@@ -170,8 +191,8 @@ chtr = chat.Chatter(serial_port='COM3', baud_rate=115200)
 for phase in experiment: 
     for trial in phase['trials']:
     
-        for i, parameter in enumerate(paramAbbrevs):
-            line = 'SET ' + parameter + ' ' + str(trial[i]) + '\n' 
+        for stim in trial:
+            line = 'SET ' + stim[0] + ' ' + str(stim[1]) + '\n' 
             f = open(chtr.pipein.name, 'w') #write the set trial parameter command to the chatter object's input pipe
             f.write(line)
             f.close()
