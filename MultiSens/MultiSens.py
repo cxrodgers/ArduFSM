@@ -153,15 +153,6 @@ random.seed()
 
 
 #########################################################################
-# Get version information about host-PC-side scripts, Arduino code, and dependencies, and write to JSON file
-
-# Find all source code files in sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x] 
-
-
-#########################################################################
-# Define experiment parameters:
-
 # Load settings from settings.json into Python dict object:
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
@@ -171,9 +162,41 @@ stimDur = settings['StimDur_s']
 responseWindow = settings['ResponseWindow_s']
 minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
 maxITI = settings['MaxITI_s']  
+
+
+#########################################################################
+# Get version information about host-PC-side scripts, Arduino code, and dependencies, and write to JSON file
+
+# Find all source files in the main sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x] 
+
+baseDir = os.getcwd()
+baseCmd = 'git log -n 1 --pretty=format:%H -- '
+srcList = []
+# For each source file in the main sketch directory... 
+for s in sources:
 	
-# Extract the experiment structure from the dict object:
-experiment = settings['Phases'] 
+	# ... get  its full path:
+	fullPath = baseDir + '\\' + s
+	
+	# ... get its SHA1 hash:
+	fullCmd = baseCmd + ' -- ' + s
+	proc = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
+	sha1, err = proc.communicate()
+	
+	# ... put the path and SHA1 into a dict: 
+	d = {"path": fullPath, "SHA1": sha1}
+	srcList.append(d)
+
+settings['srcFiles'] = srcList	
+with open('metadata.json', 'w') as fp:
+	json.dump(settings, fp)
+
+
+#########################################################################
+# Define experiment structure:
+	
+experiment = settings['Phases']  # Extract the experiment structure from the dict object:
 
 # Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
 for phase in experiment:
