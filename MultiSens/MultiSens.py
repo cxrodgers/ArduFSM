@@ -117,17 +117,17 @@ paramAbbrevs = ['STPRIDX', 'SPKRIDX']
 
 condition1 = [ 1, 1 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper & tone 1
 condition2 = [ 0, 0 ] # STPRIDX will be 0, SPKRIDX will be 0, i.e. neither stepper nor speaker
-condition3 = [ 1, 0 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. tone 1 only
-condition4 = [ 0, 1 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. stepper only
-condition5 = [ 0, 2 ] # STPRIDX will be 1, SPKRIDX will be 1, i.e. stepper and tone 2
-condition6 = [ 1, 2 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. speaker only
+condition3 = [ 1, 0 ] # STPRIDX will be 1, SPKRIDX will be 0, i.e. tone 1 only
+condition4 = [ 0, 1 ] # STPRIDX will be 0, SPKRIDX will be 1, i.e. stepper only
+condition5 = [ 0, 2 ] # STPRIDX will be 0, SPKRIDX will be 2, i.e. tone 2 only
+condition6 = [ 1, 2 ] # STPRIDX will be 1, SPKRIDX will be 2, i.e. stepper & tone 2
 
 
 #########################################################################
 # Define each phase of the experiment:
 
 phase1 = {
-	'conditions': [condition1, condition6], 
+	'conditions': [condition4, condition5], 
 	'trialsPerCond': 100,
 	'trials': []
 }
@@ -145,7 +145,7 @@ phase3 = phase1
 experiment = [phase1]
 
 #each phase will be represented by a list of trials, each of which will in turn will be represented by a pair (STPRIDX and SPKRIDX) of parameters, different specific values of which we have already assigned to condition1, condition2, etc...
-for phase in phases:
+for phase in experiment:
 	for condition in phase['conditions']:
 		for t in range(1, phase['trialsPerCond']+1):
 			phase['trials'].append(condition)
