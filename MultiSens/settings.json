@@ -10,20 +10,22 @@
 "BaudRate": 115200,
 "SerialPort": "COM3",
 "Speaker": "Green",
+"StimDur_s": 2,
+"ResponseWindow_s": 0,
+"MinITI_s": 3,
+"MaxITI_s": 6,
 "Phases": [
 	{"conditions":[ 
-			[["STPRIDX",0],["SPKRIDX",1]],
-			[["STPRIDX",0],["SPKRIDX",2]]
+			{"STPRIDX":0,"SPKRIDX":2}
+		      ],
+	 "trialsPerCond": 5},
+	{"conditions":[ 
+			{"STPRIDX":0,"SPKRIDX":1}
 		      ],
 	 "trialsPerCond": 100},
 	{"conditions":[ 
-			[["STPRIDX",0],["SPKRIDX",1]],
-			[["STPRIDX",0],["SPKRIDX",2]]
-		      ],
-	 "trialsPerCond": 100},
-	{"conditions":[ 
-			[["STPRIDX",0],["SPKRIDX",1]],
-			[["STPRIDX",0],["SPKRIDX",2]]
+			{"STPRIDX":0,"SPKRIDX":1},
+			{"STPRIDX":0,"SPKRIDX":2}
 		      ],
 	 "trialsPerCond": 100}
 ]

@@ -44,7 +44,7 @@ II. REQUIREMENTS:
 	f. "ResponseWindow_s" - response window duration, in seconds (can be 0)
 	g. "Phases" - list of dicts defining the experiment structure. Each dict should in turn define the following attributes:
 		i. "trialsPerCond" - number of trials per condition to present throughout the course of the phase
-		ii. "conditions" - a list. Each element of this list is itself a list representing a single condition to be presented throughout the course of the phase. Each element of one such condition-list is a parameter-value pair. Each parameter-value pair is represented as a list, with the parameter name being the first element and and the parameter value being the second element. 
+		ii. "conditions" - a list. Each element of this list is itself a dict representing a single condition to be presented throughout the course of the phase. Each element of the dict represents one parameter of the corresponding condition.
 		
 An example settings.json file could be as follows:
 
@@ -57,23 +57,23 @@ An example settings.json file could be as follows:
 "MaxITI_s": 6,
 "Phases": [
 	{"conditions":[ 
-			[["STPRIDX",1],["SPKRIDX",0]]
-			[["STPRIDX",0],["SPKRIDX",1]]
-			[["STPRIDX",0],["SPKRIDX",2]]
-			[["STPRIDX",1],["SPKRIDX",1]]
-			[["STPRIDX",1],["SPKRIDX",2]]
+			{"STPRIDX":1, "SPKRIDX":0}
+			{"STPRIDX":0, "SPKRIDX":1}
+			{"STPRIDX":0, "SPKRIDX":2}
+			{"STPRIDX":1, "SPKRIDX":1}
+			{"STPRIDX":1, "SPKRIDX":2}
 			],
 	"trialsPerCond": 10},
 	{"conditions":[ 
-			[["STPRIDX",1],["SPKRIDX",1]]
+			{"STPRIDX":1, "SPKRIDX":1}
 			],
 	"trialsPerCond": 300},
 	{"conditions":[ 
-			[["STPRIDX",1],["SPKRIDX",0]]
-			[["STPRIDX",0],["SPKRIDX",1]]
-			[["STPRIDX",0],["SPKRIDX",2]]
-			[["STPRIDX",1],["SPKRIDX",1]]
-			[["STPRIDX",1],["SPKRIDX",2]]
+			{"STPRIDX":1, "SPKRIDX":0}
+			{"STPRIDX":0, "SPKRIDX":1}
+			{"STPRIDX":0, "SPKRIDX":2}
+			{"STPRIDX":1, "SPKRIDX":1}
+			{"STPRIDX":1, "SPKRIDX":2}
 			],
 	"trialsPerCond": 10},
 ]
@@ -147,7 +147,16 @@ import chat
 import time
 import random
 import json
+import os
+import subprocess
 random.seed()
+
+
+#########################################################################
+# Get version information about host-PC-side scripts, Arduino code, and dependencies, and write to JSON file
+
+# Find all source code files in sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x] 
 
 
 #########################################################################
@@ -191,8 +200,8 @@ chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['Baud
 for phase in experiment: 
     for trial in phase['trials']:
     
-        for stim in trial:
-            line = 'SET ' + stim[0] + ' ' + str(stim[1]) + '\n' 
+        for key, value in trial.iteritems():
+            line = 'SET ' + key + ' ' + str(value) + '\n' 
             f = open(chtr.pipein.name, 'w') #write the set trial parameter command to the chatter object's input pipe
             f.write(line)
             f.close()
