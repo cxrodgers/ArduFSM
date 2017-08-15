@@ -1,13 +1,30 @@
 {
-'ArduinoBoard': 'arduino:avr:uno',
-'ArduinoShield': {
-	'ModelNo':'OM2',
-	'PowerSupply': '12V'
+"ArduinoBoard": "arduino:avr:uno",
+"ArduinoShield": {
+	"ModelNo":"OM2",
+	"PowerSupply": "12V"
 	},
-'StepperModelNo':,
-'StepperDriverModelNo':,
-'StimArmLength':,
-'BaudRate': 115200,
-'SerialPort': 'COM3',
-'Speaker': 'Green',
+"StepperModelNo": "SY28STH32-0674A",
+"StepperDriverModelNo": "Pololu 2128",
+"StimArmLength_mm": 11.5,
+"BaudRate": 115200,
+"SerialPort": "COM3",
+"Speaker": "Green",
+"Phases": [
+	{"conditions":[ 
+			[["STPRIDX",0],["SPKRIDX",1]],
+			[["STPRIDX",0],["SPKRIDX",2]]
+		      ],
+	 "trialsPerCond": 100},
+	{"conditions":[ 
+			[["STPRIDX",0],["SPKRIDX",1]],
+			[["STPRIDX",0],["SPKRIDX",2]]
+		      ],
+	 "trialsPerCond": 100},
+	{"conditions":[ 
+			[["STPRIDX",0],["SPKRIDX",1]],
+			[["STPRIDX",0],["SPKRIDX",2]]
+		      ],
+	 "trialsPerCond": 100}
+]
 }
