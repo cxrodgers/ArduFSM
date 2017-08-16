@@ -184,6 +184,9 @@ for s in sources:
 	proc = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
 	sha1, err = proc.communicate()
 	
+	if not sha1:
+		sha1 = 'file not under git control'
+	
 	# ... put the path and SHA1 into a dict: 
 	d = {"path": fullPath, "SHA1": sha1}
 	srcList.append(d)
@@ -191,6 +194,7 @@ for s in sources:
 settings['srcFiles'] = srcList	
 with open('metadata.json', 'w') as fp:
 	json.dump(settings, fp)
+
 
 
 #########################################################################
