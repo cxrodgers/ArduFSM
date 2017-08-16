@@ -210,15 +210,14 @@ for s in sources:
 	proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
 	sha1, err = proc2.communicate()
 
-	if not sha1:
-		sha1 = 'file not under git control'
-
 	# ... put the path and SHA1 into a dict: 
 	d = {"path": fullPath, "SHA1": sha1}
 	
 	# ... add any warnings about uncommitted changes:
 	if diff:
 		d["warnings"] = 'Uncommitted changes detected before running.'
+	if not sha1:
+		d["warnings"] = 'File not under git control.'
 	
 	# ... append dictionary for current source code file to list
 	srcDicts.append(d)
