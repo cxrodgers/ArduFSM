@@ -16,7 +16,11 @@
 "MaxITI_s": 6,
 "Phases": [
 	{"conditions":[ 
-			{"STPRIDX":0,"SPKRIDX":2}
+			{"STPRIDX":1,"SPKRIDX":0},
+			{"STPRIDX":0,"SPKRIDX":1},
+			{"STPRIDX":0,"SPKRIDX":2},
+			{"STPRIDX":1,"SPKRIDX":1},
+			{"STPRIDX":1,"SPKRIDX":2}
 		      ],
 	 "trialsPerCond": 5},
 	{"conditions":[ 
@@ -24,9 +28,12 @@
 		      ],
 	 "trialsPerCond": 100},
 	{"conditions":[ 
+			{"STPRIDX":1,"SPKRIDX":0},
 			{"STPRIDX":0,"SPKRIDX":1},
-			{"STPRIDX":0,"SPKRIDX":2}
+			{"STPRIDX":0,"SPKRIDX":2},
+			{"STPRIDX":1,"SPKRIDX":1},
+			{"STPRIDX":1,"SPKRIDX":2}
 		      ],
-	 "trialsPerCond": 100}
+	 "trialsPerCond": 5}
 ]
 }
