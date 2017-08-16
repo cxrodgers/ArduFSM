@@ -168,6 +168,7 @@ maxITI = settings['MaxITI_s']
 # Define and save metadata to secondary storage:
 
 
+
 # Get version information for source files in main sketch directory:
 sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x]  #Find all source files in the main sketch directory:
 baseDir = os.getcwd()
@@ -190,16 +191,55 @@ for s in sources:
 	d = {"path": fullPath, "SHA1": sha1}
 	srcDicts.append(d)
 
-settings['srcFiles'] = srcDicts	
+# Get version information for Arduino libraries:
+inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
+arduinoPath = 'C:\\Program Files\\Arduino\\arduino-1.6.9-windows\\arduino-1.6.9'
+os.chdir(arduinoPath)
+verifyCmd = 'arduino_debug -v --verify ' + '"' + baseDir + '\\' + inos[0] + '"'
+print(verifyCmd)
+out, err = subprocess.Popen(verifyCmd, stdout=subprocess.PIPE, shell=True).communicate() # compile the sketch using the Arduino command-line interface
+out = out.splitlines() 
+libLines = [z for z in out if 'Using library' in z] # find any lines in the output that start with 'Using library'
+print(libLines)
+libDicts = []
+for lib in libLines:
+	
+	# get the path of the library:
+	ind = lib.find(':')
+	libPath = lib[ind+2:]
+
+	# if the line ends in '(legacy)' because it's been previously compiled, exclude '(legacy)' to isolate the path to the library
+	if libPath[-len(' (legacy)'):]  == ' (legacy)':
+		libPath = libPath[:-len(' (legacy)')]
+	print(libPath)
+	
+	os.chdir(libPath) # cd to the library directory
+	
+	try:
+		sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
+	except subprocess.CalledProcessError as e:
+		print('output:')
+		print(e.output)
+		sha1 = e.output
+	
+		# put path and SHA1 hash into dict:
+	e = {"path": libPath, "SHA1": sha1}
+	libDicts.append(e)
+	
+	
+	# this part is a bit cludgey due to the way the repos are organized. Libraries directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 
+
+os.chdir(baseDir)
+
+settings['srcFiles'] =srcDicts
+settings['libraries'] = libDicts
 with open('metadata.json', 'w') as fp:
 	json.dump(settings, fp)
-
-
 
 #########################################################################
 # Define experiment structure:
 	
-experiment = settings['Phases']  # Extract the experiment structure from the dict object:
+experiment = settings['Phases']  # Extract the experiment structure data from the dict object:
 
 # Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
 for phase in experiment:
