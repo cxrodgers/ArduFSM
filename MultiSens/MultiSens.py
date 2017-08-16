@@ -190,18 +190,19 @@ for s in sources:
 	if diff:
 		raise ValueError('Uncommitted changes detected in' + s + '. Please commit or stash any changes before proceeding.')
 	
-	# ... get its SHA1 hash:
-	fullCmd = baseCmd + ' -- ' + s
-	proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
-	sha1, err = proc2.communicate()
+	# ... if there are no uncommitted changes, proceed with getting its SHA1 hash:
+	else:
+		fullCmd = baseCmd + ' -- ' + s
+		proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
+		sha1, err = proc2.communicate()
 	
-	if not sha1:
-		sha1 = 'file not under git control'
+		if not sha1:
+			sha1 = 'file not under git control'
 	
-	# ... put the path and SHA1 into a dict: 
-	d = {"path": fullPath, "SHA1": sha1}
-	srcDicts.append(d)
-settings['srcFiles'] =srcDicts
+		# ... put the path and SHA1 into a dict: 
+		d = {"path": fullPath, "SHA1": sha1}
+		srcDicts.append(d)
+	settings['srcFiles'] =srcDicts
 
 # Get version information for Arduino libraries:
 inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
