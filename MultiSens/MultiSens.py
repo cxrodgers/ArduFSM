@@ -173,7 +173,7 @@ settings['Hostname'] = socket.gethostname()
 settings['Date'] = time.strftime("%Y-%m-%d")
 
 # Get version information for source files in main sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x]  #Find all source files in the main sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' or '.vi' in x]  #Find all source files in the main sketch directory:
 baseDir = os.getcwd()
 baseCmd = 'git log -n 1 --pretty=format:%H -- '
 srcDicts = []
