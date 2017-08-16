@@ -186,41 +186,51 @@ settings['Hostname'] = socket.gethostname()
 settings['Date'] = time.strftime("%Y-%m-%d")
 
 # Get version information for source files in main sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x or '.vi' in x]  #Find all source files in the main sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if ('.pyc' not in x) and ('.cpp' in x or '.h' in x or '.ino' in x or '.py' in x or '.vi' in x)]  #Find all source files in the main sketch directory:
 baseDir = os.getcwd()
 baseCmd = 'git log -n 1 --pretty=format:%H -- '
 srcDicts = []
 for s in sources:
 	
+	warns = []
+	
 	# ... get  its full path:
 	fullPath = baseDir + '\\' + s
+	srcDict = {"path": fullPath}
 	
-	# ... check whether there are any uncommitted changes:
-	proc = subprocess.Popen('git diff -- ' + s, stdout=subprocess.PIPE, shell=True)
-	diff, err = proc.communicate()
-	
-	# ... if there are uncommitted changes, throw an error and ask the user to commit or stash any changes:
-	if diff:
-		warnings.warn('Uncommitted changes detected in ' + s + '. It is advised to commit or stash any changes before proceeding')
-		choice = raw_input("Proceed anyway? ([y]/n)")
-		checkContinue(choice)
-	
-	# ... if there are no uncommitted changes or if the user elects not to abort, proceed with getting its SHA1 hash:	
-	fullCmd = baseCmd + ' -- ' + s
+	# ...  try to find the SHA1 of its latest git commit:	
+	fullCmd = baseCmd + ' -- ' + '"' + s + '"'
 	proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
 	sha1, err = proc2.communicate()
 
-	# ... put the path and SHA1 into a dict: 
-	d = {"path": fullPath, "SHA1": sha1}
+	# ... if a SHA1 was successfully retrieved, then add it to the dict:
+	if sha1:
+		srcDict["SHA1"] = sha1
+	# ... otherwise, output a warning that the file is not under git control and give the user a chance to abort execution
+	else:
+		warnTxt = s + ' not under git control. It is advised that all source code files be under git control.'
+		warns.append(warnTxt)
+		warnings.warn(warnTxt)		
+		choice = raw_input("Proceed anyway? ([y]/n)")
+		checkContinue(choice)
+
+	# Check whether there are any uncommitted changes:
+	proc = subprocess.Popen('git diff -- ' + s, stdout=subprocess.PIPE, shell=True)
+	diff, err = proc.communicate()
 	
-	# ... add any warnings about uncommitted changes:
+	# ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
 	if diff:
-		d["warnings"] = 'Uncommitted changes detected before running.'
-	if not sha1:
-		d["warnings"] = 'File not under git control.'
+		warnTxt = 'Uncommitted changes detected in ' + s + '. It is advised to commit or stash any changes before proceeding.'
+		warns.append(warnTxt)
+		warnings.warn(warnTxt)
+		choice = raw_input("Proceed anyway? ([y]/n)")
+		checkContinue(choice)
+	
+	if warns: 
+		srcDict["Warnings"] = warns
 	
 	# ... append dictionary for current source code file to list
-	srcDicts.append(d)
+	srcDicts.append(srcDict)
 
 # Write list of dicts, one for each source code file, to settings:
 settings['srcFiles'] =srcDicts
@@ -235,9 +245,10 @@ print(verifyCmd)
 out, err = subprocess.Popen(verifyCmd, stdout=subprocess.PIPE, shell=True).communicate() # compile the sketch using the Arduino command-line interface
 out = out.splitlines() 
 libLines = [z for z in out if 'Using library' in z] # find any lines in the output that start with 'Using library'
-print(libLines)
 libDicts = []
 for lib in libLines:
+	
+	warns = []
 	
 	# get the path of the library:
 	ind = lib.find(':')
@@ -248,23 +259,77 @@ for lib in libLines:
 		libPath = libPath[:-len(' (legacy)')]
 	print(libPath)
 	
+	# get the name of the library:
+	ind2 = libPath.rfind('\\')
+	libName = libPath[ind2+1:]
+	print(libName)
+	libDict = {"libPath": libPath}
 	os.chdir(libPath) # cd to the library directory
 	
-	try:
-		sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
-	except subprocess.CalledProcessError as e:
-		print('output:')
-		sha1 = e.output
+	# Check if the library has uncommitted changes.  This part is a bit cludgey due to the way the repos are organized. Library directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 	
 	
-		# put path and SHA1 hash into dict:
-	e = {"path": libPath, "SHA1": sha1}
-	libDicts.append(e)
+	# If the library is a full repo in its own right:
+	if 'libraries' not in os.listdir(os.getcwd()):
+
+		# ... try to get the SHA1 of the directory's latest  git commit
+		try:
+			sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
+		# ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
+		except subprocess.CalledProcessError as e:
+			warns.append(e.output)
+		
+		#  Check whether there are any uncommitted changes:
+		proc = subprocess.Popen('git diff', stdout=subprocess.PIPE, shell=True)
+		diff, err = proc.communicate()		
+		
+		# ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
+		if diff:
+			warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
+			warns.append(warnTxt)
+			warnings.warn(warnTxt)
+			choice = raw_input("Proceed anyway? ([y]/n)")
+			checkContinue(choice)
+			
+			
+	# If the library is a sparse checkout of ArduFSM:		
+	else:
+		# get the names of the .h and .cpp files in the top-level directory:
+		srcFiles = [x for x in os.listdir(os.getcwd()) if '.h' in x or '.cpp' in x]
+		os.chdir('libraries\\' + libName)
+		
+		# for each file in the top-level directory, make sure it has the same hash object as the corresponding file in the lower-level directory (that was originally pulled from the repo)
+		for s in srcFiles:
+			outerSHA1 = subprocess.check_output(['git', 'hash-object', s])
+			innerSHA1 = subprocess.check_output(['git', 'hash-object', s])	
+
+		# ... if there is a mismatch, warn the user and offer a chance to abort execution
+		if outerSHA1 != innerSHA1:
+			warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
+			warns.append(warnTxt)
+			warnings.warn(warnTxt)
+			choice = raw_input("Proceed anyway? ([y]/n)")
+			checkContinue(choice)				
+
+		# ... if there's no mistmatch or if the user instructs the program to proceed anyway, try to get the directory's latest SHA1
+		try:
+			sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
+		# ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
+		except subprocess.CalledProcessError as e:
+			warns.append(e.output)
+	
+	if sha1:
+		libDict['SHA1'] = sha1
+	else:
+		warns.append('At least one source file in library not under git control.')
+		
+	if warns:
+		libDict['Warnings'] = warns
+		
+	libDicts.append(libDict)
+	
 settings['libraries'] = libDicts
 	
 	
-	# this part is a bit cludgey due to the way the repos are organized. Libraries directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 
-
-
 #########################################################################
 # Define experiment structure:
 	
