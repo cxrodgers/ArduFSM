@@ -173,7 +173,7 @@ settings['Hostname'] = socket.gethostname()
 settings['Date'] = time.strftime("%Y-%m-%d")
 
 # Get version information for source files in main sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' or '.vi' in x]  #Find all source files in the main sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x or '.vi' in x]  #Find all source files in the main sketch directory:
 baseDir = os.getcwd()
 baseCmd = 'git log -n 1 --pretty=format:%H -- '
 srcDicts = []
@@ -182,10 +182,18 @@ for s in sources:
 	# ... get  its full path:
 	fullPath = baseDir + '\\' + s
 	
+	# ... check whether there are any uncommitted changes:
+	proc = subprocess.Popen('git diff ' + s, stdout=subprocess.PIPE, shell=True)
+	diff, err = proc.communicate()
+	
+	# ... if there are uncommitted changes, throw an error and ask the user to commit or stash any changes:
+	if diff:
+		raise ValueError('Uncommitted changes detected in' + s '. Please commit or stash any changes before proceeding.')
+	
 	# ... get its SHA1 hash:
 	fullCmd = baseCmd + ' -- ' + s
-	proc = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
-	sha1, err = proc.communicate()
+	proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
+	sha1, err = proc2.communicate()
 	
 	if not sha1:
 		sha1 = 'file not under git control'
