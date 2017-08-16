@@ -183,7 +183,7 @@ for s in sources:
 	fullPath = baseDir + '\\' + s
 	
 	# ... check whether there are any uncommitted changes:
-	proc = subprocess.Popen('git diff ' + s, stdout=subprocess.PIPE, shell=True)
+	proc = subprocess.Popen('git diff -- ' + s, stdout=subprocess.PIPE, shell=True)
 	diff, err = proc.communicate()
 	
 	# ... if there are uncommitted changes, throw an error and ask the user to commit or stash any changes:
