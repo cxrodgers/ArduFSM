@@ -149,6 +149,8 @@ import random
 import json
 import os
 import subprocess
+import socket
+import copy
 random.seed()
 
 
@@ -167,7 +169,8 @@ maxITI = settings['MaxITI_s']
 #########################################################################
 # Define and save metadata to secondary storage:
 
-
+settings['Hostname'] = socket.gethostname()
+settings['Date'] = time.strftime("%Y-%m-%d")
 
 # Get version information for source files in main sketch directory:
 sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x]  #Find all source files in the main sketch directory:
@@ -190,6 +193,7 @@ for s in sources:
 	# ... put the path and SHA1 into a dict: 
 	d = {"path": fullPath, "SHA1": sha1}
 	srcDicts.append(d)
+settings['srcFiles'] =srcDicts
 
 # Get version information for Arduino libraries:
 inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
@@ -219,27 +223,21 @@ for lib in libLines:
 		sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
 	except subprocess.CalledProcessError as e:
 		print('output:')
-		print(e.output)
 		sha1 = e.output
 	
 		# put path and SHA1 hash into dict:
 	e = {"path": libPath, "SHA1": sha1}
 	libDicts.append(e)
+settings['libraries'] = libDicts
 	
 	
 	# this part is a bit cludgey due to the way the repos are organized. Libraries directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 
 
-os.chdir(baseDir)
-
-settings['srcFiles'] =srcDicts
-settings['libraries'] = libDicts
-with open('metadata.json', 'w') as fp:
-	json.dump(settings, fp)
 
 #########################################################################
 # Define experiment structure:
 	
-experiment = settings['Phases']  # Extract the experiment structure data from the dict object:
+experiment = copy.deepcopy(settings['Phases'])  # Extract the experiment structure data from the dict object:
 
 # Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
 for phase in experiment:
@@ -259,6 +257,14 @@ for phase in experiment:
 # Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
 chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'])
 
+# Save serial communication start time to settings:
+settings['SerialStartTime'] = time.strftime("%H:%M:%S")
+
+# Save to secondary storage:
+os.chdir(baseDir)
+with open('metadata.json', 'w') as fp:
+	json.dump(settings, fp)
+	
 
 #########################################################################
 # Iterate through every phase of the experiment:
