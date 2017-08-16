@@ -85,6 +85,15 @@ def get_specific_parameters_from_user_input(user_input):
         specific_parameters[param_type].update(box_parameters[param_type])
         specific_parameters[param_type].update(board_parameters[param_type])
         specific_parameters[param_type].update(mouse_parameters[param_type])
+    
+    # Hack because "do not use ir dectector" is encoded as '0' not None
+    if specific_parameters['C']['use_ir_detector'] == '0':
+        specific_parameters['C'].pop('use_ir_detector')
+    
+    #~ print board_parameters
+    #~ print mouse_parameters
+    #~ print specific_parameters['C']
+    #~ 1/0
 
     # Check the required ones are present
     for param_name in ['protocol_name', 'script_name', 'serial_port']:

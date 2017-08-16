@@ -53,7 +53,10 @@ def fix_ir_detector_params(res):
     else:
         # Hack because a C and Python parameter have the same name
         # False -> None
-        res['C']['use_ir_detector'] = None    
+        res['C']['use_ir_detector'] = '0'
+
+        # This has to be '0' or else it gets removed from the dict completely
+        # and then the precedence update order fails
 
         # Hack because I don't know how to store a list of filenames
         # in the django db
