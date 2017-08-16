@@ -148,12 +148,25 @@ import time
 import random
 import json
 import os
+import sys
 import subprocess
 import socket
 import copy
+import warnings
 random.seed()
 
-
+############################################################################
+# Define some utility function
+def checkContinue(str):
+	if str == 'n':
+		sys.exit('Executiuon terminated by user.')
+	elif str == 'y':
+		return
+	else:
+		choice = raw_input('Please enter y or n.')
+		checkCont(choice)
+		
+		
 #########################################################################
 # Load settings from settings.json into Python dict object:
 with open('settings.json') as json_data:
@@ -188,21 +201,31 @@ for s in sources:
 	
 	# ... if there are uncommitted changes, throw an error and ask the user to commit or stash any changes:
 	if diff:
-		raise ValueError('Uncommitted changes detected in' + s + '. Please commit or stash any changes before proceeding.')
+		warnings.warn('Uncommitted changes detected in ' + s + '. It is advised to commit or stash any changes before proceeding')
+		choice = raw_input("Proceed anyway? ([y]/n)")
+		checkContinue(choice)
 	
-	# ... if there are no uncommitted changes, proceed with getting its SHA1 hash:
-	else:
-		fullCmd = baseCmd + ' -- ' + s
-		proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
-		sha1, err = proc2.communicate()
+	# ... if there are no uncommitted changes or if the user elects not to abort, proceed with getting its SHA1 hash:	
+	fullCmd = baseCmd + ' -- ' + s
+	proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
+	sha1, err = proc2.communicate()
+
+	if not sha1:
+		sha1 = 'file not under git control'
+
+	# ... put the path and SHA1 into a dict: 
+	d = {"path": fullPath, "SHA1": sha1}
 	
-		if not sha1:
-			sha1 = 'file not under git control'
+	# ... add any warnings about uncommitted changes:
+	if diff:
+		d["warnings"] = 'Uncommitted changes detected before running.'
 	
-		# ... put the path and SHA1 into a dict: 
-		d = {"path": fullPath, "SHA1": sha1}
-		srcDicts.append(d)
-	settings['srcFiles'] =srcDicts
+	# ... append dictionary for current source code file to list
+	srcDicts.append(d)
+
+# Write list of dicts, one for each source code file, to settings:
+settings['srcFiles'] =srcDicts
+
 
 # Get version information for Arduino libraries:
 inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
