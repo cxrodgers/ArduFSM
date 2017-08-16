@@ -188,7 +188,7 @@ for s in sources:
 	
 	# ... if there are uncommitted changes, throw an error and ask the user to commit or stash any changes:
 	if diff:
-		raise ValueError('Uncommitted changes detected in' + s '. Please commit or stash any changes before proceeding.')
+		raise ValueError('Uncommitted changes detected in' + s + '. Please commit or stash any changes before proceeding.')
 	
 	# ... get its SHA1 hash:
 	fullCmd = baseCmd + ' -- ' + s
