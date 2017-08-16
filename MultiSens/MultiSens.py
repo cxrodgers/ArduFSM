@@ -165,15 +165,14 @@ maxITI = settings['MaxITI_s']
 
 
 #########################################################################
-# Get version information about host-PC-side scripts, Arduino code, and dependencies, and write to JSON file
+# Define and save metadata to secondary storage:
 
-# Find all source files in the main sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x] 
 
+# Get version information for source files in main sketch directory:
+sources = [x for x in os.listdir(os.getcwd()) if '.cpp' in x or '.h' in x or '.ino' in x or '.py' in x]  #Find all source files in the main sketch directory:
 baseDir = os.getcwd()
 baseCmd = 'git log -n 1 --pretty=format:%H -- '
-srcList = []
-# For each source file in the main sketch directory... 
+srcDicts = []
 for s in sources:
 	
 	# ... get  its full path:
@@ -189,9 +188,9 @@ for s in sources:
 	
 	# ... put the path and SHA1 into a dict: 
 	d = {"path": fullPath, "SHA1": sha1}
-	srcList.append(d)
+	srcDicts.append(d)
 
-settings['srcFiles'] = srcList	
+settings['srcFiles'] = srcDicts	
 with open('metadata.json', 'w') as fp:
 	json.dump(settings, fp)
 
