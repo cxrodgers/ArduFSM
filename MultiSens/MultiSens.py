@@ -264,13 +264,13 @@ for phase in experiment:
 
 #########################################################################
 # Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
+os.chdir(baseDir)
 chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'])
 
 # Save serial communication start time to settings:
 settings['SerialStartTime'] = time.strftime("%H:%M:%S")
 
 # Save to secondary storage:
-os.chdir(baseDir)
 with open('metadata.json', 'w') as fp:
 	json.dump(settings, fp)
 	
