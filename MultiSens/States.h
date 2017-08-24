@@ -128,20 +128,28 @@ into States.cpp.
 #include "devices.h"                    
 #define NUM_DEVICES 2
 
-#define STPR1_PIN1 8
-#define STPR1_PIN2 6      
-#define ENBL1_PIN 7
-#define HALL1_PIN 1
+#define STPR_PIN 6
+#define DIR_PIN 8
+//#define STPR1_PIN2 6      
+//#define ENBL1_PIN 7
+#define HALL_PIN 0
 #define SPKR_PIN 13
 #define SOLENOID_PIN 2
 #define LICK_DETECTOR_PIN 10
+#define TIMER_PIN 11
+#define LED_PIN 9
+#define SPKR_COND_PIN1 4
+#define SPKR_COND_PIN2 5
 
 #define NUM_STEPS 200
-#define HALL1_THRESH 50
-#define STPR1_SPEED 80
-#define STPR1_CW -20
-#define STPR1_CCW 20
-#define HALL1_VAL 500  
+#define HALL_THRESH 50
+#define STPR1_SPEED 100
+#define STPR1_CW 50
+#define STPR1_CCW -50
+#define HALL_VAL 500  
+#define STEP_HALFDELAY_US 1500
+#define MICROSTEP 8
+#define REVERSE_ROTATION_DEGREES 50
 
 //// States
 // Defines the finite state machine for this protocol
@@ -176,14 +184,16 @@ int state_reward(STATE_TYPE& next_state);
 // s_setup, loop(), and s_finish() that you are going to define.
 class StimPeriod : public TimedState {
   protected:
+    int _timerPin;
     void s_setup();
     void loop();
     void s_finish();
     boolean licked;
 
   public: 
+    int trialNumber;
     int devFcns[NUM_DEVICES];
-    StimPeriod(unsigned long d) : TimedState(d) { };
+    StimPeriod(unsigned long d, int timerPin) : TimedState(d), _timerPin(timerPin), trialNumber(1){ pinMode(_timerPin, OUTPUT); pinMode(LED_PIN, OUTPUT);}
 };
 
 class StateResponseWindow : public TimedState {
@@ -237,5 +247,9 @@ class StatePostRewardPause : public TimedState {
 };
 
 Device ** config_hw();
+
+void rotate_to_sensor();
+void rotate_one_step();
+void rotate_back();
 
 #endif

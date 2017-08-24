@@ -71,6 +71,8 @@ extern bool flag_start_trial;
 
 int lickThresh = 900;
 int Device::deviceCounter = 0;
+int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
+String stprState = "RETRACTED";
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -80,7 +82,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   };
 long param_values[N_TRIAL_PARAMS] = {
   0, 0, 2000, 0, 50, 
-  500, 6000, 3000, 3000, 1,
+  500, 6000, 3000, 0, 1,
   1   
   };
 
@@ -128,7 +130,7 @@ int devIndices[NUM_DEVICES] = { tpidx_STPRIDX, tpidx_SPKRIDX };
  * These objects will be invoked from stateDependentOperations, the function for 
  * deciding how the Arduino should behave based on the current state. 
  */
-static StimPeriod stim_period(param_values[tpidx_STIM_DUR]);
+static StimPeriod stim_period(param_values[tpidx_STIM_DUR], TIMER_PIN);
 static StateResponseWindow srw(param_values[tpidx_RESP_WIN_DUR]);
 static StateFakeResponseWindow sfrw(param_values[tpidx_RESP_WIN_DUR]);
 static StateInterTrialInterval state_inter_trial_interval(param_values[tpidx_ITI]);
@@ -165,7 +167,10 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
     
         // Set up the trial based on received trial parameters
         Serial.print(time);
-        Serial.println(" TRL_START");
+        Serial.print(" TRL_");
+        Serial.print(String(stim_period.trialNumber));
+        Serial.println("_START");        
+        //Serial.println(" TRL_START");
         for(int i=0; i < N_TRIAL_PARAMS; i++)
         {
           if (param_report_ET[i]) 
@@ -211,7 +216,6 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
         state_reward(next_state);
         break;
     
-      case POST_REWARD_PAUSE:
         state_post_reward_pause.run(time);
         break;    
     
@@ -242,29 +246,76 @@ void stateDependentOperations(STATE_TYPE current_state, unsigned long time){
  
 //StimPeriod definitions:
 void StimPeriod::s_setup(){
+
+
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
-  for ( int i = 0; i < NUM_DEVICES; i++ ){
-    devFcns[i] = param_values[devIndices[i]]; 
+
+  if (param_values[tpidx_SPKRIDX] == 1){
+          digitalWrite(SPKR_COND_PIN1, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN1, LOW);          
+        } else if (param_values[tpidx_SPKRIDX] == 2){
+          digitalWrite(SPKR_COND_PIN2, HIGH);
+          delay(10);
+          digitalWrite(SPKR_COND_PIN2, LOW);
   }
+
+  delay(100);
+
+  digitalWrite(_timerPin, HIGH);
+  digitalWrite(LED_PIN, HIGH);
+  delay(10);
+  digitalWrite(LED_PIN, LOW);
+  digitalWrite(_timerPin, LOW);
+
+  if(param_values[tpidx_SPKRIDX]!=0  ){
+      Serial.println("playing audio");
+      digitalWrite(SPKR_PIN, HIGH);
+      delay(10);    
+      digitalWrite(SPKR_PIN, LOW);
+    }
+    
+  if(param_values[tpidx_STPRIDX]==1){
+        rotate_to_sensor();
+      }
 }
 
 void StimPeriod::loop(){
   unsigned long time = millis();
+
+  /*
+  if(param_values[tpidx_SPKRIDX==1]){
+      tone(SPKR_PIN,random(10000,20000));
+  }
+  */
+    
+  /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> loop(devFcns[i]);
   }
+  */
+  
   //on rewarded trials, make reward coterminous with stimulus
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
   }
+
 }
 
 void StimPeriod::s_finish()
 {
+  
+  /*
   for ( int i = 0; i < NUM_DEVICES; i++ ){
     devPtrs[i] -> s_finish();
   }
+  */
+  
+   if(stprState == "EXTENDED"){
+       rotate_back();
+   }
+    
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
   if ( licked == 1 ){ 
@@ -274,8 +325,36 @@ void StimPeriod::s_finish()
   else {
     next_state = RESPONSE_WINDOW;
   }
+  trialNumber++;
 }
 
+void rotate_to_sensor(){
+    digitalWrite(DIR_PIN, LOW);
+    //int hall_val = analogRead(HALL_PIN);
+    while(analogRead(HALL_PIN)>HALL_THRESH){
+        rotate_one_step(); //how to deal with direction??
+        //delay(1);
+        //hall_val = analogRead(HALL_PIN);
+  }
+  Serial.println("stepper extended");
+  stprState  = "EXTENDED";
+}
+
+void rotate_one_step()
+{
+  digitalWrite(STPR_PIN, HIGH);
+  delayMicroseconds( STEP_HALFDELAY_US / MICROSTEP );
+  digitalWrite(STPR_PIN, LOW);
+  delayMicroseconds( STEP_HALFDELAY_US / MICROSTEP );
+}
+
+void rotate_back(){
+  digitalWrite(DIR_PIN, HIGH);
+  //delay(1);
+  for(int i = 0; i < numSteps; i++){rotate_one_step();}
+  Serial.println("stepper retracted");
+  stprState = "RETRACTED";
+}
 
 // StateResponseWindow definitions:
 void StateResponseWindow::update()
@@ -443,10 +522,10 @@ boolean checkLicks(){
 
 Device ** config_hw(){ 
     
-    bool debug = 1; // set to 0 if using real hardware devices; set to 1 if using dummy devices
+    bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
     
     if ( debug == 0 ){
-        static myStepper myStp1( NUM_STEPS, STPR1_PIN1, STPR1_PIN1, ENBL1_PIN, HALL1_PIN, HALL1_THRESH, STPR1_SPEED, STPR1_CW, STPR1_CCW, HALL1_VAL );  
+        static myStepper myStp1( STPR_PIN,  DIR_PIN, HALL_PIN, HALL_THRESH, HALL_VAL, STEP_HALFDELAY_US, MICROSTEP, REVERSE_ROTATION_DEGREES );  
         static mySpeaker spkr1( SPKR_PIN );
   
         static Device * devPtrs[] = { &myStp1, &spkr1 };
