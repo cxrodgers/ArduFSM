@@ -7,6 +7,8 @@
 "StepperModelNo": "SY28STH32-0674A",
 "StepperDriverModelNo": "Pololu 2128",
 "StimArmLength_mm": 11.5,
+"whiskerCam": {"model": "PS3 eye",
+		"lens": "PT-1220 12.0 mm, F2.0"},
 "BaudRate": 115200,
 "SerialPort": "COM3",
 "Speaker": "Green",
@@ -22,18 +24,6 @@
 			{"STPRIDX":1,"SPKRIDX":1},
 			{"STPRIDX":1,"SPKRIDX":2}
 		      ],
-	 "trialsPerCond": 5},
-	{"conditions":[ 
-			{"STPRIDX":0,"SPKRIDX":1}
-		      ],
-	 "trialsPerCond": 100},
-	{"conditions":[ 
-			{"STPRIDX":1,"SPKRIDX":0},
-			{"STPRIDX":0,"SPKRIDX":1},
-			{"STPRIDX":0,"SPKRIDX":2},
-			{"STPRIDX":1,"SPKRIDX":1},
-			{"STPRIDX":1,"SPKRIDX":2}
-		      ],
-	 "trialsPerCond": 5}
+	 "trialsPerCond": 40}
 ]
 }
