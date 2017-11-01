@@ -72,6 +72,7 @@ else:
 
 ## Only show the IR_plot if use_ir_detector
 SHOW_IR_PLOT = runner_params.get('use_ir_detector', False)
+SHOW_IR_PLOT = False
 
 # sensor plot
 SHOW_SENSOR_PLOT = False
