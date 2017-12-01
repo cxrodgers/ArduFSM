@@ -252,5 +252,7 @@ Device ** config_hw();
 void rotate_to_sensor();
 void rotate_one_step();
 void rotate_back();
+void trigger_stepper();
+void trigger_audio();
 
 #endif
