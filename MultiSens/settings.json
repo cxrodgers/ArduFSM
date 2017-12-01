@@ -18,11 +18,11 @@
 "MaxITI_s": 6,
 "Phases": [
 	{"conditions":[ 
-			{"STPRIDX":1,"SPKRIDX":0},
-			{"STPRIDX":0,"SPKRIDX":1},
-			{"STPRIDX":0,"SPKRIDX":2},
-			{"STPRIDX":1,"SPKRIDX":1},
-			{"STPRIDX":1,"SPKRIDX":2}
+			{"STPRIDX":1,"SPKRIDX":0,"ISL":0},
+			{"STPRIDX":0,"SPKRIDX":1,"ISL":0},
+			{"STPRIDX":0,"SPKRIDX":2,"ISL":0},
+			{"STPRIDX":1,"SPKRIDX":1,"ISL":0},
+			{"STPRIDX":1,"SPKRIDX":2,"ISL":0}
 		      ],
 	 "trialsPerCond": 40}
 ]
