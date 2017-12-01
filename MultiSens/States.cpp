@@ -78,12 +78,12 @@ String stprState = "RETRACTED";
 char* param_abbrevs[N_TRIAL_PARAMS] = {
   "STPRIDX", "SPKRIDX", "STIMDUR", "REW", "REW_DUR", 
   "IRI", "TO", "ITI", "RWIN", "MRT", 
-  "TOE" 
+  "TOE", "ISL" 
   };
 long param_values[N_TRIAL_PARAMS] = {
   0, 0, 2000, 0, 50, 
   500, 6000, 3000, 0, 1,
-  1   
+  1, 0   
   };
 
 // Whether to report on each trial  
@@ -94,7 +94,7 @@ long param_values[N_TRIAL_PARAMS] = {
 bool param_report_ET[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 0, 
   0, 0, 0, 0, 0,
-  0
+  0, 0
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -269,16 +269,16 @@ void StimPeriod::s_setup(){
   digitalWrite(LED_PIN, LOW);
   digitalWrite(_timerPin, LOW);
 
-  if(param_values[tpidx_SPKRIDX]!=0  ){
-      Serial.println("playing audio");
-      digitalWrite(SPKR_PIN, HIGH);
-      delay(10);    
-      digitalWrite(SPKR_PIN, LOW);
-    }
-    
-  if(param_values[tpidx_STPRIDX]==1){
-        rotate_to_sensor();
-      }
+  if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
+      trigger_stepper();
+      delay(param_values[tpidx_INTERSTIM_LATENCY]);
+      trigger_audio():
+    }  else {
+      trigger_audio():
+      delay(param_values[tpidx_INTERSTIM_LATENCY]);
+      trigger_stepper();
+    } 
+
 }
 
 void StimPeriod::loop(){
@@ -518,6 +518,21 @@ boolean checkLicks(){
     }
   return licking;
 }
+
+void trigger_audio(){
+    if(param_values[tpidx_SPKRIDX]!=0  ){
+      Serial.println("playing audio");
+      digitalWrite(SPKR_PIN, HIGH);
+      delay(10);    
+      digitalWrite(SPKR_PIN, LOW);
+    }
+  }
+
+void trigger_stepper(){
+    if(param_values[tpidx_STPRIDX]==1){
+        rotate_to_sensor();
+      }
+  }
 
 
 Device ** config_hw(){ 

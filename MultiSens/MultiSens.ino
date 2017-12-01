@@ -1,4 +1,4 @@
-/* Last updated DDK 6/7/16
+/* Last updated DDK 2017-12-01
  * 
  * OVERVIEW:
  * This file is the main Arduino sketch for the ArduFSM protocol MultiSens. This 

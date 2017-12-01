@@ -86,7 +86,7 @@ into States.cpp.
 // And we can argue about how these two categories map onto the categories above.
 //
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 11
+#define N_TRIAL_PARAMS 12
 #define tpidx_STPRIDX 0 // reqd
 #define tpidx_SPKRIDX 1 // latch
 #define tpidx_STIM_DUR 2 // reqd
@@ -98,6 +98,7 @@ into States.cpp.
 #define tpidx_RESP_WIN_DUR 8
 #define tpidx_MRT 9
 #define tpidx_TERMINATE_ON_ERR 10 
+#define tpidx_INTERSTIM_LATENCY 11
 
 //state indices for an array of state pointers
 #define N_CLASS_STATES 6
