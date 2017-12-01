@@ -265,7 +265,7 @@ void StimPeriod::s_setup(){
 
   digitalWrite(_timerPin, HIGH);
   digitalWrite(LED_PIN, HIGH);
-  delay(10);
+  delay(50);
   digitalWrite(LED_PIN, LOW);
   digitalWrite(_timerPin, LOW);
 
