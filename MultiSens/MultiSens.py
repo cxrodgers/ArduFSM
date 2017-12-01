@@ -133,7 +133,7 @@ As far as the semantics, the parameter abbreviations sent by the host PC must ma
 
 	TOE - terminate on error; whether or not the trial will end immediately following a false alarm response. Set to 1 by default on the Arduino. 
 	
-	ISL - interstimulus latency, i.e., the time between tone onset and whisker stim onset (or vice-versa) on a given trial. If positive, whisker stim precedes tone; if negative, tone precedes whisker stim.
+	ISL - interstimulus latency, i.e., the time between tone onset and whisker stim onset (or vice-versa) on a given trial, in milliseconds. If positive, whisker stim precedes tone; if negative, tone precedes whisker stim.
 
 Once the trial parameters are received, the Arduino will wait to begin the upcoming trial until it receives the message
 
