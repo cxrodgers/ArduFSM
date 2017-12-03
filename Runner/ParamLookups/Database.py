@@ -155,6 +155,7 @@ def get_mouse_parameters(mouse_name):
             'timeout': mouse.timeout,
             'scheduler': mouse.scheduler,
             'max_rewards_per_trial': mouse.max_rewards_per_trial,
+            'target_water_volume': mouse.target_water_volume,
         },
         'build': {
             'protocol_name': mouse.protocol_name,
