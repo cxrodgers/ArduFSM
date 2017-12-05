@@ -56,8 +56,6 @@ long trigTime = 0;
 long levLiftTime = 0;
 long randNumber = 0;    // random number for whisker stimulus
 
-long periodic_reward_timer = 0;
-
 
 void setup() {
   // initialize the LED pin as an output:
@@ -93,12 +91,6 @@ void loop(){
 
  ///////////////////START TRIALS
   time = millis();
-  //~ if (time > periodic_reward_timer) {
-    //~ Serial.print(time);
-    //~ Serial.println(" per. rew.");
-    //~ reward();
-    //~ periodic_reward_timer += 10000;
-  //~ }
     
  //make sure lever is pressed before starting trials.
   if (optoStart == 0){
@@ -115,7 +107,6 @@ void loop(){
 //    levState = digitalRead(leverPin);
     
   leverState = digitalRead(leverPin);
-  //~ leverState = HIGH;
   if (leverState == HIGH){
     if(prevLevState == 0) { // if previously not pressed --as in beginning of session
       levPressTime = millis();
@@ -134,15 +125,6 @@ void loop(){
       levPressDur= 0;
     }
   }
-  
-  //~ time = millis();
-  //~ if ((time % 1000) == 0) {
-    //~ Serial.print(time);
-    //~ Serial.print(" DBG ");
-    //~ Serial.println(digitalRead(leverPin));
-    //~ delay(10);
-  //~ }
-  
  
  ////////////////// START STIMULUS TRIAL
    if(levPressDur > levPressThreshold){ // start trial is lever is held down long enough
