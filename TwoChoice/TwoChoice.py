@@ -85,18 +85,48 @@ SHOW_IR_PLOT = False
 SHOW_SENSOR_PLOT = False
 
 
+## Reward amounts
+# Target amount for this mouse (nL)
+target_water_volume = runner_params['target_water_volume']
+norm_target_water_volume = runner_params['target_water_volume'] / 5000.0
+
+# Clamp
+if norm_target_water_volume < .8:
+    norm_target_water_volume = .8
+if norm_target_water_volume > 1.1:
+    norm_target_water_volume = 1.1 
+
+# Typical value for this box (ms)
+l_typical = float(runner_params['l_reward_duration'])
+r_typical = float(runner_params['r_reward_duration'])
+
+# Sensitivity for this box (normed duration / normed amount)
+# Eventually this should be a box parameter
+l_sensitivity = .3
+r_sensitivity = .3
+
+# Adjusted durations
+l_adjustment = l_typical * l_sensitivity * (norm_target_water_volume - 1)
+r_adjustment = r_typical * r_sensitivity * (norm_target_water_volume - 1)
+
+# Adjust and convert to int
+l_adjusted_duration = int(np.rint(l_typical + l_adjustment))
+r_adjusted_duration = int(np.rint(r_typical + r_adjustment))
+
+
 ## Various window positions
 video_window_position = runner_params.get('video_window_position', None)
 gui_window_position = runner_params.get('gui_window_position', None)
 window_position_IR_plot = runner_params.get(
     'window_position_IR_plot', None)
+
     
 ## Set up params_table
 # First we load the table of protocol-specific parameters that is used by the UI
 # Then we assign a few that were set by the runner
 params_table = ParamsTable.get_params_table()
-params_table.loc['RD_L', 'init_val'] = runner_params['l_reward_duration']
-params_table.loc['RD_R', 'init_val'] = runner_params['r_reward_duration']
+params_table.loc['RD_L', 'init_val'] = l_adjusted_duration
+params_table.loc['RD_R', 'init_val'] = r_adjusted_duration
 params_table.loc['STPHAL', 'init_val'] = 3 if runner_params['has_side_HE_sensor'] else 2
 params_table.loc['STPFR', 'init_val'] = runner_params['step_first_rotation']
 try:
