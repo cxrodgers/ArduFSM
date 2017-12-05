@@ -14,9 +14,9 @@ const int stimCW = 50;
 const int stimCCW = -50;
 int rewStimFreq = 50;
 int ITI = 1000;
-int stimDuration = 1500; // how long stimulus should be available for sampling
+int stimDuration = 1200; // how long stimulus should be available for sampling
 const int optoStartTime = 00000; // how long to wait before starting laser trials
-const int optoStimFreq = 35;
+const int optoStimFreq = 50;
 const int stimHoldDelay = 100;
 
 
@@ -40,8 +40,8 @@ int startLevLiftCheck = 0;
 int rew = 0;
 int randSound = 0; // random noise for white noise audio stimuluspu
 int drinkDur = 1000; // drink duration
-int rewToneDur = 500; // reward tone duration
-int unrewTO = 6000; // punishment timeout duration
+int rewToneDur = 300; // reward tone duration
+int unrewTO = 3000; // punishment timeout duration
 int liftLevThresh = 100; // how long lever has to be lifted to count as response.
 int optoStart =0;
 int optoRand = 0;
@@ -65,8 +65,8 @@ void setup() {
   pinMode(leverPin, INPUT);
   pinMode(rewPin, OUTPUT);
   pinMode(speakerPin, OUTPUT);
-  pinMode(__HWCONSTANTS_H_BACK_LIGHT, OUTPUT);
-  digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);
+  pinMode(lampPin, OUTPUT);
+  digitalWrite(lampPin, HIGH);
   stimStepper.setSpeed(80); 
   Serial.begin(9600);    // initialize serial for output to Processing sketch
   randomSeed(analogRead(2));
@@ -95,7 +95,7 @@ void loop(){
  //make sure lever is pressed before starting trials.
   if (optoStart == 0){
     time = millis();
-    if (time > 300000 ){   //can't use variable for  some reason. use number here 300000 = 5 min
+    if (time > 0 ){   //can't use variable for  some reason. use number here 300000 = 5 min
       optoStart = 1;
       Serial.println("begin OPTOSTIM");
       Serial.println(millis());
@@ -130,13 +130,15 @@ void loop(){
    if(levPressDur > levPressThreshold){ // start trial is lever is held down long enough
      
      trigTime = millis(); // time of stimulus trigger = used to be trigTime2
-//     Serial.println("Stimulus trial start at:");
-//     Serial.println(trigTime);
+     digitalWrite(lampPin, LOW); //signal for ttl pulse to signal start trial
+     delay(25);
+     digitalWrite(lampPin, HIGH);
+     delay(100); // added 5/16/16
+     Serial.println("Trial started at:");
+     Serial.println(trigTime);
      //delay(10); 
-     
-     digitalWrite(startPin, HIGH); //signal for ttl pulse to signal start trial
-     delay(10);
-     
+
+     digitalWrite(startPin, LOW);
      //fiberPos = analogRead(fiberPosPin); //read the input from matlab about position of manipulator
      //Serial.println("fiber position:" );
      //Serial.println(fiberPos);
@@ -149,12 +151,13 @@ void loop(){
          digitalWrite(optoPin, HIGH); //sends pin HIGH to trigger TTL
          Serial.println("laser ON");
          Serial.println(millis());
-         delay(50); //added 0407
+         delay(100); //added 040715
        }
        else{
-         
+         digitalWrite(optoPin, LOW);
          Serial.println("dark");
          Serial.println(millis());
+         delay(100); //added 062816
        }
      }
      
@@ -177,6 +180,7 @@ void loop(){
       delay(100);
       hallSensValue = analogRead(hallPin);
       leverState = digitalRead(leverPin);
+      // No need to check lever state again here
       //~ if (leverState == HIGH) { // if lever is pressed for defined amount of time
         while (hallSensValue < hallThresh){ //rotate motor until it hits the hall effect sensor
           stimStepper.step(-1);
@@ -262,13 +266,7 @@ void loop(){
        elapTime = 0;
        prevLevState = 0;
        levPressDur = 0;
-       
-       // bug here where startLevLiftCheck is not set to zero, so uses
-       // its previous value
-       // Thus, if the animal lifted his paw while the motor is moving,
-       // it will not count as a release on GO trials, but it may count
-       // as a release on NOGO trials (if startLevLiftCheck was still set to
-       // 1 from the previous trial).
+       startLevLiftCheck = 0; // was missing until 16.03.09
        
        while (elapTime <= stimDuration) {
          time = millis();
@@ -304,6 +302,7 @@ void loop(){
       //  move stimback to rest position
       stimStepper.step(stimCCW);
       delay(200);
+      digitalWrite(enablePin, LOW);
        
        // digitalWrite(optoPin, LOW);
        
@@ -314,14 +313,6 @@ void loop(){
      //endTime = millis(); 
      
      delay(ITI); //inter-trial interval    
-
-     // Pulse the back light
-     Serial.println("end of trial");
-     Serial.println(millis());
-     digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, LOW);
-     delay(25);
-     digitalWrite(__HWCONSTANTS_H_BACK_LIGHT, HIGH);   
-     
    } 
     // END of if (levPressDur > levPresThresh)
 } // END of loop

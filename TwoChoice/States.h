@@ -190,6 +190,7 @@ class StateErrorTimeout : public TimedState {
     Servo my_linServo;
   
     void s_setup();
+    void loop();
     void s_finish();
   
   public:

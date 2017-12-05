@@ -9,7 +9,12 @@ void TimedState::run(unsigned long time)
 
   States that inherit from this should define their own s_setup(), loop(),
   and s_finish().
-    
+  
+  I thought that the idea was that s_finish would always run, but actually,
+  I think this is only the case if there's one last run() call after setting
+  flag_stop. The problem is that if the state sets next_state, I don't think
+  it will call run() again.
+  
   Simple algorithm:
     * If the timer is set to 0, take this to mean that we haven't started yet.
       Run s_setup()

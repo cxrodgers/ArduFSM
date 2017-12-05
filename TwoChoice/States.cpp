@@ -179,8 +179,8 @@ void StateResponseWindow::loop()
 
 void StateResponseWindow::s_finish()
 {
-  // Turn off laser, if it was on
-  digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  // The laser used to turn off here, but actually leave it on longer
+  // digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   
   // If response is still not set, mark as a nogo response
   if (results_values[tridx_RESPONSE] == 0)
@@ -236,10 +236,20 @@ void StateErrorTimeout::s_finish()
 
 void StateErrorTimeout::s_setup()
 {
-  // Turn off laser, if it was on
-  digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  // The laser used to turn off here
+  // digitalWrite(__HWCONSTANTS_H_OPTO, 0);
   
   my_linServo.write(param_values[tpidx_SRV_FAR]);
+}
+
+void StateErrorTimeout::loop()
+{
+  // Turn off laser after 500ms 
+  // This is so that there is a latency between choice and laser offset
+  long time = millis();
+  if ((time - ((long) timer - (long) duration)) > 500) {
+    digitalWrite(__HWCONSTANTS_H_OPTO, 0);
+  }
 }
 
 
@@ -334,8 +344,12 @@ void StateWaitForServoMove::s_finish()
 void StateInterTrialInterval::s_setup()
 {
   // Turn off laser, if it was on
+  // This is really just a safety check because it should have been turned
+  // off after post_reward_pause (for hits) or during error timeout (for errors)
+  // It also handles the edge case of a spoiled trial with an rwin that is
+  // shorter than the maximum laser on time.
   digitalWrite(__HWCONSTANTS_H_OPTO, 0);
-    
+  
   // First-time code: Report results
   for(int i=0; i < N_TRIAL_RESULTS; i++)
   {
@@ -697,6 +711,12 @@ void rotate_one_step()
 //// Post-reward state
 void StatePostRewardPause::s_finish()
 {
+  // Turn off the laser
+  // We do this here so that the laser doesn't turn off immediately upon
+  // choice, but rather with a latency of solenoid time + post reward pause
+  // time.
+  digitalWrite(__HWCONSTANTS_H_OPTO, 0);  
+  
   next_state = RESPONSE_WINDOW;
 }
 
