@@ -609,7 +609,8 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     return res
 
 
-def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
+def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
+    unsorted_times_action='warn'):
     """Read logfile into a DataFrame
     
     Something like this should probably be the preferred way to read the 
