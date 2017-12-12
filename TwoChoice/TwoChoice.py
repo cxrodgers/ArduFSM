@@ -86,28 +86,30 @@ SHOW_SENSOR_PLOT = False
 
 
 ## Reward amounts
-# Target amount for this mouse (nL)
-target_water_volume = runner_params['target_water_volume']
-norm_target_water_volume = runner_params['target_water_volume'] / 5000.0
+# Target amount for this mouse (uL)
+target_water_volume = runner_params['target_water_volume'] / 1000.
+
+# Randomize the amount slightly
+random_water_mul = 1 + .2 * (np.random.random() - .5)
+adjusted_target_water_volume = target_water_volume * random_water_mul
 
 # Clamp
-if norm_target_water_volume < .8:
-    norm_target_water_volume = .8
-if norm_target_water_volume > 1.1:
-    norm_target_water_volume = 1.1 
+if adjusted_target_water_volume < 3:
+    adjusted_target_water_volume = 3.
+if adjusted_target_water_volume > 7.:
+    adjusted_target_water_volume = 7.
 
 # Typical value for this box (ms)
 l_typical = float(runner_params['l_reward_duration'])
 r_typical = float(runner_params['r_reward_duration'])
 
-# Sensitivity for this box (normed duration / normed amount)
-# Eventually this should be a box parameter
-l_sensitivity = .3
-r_sensitivity = .3
+# Box sensitivity (ms / uL), centered around 5uL
+l_sensitivity = float(runner_params['l_reward_sensitivity'])
+r_sensitivity = float(runner_params['r_reward_sensitivity'])
 
 # Adjusted durations
-l_adjustment = l_typical * l_sensitivity * (norm_target_water_volume - 1)
-r_adjustment = r_typical * r_sensitivity * (norm_target_water_volume - 1)
+l_adjustment = l_sensitivity * (target_water_volume - 5.0)
+r_adjustment = r_sensitivity * (target_water_volume - 5.0)
 
 # Adjust and convert to int
 l_adjusted_duration = int(np.rint(l_typical + l_adjustment))
@@ -381,6 +383,11 @@ except trial_setter_ui.QuitException as qe:
 
     session_results['l_valve_mean'] = lmean
     session_results['r_valve_mean'] = rmean
+    
+    # Add adjusted durations
+    session_results['l_adjusted_duration'] = l_adjusted_duration
+    session_results['r_adjusted_duration'] = r_adjusted_duration
+    session_results['adjusted_target_water_volume'] = adjusted_target_water_volume
     
     print "Previous pipe position was %s" % recent_pipe
     session_results['final_pipe'] = raw_input("Enter final pipe position: ")

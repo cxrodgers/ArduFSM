@@ -609,7 +609,8 @@ def make_trials_matrix_from_logfile_lines2(logfile_lines,
     return res
 
 
-def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
+def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
+    unsorted_times_action='warn'):
     """Read logfile into a DataFrame
     
     Something like this should probably be the preferred way to read the 
@@ -628,6 +629,11 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
         with None.
     add_trial_column : optionally add a column for the trial number of 
         each line. Lines before the first trial begins have trial number -1.
+    
+    unsorted_times_action : 'ignore', 'warn', 'error'
+        The times "should" be sorted but frequently aren't.
+        This is always the case for some commands, and less frequently
+        the case when the first digit seems to have been dropped.
     
     The dtype will always be int for the time column and object (ie, string)
     for every other column. This is to ensure consistency. You may want
@@ -695,13 +701,20 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True):
     bad_args = np.where(np.diff(unsorted_times) < 0)[0]
     if len(bad_args) > 0:
         first_bad_arg = bad_args[0]
-        print "bad args"
         pre_bad_arg = np.max([first_bad_arg - 2, 0])
         post_bad_arg = np.min([first_bad_arg + 2, len(rrdf)])
         bad_rows = rrdf.ix[rrdf.index[pre_bad_arg]:rrdf.index[post_bad_arg]]
-        print bad_rows
-        raise ValueError("unsorted times in logfile, starting at line %d" %
-            bad_args[0])
+        error_string = "unsorted times in logfile %s, starting at line %d" % (
+            logfile, bad_args[0])
+
+        if unsorted_times_action == 'warn':
+            print error_string
+        elif unsorted_times_action == 'error':
+            raise ValueError(error_string)
+        elif unsorted_times_action == 'ignore':
+            pass
+        else:
+            raise ValueError("unknown action for unsorted times")
     
     return rdf
     
