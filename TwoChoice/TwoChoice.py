@@ -378,6 +378,7 @@ except trial_setter_ui.QuitException as qe:
             bad_data = True
         
         if not bad_data:
+            print "Target was %0.1f" % adjusted_target_water_volume
             print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
             choice = raw_input("Confirm? [Y/n] ")
 

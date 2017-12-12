@@ -102,7 +102,9 @@ def get_box_parameters(box_name):
                 'video_gain': box.video_gain,
                 'video_exposure': box.video_exposure,
                 'l_reward_duration': box.l_reward_duration,
-                'r_reward_duration': box.r_reward_duration,                
+                'r_reward_duration': box.r_reward_duration,
+                'l_reward_sensitivity': box.l_reward_sensitivity,
+                'r_reward_sensitivity': box.r_reward_sensitivity,                         
             },
             'build': {
                 'serial_port': box.serial_port,
