@@ -269,7 +269,7 @@ void StimPeriod::s_setup(){
   digitalWrite(LED_PIN, HIGH);
   digitalWrite(_timerPin, LOW);
 
-  if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
+  if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
       trigger_stepper();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
