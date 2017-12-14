@@ -114,6 +114,8 @@ void setup()
   pinMode(SPKR_PIN, OUTPUT);
   pinMode(SPKR_COND_PIN1, OUTPUT);
   pinMode(SPKR_COND_PIN2, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(TIMER_PIN, OUTPUT);
   
   // random number seed
   randomSeed(analogRead(3));
