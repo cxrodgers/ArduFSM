@@ -264,9 +264,9 @@ void StimPeriod::s_setup(){
   delay(100);
 
   digitalWrite(_timerPin, HIGH);
-  digitalWrite(LED_PIN, HIGH);
-  delay(50);
   digitalWrite(LED_PIN, LOW);
+  delay(50);
+  digitalWrite(LED_PIN, HIGH);
   digitalWrite(_timerPin, LOW);
 
   if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){

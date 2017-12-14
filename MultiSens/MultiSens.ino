@@ -131,6 +131,9 @@ void setup()
       delay(1000);
     }
   }
+
+  // turn on LED lamp:
+  digitalWrite(LED_PIN, HIGH);
 }
 
 
