@@ -9,12 +9,12 @@ To be used with optostim.
 
 
 // constants that frequently change:
-const int rewSolDur = 35 ; //how long solenoid valve should open to deliver water reward
-const int stimCW = 50;
-const int stimCCW = -50;
+const int rewSolDur = 23; //how long solenoid valve should open to deliver water reward
+const int stimCW = 35;
+const int stimCCW = -35;
 int rewStimFreq = 50;
 int ITI = 1000;
-int stimDuration = 1200; // how long stimulus should be available for sampling
+int stimDuration = 1500; // how long stimulus should be available for sampling
 const int optoStartTime = 00000; // how long to wait before starting laser trials
 const int optoStimFreq = 50;
 const int stimHoldDelay = 100;
@@ -95,7 +95,7 @@ void loop(){
  //make sure lever is pressed before starting trials.
   if (optoStart == 0){
     time = millis();
-    if (time > 0 ){   //can't use variable for  some reason. use number here 300000 = 5 min
+    if (time > 180000){   //can't use variable for  some reason. use number here 300000 = 5 min
       optoStart = 1;
       Serial.println("begin OPTOSTIM");
       Serial.println(millis());
