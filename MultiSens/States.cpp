@@ -94,7 +94,7 @@ long param_values[N_TRIAL_PARAMS] = {
 bool param_report_ET[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 0, 
   0, 0, 0, 0, 0,
-  0, 0
+  0, 1
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
