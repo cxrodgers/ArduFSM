@@ -423,7 +423,7 @@ class UI(object):
         uparams = self.ts_obj.params_table[
             self.ts_obj.params_table['ui-accessible']]
         
-        for nparam, (name, value) in enumerate(uparams['current-value'].iterkv()):
+        for nparam, (name, value) in enumerate(uparams['current-value'].iteritems()):
             s = '%s = %s' % (name, str(value))
             self.stdscr.addstr(start_row + nparam, col, s)
     
