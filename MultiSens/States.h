@@ -136,7 +136,7 @@ into States.cpp.
 #define HALL_PIN 0
 #define SPKR_PIN 13
 #define SOLENOID_PIN 2
-#define LICK_DETECTOR_PIN 10
+#define LICK_DETECTOR_PIN A0
 #define TIMER_PIN 11
 #define LED_PIN 5
 #define SPKR_COND_PIN1 4
