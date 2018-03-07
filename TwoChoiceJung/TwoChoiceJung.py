@@ -18,6 +18,8 @@ import numpy as np, pandas
 import my
 import time
 import curses
+import matplotlib
+matplotlib.rcParams['toolbar'] = 'None'
 import matplotlib.pyplot as plt
 import ArduFSM
 from ArduFSM import TrialSpeak, TrialMatrix
