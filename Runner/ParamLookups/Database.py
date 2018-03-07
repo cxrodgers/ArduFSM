@@ -108,6 +108,7 @@ def get_box_parameters(box_name):
             },
             'build': {
                 'serial_port': box.serial_port,
+                'subprocess_window_xpos': box.subprocess_window_xpos,  
                 'subprocess_window_ypos': box.subprocess_window_ypos,                
             },
         })
