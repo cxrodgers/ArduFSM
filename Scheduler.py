@@ -65,17 +65,17 @@ class ForcedAlternation:
         else:    
             # Not the first trial
             # First check that the last trial hasn't been released
-            assert trial_matrix['release_time'].isnull().irow(-1)
+            assert trial_matrix['release_time'].isnull().iloc[-1]
             
             # But that it has been responded
-            assert not trial_matrix['choice'].isnull().irow(-1)
+            assert not trial_matrix['choice'].isnull().iloc[-1]
             
             # Set side to left by default, and otherwise forced alt
             if len(trial_matrix) < 2:
                 res['RWSD'] = 'left'
             else:
                 # Get last trial
-                last_trial = trial_matrix.irow(-1)
+                last_trial = trial_matrix.iloc[-1]
                 if last_trial['choice'] == last_trial['rewside']:
                     res['RWSD'] = {'left': 'right', 'right':'left'}[last_trial['rewside']]
                 else:
@@ -158,17 +158,17 @@ class ForcedAlternationGNG(ForcedAlternation):
         else:    
             # Not the first trial
             # First check that the last trial hasn't been released
-            assert trial_matrix['release_time'].isnull().irow(-1)
+            assert trial_matrix['release_time'].isnull().iloc[-1]
             
             # But that it has been responded
-            assert not trial_matrix['choice'].isnull().irow(-1)
+            assert not trial_matrix['choice'].isnull().iloc[-1]
             
             # Set side to left by default, and otherwise forced alt
             if len(trial_matrix) < 2:
                 res['RWSD'] = 'right'
             else:
                 # Get last trial
-                last_trial = trial_matrix.irow(-1)
+                last_trial = trial_matrix.iloc[-1]
                 if last_trial['choice'] == last_trial['rewside']:
                     res['RWSD'] = {'nogo': 'right', 'right':'nogo'}[last_trial['rewside']]
                 else:
@@ -232,17 +232,17 @@ class ForcedAlternationLickTrain:
         else:    
             # Not the first trial
             # First check that the last trial hasn't been released
-            assert trial_matrix['release_time'].isnull().irow(-1)
+            assert trial_matrix['release_time'].isnull().iloc[-1]
             
             # But that it has been responded
-            assert not trial_matrix['choice'].isnull().irow(-1)
+            assert not trial_matrix['choice'].isnull().iloc[-1]
             
             # Set side to left by default, and otherwise forced alt
             if len(trial_matrix) < 2:
                 res['RWSD'] = 'right'
             else:
                 # Get last trial
-                last_trial = trial_matrix.irow(-1)
+                last_trial = trial_matrix.iloc[-1]
                 if last_trial['outcome'] == 'hit':
                     res['RWSD'] = {'left': 'right', 'right':'left'}[last_trial['rewside']]
                 else:
@@ -492,14 +492,14 @@ class SessionStarterSrvMax(ForcedAlternation):
         # For simplicity, slice trial_types
         # Later, might want to reimplement the choosing rule instead
         lefts = my.pick_rows(self.trial_types, rewside='left')
-        closest_left = lefts.srvpos.argmax()
+        closest_left = lefts.srvpos.idxmax()
         
         rights = my.pick_rows(self.trial_types, rewside='right')
-        closest_right = rights.srvpos.argmax()
+        closest_right = rights.srvpos.idxmax()
         
         # Because we maintain the indices, plotter will work correctly
         # Not quite right, we don't currently use indices, but this is a TODO
-        self.picked_trial_types = self.trial_types.ix[
+        self.picked_trial_types = self.trial_types.loc[
             [closest_left, closest_right]].copy()
 
 class Auto:
