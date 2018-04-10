@@ -15,6 +15,14 @@ import shlex
 def create_sandbox(user_input, sandbox_root):
     """Create a sandbox directory for Autosketch and Script
     
+    user_input : dict containing the following keys
+        'mouse', 'board', 'box', 'experimenter'
+    
+    sandbox_root : rooth path of sandboxes
+    
+    The sandbox directory will be in EYM format:
+        sandbox_root/experimenter/year/month
+    
     Returns: dict with following keys
         'sandbox': Path to sandbox directory
         'sketch': Path to directory that will contain sketch
@@ -25,16 +33,30 @@ def create_sandbox(user_input, sandbox_root):
     
     Note: 'script' and 'sketch' are subdirectories of 'sandbox'
     """
-    date_string = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    now = datetime.datetime.now()
+    
+    # Construct sandbox name
+    date_string = now.strftime('%Y-%m-%d-%H-%M-%S')
     sandbox_name = '%s-%s-%s-%s' % (date_string,
         user_input['mouse'], user_input['board'], user_input['box'])
-    sandbox_path = os.path.join(sandbox_root, sandbox_name)
+    
+    # Construct path in EYM format
+    experimenter_path = os.path.join(sandbox_root, user_input['experimenter'])
+    year_path = os.path.join(experimenter_path, str(now.year))
+    month_path = os.path.join(year_path, '%02d' % now.month)
+    sandbox_path = os.path.join(month_path, sandbox_name)
+    
+    # Path to other things
     sketch_path = os.path.join(sandbox_path, 'Autosketch')
     script_path = os.path.join(sandbox_path, 'Script')
     logfile_path = os.path.join(script_path, 'logfiles')
 
+    # Status
     print "create sandbox in ", sandbox_path
-    for dirname in [sandbox_path, sketch_path, script_path, logfile_path]:
+
+    # Create directories if necessary
+    for dirname in [experimenter_path, year_path, month_path, sandbox_path, 
+        sketch_path, script_path, logfile_path]:
         if not os.path.exists(dirname):
             os.mkdir(dirname)
     
