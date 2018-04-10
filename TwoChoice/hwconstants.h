@@ -15,7 +15,6 @@
 
 // This is only for stepper driver
 #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-#define __HWCONSTANTS_H_STEP_ENABLE 7
 #define __HWCONSTANTS_H_STEP_PIN 6
 #define __HWCONSTANTS_H_STEP_DIR 8
 #endif
