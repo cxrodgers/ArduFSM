@@ -40,12 +40,14 @@ import ParamLookups.base
 import argparse
 import sys
 
-def main(mouse, board, box, **other_python_parameters):
+def main(mouse, board, box, experimenter, **other_python_parameters):
     """Get specific parameters, create sandbox, and call the python script.
     
     mouse, board, box : session parameters as strings
         These are used to collect the specific parameters using
         ParamLookups.base.get_specific_parameters_from_user_input
+    
+    experimenter : also passed to create_sandbox just to create sandbox
     
     All other keyword arguments will be added to the Python parameters,
     so they will be written to the json file that is available to the 
@@ -60,7 +62,8 @@ def main(mouse, board, box, **other_python_parameters):
     protocol_root = os.path.expanduser('~/dev/ArduFSM')
         
     # Get session parameters from user (board number, etc)
-    user_input = {'mouse': mouse, 'board': board, 'box': box}
+    user_input = {'mouse': mouse, 'board': board, 'box': box,
+        'experimenter': experimenter}
 
     # Look up the specific parameters
     specific_parameters = \
@@ -70,7 +73,8 @@ def main(mouse, board, box, **other_python_parameters):
     specific_parameters['Python'].update(other_python_parameters)
 
     # Use the sandbox parameters to create the sandbox
-    sandbox_paths = Sandbox.create_sandbox(user_input, sandbox_root=sandbox_root)
+    sandbox_paths = Sandbox.create_sandbox(user_input, 
+        sandbox_root=sandbox_root)
 
     # Copy protocol to sandbox
     Sandbox.copy_protocol_to_sandbox(
