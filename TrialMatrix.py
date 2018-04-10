@@ -266,9 +266,10 @@ def calculate_safe_perf(df):
 def add_rwin_and_choice_times_to_trial_matrix(tm, bfile):
     """Add choice_time, rwin_time, and rt to trial matrix"""
     # Get the choice time and reaction time
-    tm['choice_time'] = TrialSpeak.identify_state_change_times_new(
-        bfile, state0=7) / 1000.
-    tm['rwin_time'] = TrialSpeak.identify_state_change_times_new(
-        bfile, state1=7) / 1000.
+    # Don't warn because can go in and out of response window state
+    tm['choice_time'] = TrialSpeak.identify_state_change_times(
+        bfile, state0=7, warn_on_multiple_changes=False) / 1000.
+    tm['rwin_time'] = TrialSpeak.identify_state_change_times(
+        bfile, state1=7, warn_on_multiple_changes=False) / 1000.
     tm['rt'] = (tm['choice_time'] - tm['rwin_time'])  
     return tm

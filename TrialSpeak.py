@@ -271,103 +271,27 @@ def get_lick_times(spline, num):
         res.append(int(line.split()[0]) / 1000.)
     return np.array(res)
 
-def identify_state_change_time_old(splines, state0, state1):
-    """Return time that state changed from state0 to state1
-    
-    for servo starting moving: 1 2
-    for resp win open: 3 4
-    
-    Returns: Series of times in s, indexed by the entry in splines
-    """
-    res_l = []
-    idx_l = []
-    for nspline, spline in enumerate(splines):
-        # Find the state change line
-        match_lines = filter(
-            lambda line: 'ST_CHG %d %d' % (state0, state1) in line, spline)
-        
-        # There should be 1 hit, except in rare cases
-        if len(match_lines) == 1:
-            # Append result and nspline as index
-            res_l.append(int(match_lines[0].split()[0]))
-            idx_l.append(nspline)
-        elif len(match_lines) == 0:
-            # no state change found
-            # this is only okay on the most recent ("current") trial
-            if nspline != len(splines) - 1:
-                print "error: cannot find state change in non-last trial"
-        else:
-            # should never find multiple instances
-            raise ValueError("multiple state changes per spline")
-
-    return pandas.Series(res_l, index=idx_l, dtype=np.float) / 1000.
-
-def identify_state_change_times(parsed_df_by_trial, state0=None, state1=None,
-    show_warnings=True, error_on_multi=False, command='ST_CHG'):
-    """Return time that state changed from state0 to state1
-    
-    This should be replaced with identify_state_change_times_new, which
-    uses a combination of
-    ArduFSM.TrialSpeak.read_logfile_into_df
-    ArduFSM.TrialSpeak.get_commands_from_parsed_lines
-    
-    parsed_df_by_trial : result of parse_lines_into_df_split_by_trial
-        (May be more efficient to rewrite this to operate on the whole thing?)
-    state0 and state1 : any argument that pick_rows can work on, so
-        13 works or [13, 14] works
-    command : the state change token
-        ST_CHG2 uses the time at the end, instead of beginning, of the loop
-    
-    If multiple hits per trial found:
-        returns first one
-    
-    If no hits per trial found:
-        return nan
-    """
-    multi_warn_flag = False
-    res = []
-    
-    # Iterate over trials
-    for df in parsed_df_by_trial:
-        # Get st_chg commands
-        st_chg_rows = my.pick_rows(df, command=command)
-        
-        # Split the argument string and intify
-        if len(st_chg_rows) > 0:
-            split_arg = pandas.DataFrame(
-                st_chg_rows['argument'].str.split().tolist(),
-                dtype=np.int, columns=['state0', 'state1'],
-                index=st_chg_rows.index)
-            
-            # Match to state0, state1
-            picked = my.pick(split_arg, state0=state0, state1=state1)
-        else:
-            picked = []
-        
-        # Split on number of hits per trial
-        if len(picked) == 0:
-            res.append(np.nan)
-        elif len(picked) == 1:
-            res.append(df['time'][picked[0]])
-        else:
-            res.append(df['time'][picked[0]])
-            multi_warn_flag = True
-            if error_on_multi:
-                raise(ValueError("multiple events on this trial"))
-    
-    if show_warnings and multi_warn_flag:
-        print "warning: multiple target state changes found on some trial"
-    
-    return np.array(res, dtype=np.float) / 1000.0
-
-def identify_state_change_times_new(behavior_filename, state0=None, state1=None,
-    error_on_multi=False, command='ST_CHG'):
+def identify_state_change_times(behavior_filename=None, logfile_df=None,
+    state0=None, state1=None,
+    error_on_multiple_changes=False, warn_on_multiple_changes=True, 
+    command='ST_CHG2'):
     """Return time that state changed from state0 to state1 on each trial
     
-    This is the most current way to do this.
+    behavior_filename : name of logfile.
+        Only used if logfile_df is not None
+    logfile_df : result of read_logfile_into_df
+    state0 : state before change
+        If None, can be any
+    state1 : state after change
+        If None, can be any
+    
     Uses read_logfile_into_df to read the file
     and get_commands_from_parsed_lines to parse the lines
     and then parses the states in the resulting dataframe.
+    
+    ST_CHG2 is used, because this is the time of the end of the last
+    call of the state before the change. ST_CHG gives you the time of the
+    start of that call.
     
     If multiple times are found for a trial, only the first is returned.
     If no times are found for a trial, there will be no entry for that trial
@@ -377,10 +301,13 @@ def identify_state_change_times_new(behavior_filename, state0=None, state1=None,
         for each trial. The values will be a number of milliseconds
         as an integer.
     """
+    # Get logfile_df
+    if logfile_df is None:
+        logfile_df = read_logfile_into_df(behavior_filename)
+    
     # Get the state change times
-    logfile_df = read_logfile_into_df(behavior_filename)
     state_change_cmds = get_commands_from_parsed_lines(
-        logfile_df, 'ST_CHG2')
+        logfile_df, command)
     
     # Drop any from trial "-1"
     state_change_cmds = state_change_cmds[state_change_cmds.trial != -1]
@@ -393,21 +320,28 @@ def identify_state_change_times_new(behavior_filename, state0=None, state1=None,
     gobj = state_change_cmds.groupby('trial')
 
     # Error check
-    if error_on_multi:
-        if (gobj.apply(len) != 1).any():
+    if (gobj.apply(len) != 1).any():
+        if error_on_multiple_changes:
             raise ValueError("non-unique state change on some trials")
+        if warn_on_multiple_changes:
+            print "warning: non-unique state change on some trials"
     
     # Take the first from each trial
     time_by_trial = gobj.first()
     
     return time_by_trial['time']
+
+def identify_state_change_times_new(*args, **kwargs):
+    print ("warning: identify_state_change_times_new is deprecated, "
+        "use identify_state_change_times")
+    return identify_state_change_times(*args, **kwargs)
     
 def identify_servo_retract_times(behavior_filename):
     """Identify transition to 13 or 14.
     
     On error trials we get one of each, so take the first one
     """
-    return identify_state_change_times_new(behavior_filename, 
+    return identify_state_change_times(behavior_filename, 
         state0=None, state1=[13, 14], 
         error_on_multi=False)
 
