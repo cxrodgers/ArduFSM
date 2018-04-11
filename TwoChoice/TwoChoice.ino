@@ -112,7 +112,6 @@ void setup()
 
   // Set up stepper driver
   #ifdef __HWCONSTANTS_H_USE_STEPPER_DRIVER
-  pinMode(__HWCONSTANTS_H_STEP_ENABLE, OUTPUT);
   pinMode(__HWCONSTANTS_H_STEP_RESET, OUTPUT);
   pinMode(__HWCONSTANTS_H_STEP_PIN, OUTPUT);
   pinMode(__HWCONSTANTS_H_STEP_DIR, OUTPUT);
