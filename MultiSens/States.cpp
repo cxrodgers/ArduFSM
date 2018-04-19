@@ -69,7 +69,7 @@ Defines the following:
 extern STATE_TYPE next_state;
 extern bool flag_start_trial;
 
-int lickThresh = 900;
+int lickThresh = 600;
 int Device::deviceCounter = 0;
 int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 String stprState = "RETRACTED";
