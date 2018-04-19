@@ -275,7 +275,6 @@ void StimPeriod::s_setup(){
       trigger_stepper();
     }  else {
       trigger_audio();
-      delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
     } 
 
