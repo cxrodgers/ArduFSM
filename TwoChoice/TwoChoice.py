@@ -267,6 +267,13 @@ try:
     if RUN_GUI:
         plotter = ArduFSM.plot.PlotterWithServoThrow(trial_types)
         plotter.init_handles()
+        
+        # Set figure background color
+        if 'background_color' in runner_params:
+            plotter.graphics_handles['f'].patch.set_facecolor(
+                runner_params['background_color'])
+        
+        # Move figure to correct position
         move_figure(plotter.graphics_handles['f'],
             gui_window_position[0], gui_window_position[1])
         
