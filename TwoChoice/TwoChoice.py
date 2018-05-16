@@ -150,6 +150,21 @@ trial_types_name = runner_params['stimulus_set'] + '_r'
 trial_types = get_trial_types(trial_types_name)
 
 
+## Print welcome message in background color
+if 'background_color' in runner_params:
+    # https://stackoverflow.com/questions/15682537/ansi-color-specific-rgb-sequence-bash
+    rgb_tuple = matplotlib.colors.ColorConverter().to_rgb(
+        runner_params['background_color'])
+    rcolor, gcolor, bcolor = [int(np.rint(color_float * 255)) 
+        for color_float in rgb_tuple]
+    color_start_string = "\x1b[38;2;%d;%d;%dm" % (rcolor, gcolor, bcolor)
+    color_stop_string = "\x1b[0m"
+    print "%sTraining mouse %s in Box %s on Board %s%s" % (
+        color_start_string, 
+        runner_params['mouse'], runner_params['box'], runner_params['board'],
+        color_stop_string)
+
+
 ## User interaction
 session_results = {}
 # Print out the results from last time
