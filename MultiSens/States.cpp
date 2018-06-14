@@ -261,9 +261,6 @@ void StimPeriod::s_setup(){
           digitalWrite(SPKR_COND_PIN2, LOW);
   }
 
-  if (param_values[tpidx_STPRIDX == 1]){
-    digitalWrite(ENBL_PIN, LOW);
-    }
 
   delay(100);
 
@@ -276,9 +273,15 @@ void StimPeriod::s_setup(){
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
+      if (param_values[tpidx_STPRIDX == 1]){
+        digitalWrite(ENBL_PIN, LOW);
+       }
       trigger_stepper();
     }  else {
       trigger_audio();
+      if (param_values[tpidx_STPRIDX == 1]){
+        digitalWrite(ENBL_PIN, LOW);
+       }
       trigger_stepper();
     } 
 
