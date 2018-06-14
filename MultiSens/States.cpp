@@ -275,15 +275,19 @@ void StimPeriod::s_setup(){
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
+        delay(5);
        }
       trigger_stepper();
+      delay(5);
       digitalWrite(ENBL_PIN, HIGH);
     }  else {
       trigger_audio();
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
+        delay(5);
        }
       trigger_stepper();
+      delay(5);
       digitalWrite(ENBL_PIN, HIGH);
     } 
 
@@ -322,7 +326,9 @@ void StimPeriod::s_finish()
   
    if(stprState == "EXTENDED"){
        digitalWrite(ENBL_PIN, LOW);
+       delay(5);
        rotate_back();
+       delay(5);
        digitalWrite(ENBL_PIN, HIGH);
    }
     
