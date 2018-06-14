@@ -277,12 +277,14 @@ void StimPeriod::s_setup(){
         digitalWrite(ENBL_PIN, LOW);
        }
       trigger_stepper();
+      digitalWrite(ENBL_PIN, HIGH);
     }  else {
       trigger_audio();
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
        }
       trigger_stepper();
+      digitalWrite(ENBL_PIN, HIGH);
     } 
 
 }
@@ -319,6 +321,7 @@ void StimPeriod::s_finish()
   */
   
    if(stprState == "EXTENDED"){
+       digitalWrite(ENBL_PIN, LOW);
        rotate_back();
        digitalWrite(ENBL_PIN, HIGH);
    }
