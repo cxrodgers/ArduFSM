@@ -132,7 +132,7 @@ into States.cpp.
 #define STPR_PIN 6
 #define DIR_PIN 8
 //#define STPR1_PIN2 6      
-#define ENBL1_PIN 7
+#define ENBL_PIN 7
 #define HALL_PIN 0
 #define SPKR_PIN 13
 #define SOLENOID_PIN 2
