@@ -137,7 +137,7 @@ void setup()
   digitalWrite(LED_PIN, HIGH);
 
   // disable stepper; counterintuitively, this requires setting ENBL to HIGH:
-  digitalWrite(ENBLE_PIN, HIGH);
+  digitalWrite(ENBL_PIN, HIGH);
 }
 
 
