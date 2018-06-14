@@ -116,6 +116,7 @@ void setup()
   pinMode(SPKR_COND_PIN2, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(TIMER_PIN, OUTPUT);
+  pinMode(ENBL_PIN, OUTPUT);
   
   // random number seed
   randomSeed(analogRead(3));
@@ -134,6 +135,9 @@ void setup()
 
   // turn on LED lamp:
   digitalWrite(LED_PIN, HIGH);
+
+  // disable stepper; counterintuitively, this requires setting ENBL to HIGH:
+  digitalWrite(ENBLE_PIN, HIGH);
 }
 
 

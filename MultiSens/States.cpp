@@ -261,6 +261,10 @@ void StimPeriod::s_setup(){
           digitalWrite(SPKR_COND_PIN2, LOW);
   }
 
+  if (param_values[tpidx_STPRIDX == 1]){
+    digitalWrite(ENBL_PIN, LOW);
+    }
+
   delay(100);
 
   digitalWrite(_timerPin, HIGH);
@@ -313,6 +317,7 @@ void StimPeriod::s_finish()
   
    if(stprState == "EXTENDED"){
        rotate_back();
+       digitalWrite(ENBL_PIN, HIGH);
    }
     
   digitalWrite(SOLENOID_PIN, LOW);
