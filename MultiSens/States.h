@@ -140,7 +140,7 @@ into States.cpp.
 #define TIMER_PIN 11
 #define LED_PIN 5
 #define SPKR_COND_PIN1 4
-#define SPKR_COND_PIN2 7
+#define SPKR_COND_PIN2 9
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
