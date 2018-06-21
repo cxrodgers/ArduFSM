@@ -240,7 +240,7 @@ settings['srcFiles'] =srcDicts
 
 # Get version information for Arduino libraries:
 inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
-arduinoPath = 'C:\\Program Files\\Arduino\\arduino-1.6.9-windows\\arduino-1.6.9'
+arduinoPath = 'C:\\Program Files (x86)\\Arduino'
 os.chdir(arduinoPath)
 verifyCmd = 'arduino_debug -v --verify ' + '"' + baseDir + '\\' + inos[0] + '"'
 print(verifyCmd)
