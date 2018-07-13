@@ -129,18 +129,22 @@ into States.cpp.
 #include "devices.h"                    
 #define NUM_DEVICES 2
 
-#define STPR_PIN 6
-#define DIR_PIN 8
-//#define STPR1_PIN2 6      
-#define ENBL_PIN 7
+// Digital I/O:
 #define HALL_PIN 0
-#define SPKR_PIN 13
 #define SOLENOID_PIN 2
-#define LICK_DETECTOR_PIN A0
-#define TIMER_PIN 11
-#define LED_PIN 5
 #define SPKR_COND_PIN1 4
-#define SPKR_COND_PIN2 9
+#define LED_PIN 5 // reserved for H-bridge
+#define STPR_PIN 6 // reserved for stepper motor driver STEP pin
+#define ENBL_PIN 7 // reserved for stepper motor driver ENABLE pin
+#define DIR_PIN 8 // reserved for stepper motor driver DIR pin
+#define SLP_PIN 9 // reserved for stepper motor driver SLEEP pin
+#define SPKR_COND_PIN2 10
+//#define STPR1_PIN2 6      
+#define TIMER_PIN 11
+#define SPKR_PIN 13
+
+// Analog inputs:
+#define LICK_DETECTOR_PIN A0
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
