@@ -69,7 +69,7 @@ Defines the following:
 extern STATE_TYPE next_state;
 extern bool flag_start_trial;
 
-int lickThresh = 600;
+int lickThresh = 800;
 int Device::deviceCounter = 0;
 int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 String stprState = "RETRACTED";
@@ -281,7 +281,6 @@ void StimPeriod::s_setup(){
       delay(5);
       digitalWrite(ENBL_PIN, HIGH);
     }  else {
-      trigger_audio();
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
         delay(5);
@@ -289,6 +288,7 @@ void StimPeriod::s_setup(){
       trigger_stepper();
       delay(5);
       digitalWrite(ENBL_PIN, HIGH);
+      trigger_audio();
     } 
 
 }
