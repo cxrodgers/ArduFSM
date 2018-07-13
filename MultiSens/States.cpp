@@ -271,25 +271,25 @@ void StimPeriod::s_setup(){
   digitalWrite(_timerPin, LOW);
 
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
-      trigger_audio();
-      delay(param_values[tpidx_INTERSTIM_LATENCY]);
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
-        delay(5);
+        delay(100);
        }
+      trigger_audio();
+      delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
-      delay(5);
+      delay(500);
       digitalWrite(ENBL_PIN, HIGH);
     }  else {
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
-        delay(5);
+        delay(100);
        }
       trigger_stepper();
-      delay(5);
-      digitalWrite(ENBL_PIN, HIGH);
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
+      delay(500);
+      digitalWrite(ENBL_PIN, HIGH);
     } 
 
 }
