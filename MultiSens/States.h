@@ -130,7 +130,6 @@ into States.cpp.
 #define NUM_DEVICES 2
 
 // Digital I/O:
-#define HALL_PIN 0
 #define SOLENOID_PIN 2
 #define SPKR_COND_PIN1 4
 #define LED_PIN 5 // reserved for H-bridge
@@ -144,7 +143,8 @@ into States.cpp.
 #define SPKR_PIN 13
 
 // Analog inputs:
-#define LICK_DETECTOR_PIN A0
+#define HALL_PIN A0 // reserved for hall effect sensor
+#define LICK_DETECTOR_PIN A1
 
 #define NUM_STEPS 200
 #define HALL_THRESH 50
