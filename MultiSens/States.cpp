@@ -73,6 +73,7 @@ int lickThresh = 800;
 int Device::deviceCounter = 0;
 int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 String stprState = "RETRACTED";
+int stpr_powerup_time = 100;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -273,22 +274,22 @@ void StimPeriod::s_setup(){
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
-        delay(100);
+        delay(stpr_powerup_time);
        }
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
-      delay(100);
+      delay(stpr_powerup_time);
       digitalWrite(ENBL_PIN, HIGH);
     }  else {
       if (param_values[tpidx_STPRIDX == 1]){
         digitalWrite(ENBL_PIN, LOW);
-        delay(100);
+        delay(stpr_powerup_time);
        }
       trigger_stepper();
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
-      delay(100);
+      delay(stpr_powerup_time);
       digitalWrite(ENBL_PIN, HIGH);
     } 
 
@@ -327,9 +328,9 @@ void StimPeriod::s_finish()
   
    if(stprState == "EXTENDED"){
        digitalWrite(ENBL_PIN, LOW);
-       delay(100);
+       delay(stpr_powerup_time);
        rotate_back();
-       delay(100);
+       delay(stpr_powerup_time);
        digitalWrite(ENBL_PIN, HIGH);
    }
     
