@@ -288,6 +288,7 @@ void StimPeriod::s_setup(){
       trigger_stepper();
       delay(5);
       digitalWrite(ENBL_PIN, HIGH);
+      delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
     } 
 
