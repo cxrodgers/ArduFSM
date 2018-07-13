@@ -272,7 +272,7 @@ void StimPeriod::s_setup(){
   digitalWrite(_timerPin, LOW);
 
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
-      if (param_values[tpidx_STPRIDX == 1]){
+      if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
@@ -282,7 +282,7 @@ void StimPeriod::s_setup(){
       delay(stpr_powerup_time);
       digitalWrite(ENBL_PIN, HIGH);
     }  else {
-      if (param_values[tpidx_STPRIDX == 1]){
+      if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
