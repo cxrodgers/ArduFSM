@@ -613,8 +613,8 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
     # Join on trial number
     if add_trial_column:
         # Find the boundaries between trials in logfile_lines
-        trl_start_idxs = my.pick_rows(rdf, 
-            command=start_trial_token).index
+        trl_start_idxs = rdf.index[rdf['command'] == start_trial_token]
+
         if len(trl_start_idxs) > 0:            
             # Assign trial numbers. The first chunk of lines are 
             # pre-session setup, so subtract 1 to make that trial "-1".
@@ -677,7 +677,7 @@ def get_commands_from_parsed_lines(parsed_lines, command,
     See BeWatch.misc for other examples of task-specific logic
     """
     # Pick
-    res = my.pick_rows(parsed_lines, command=command)
+    res = parsed_lines[parsed_lines['command'] == command]
     
     # Decide which columns to keep and how to coerce
     if command == 'ST_CHG2':
