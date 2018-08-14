@@ -158,7 +158,7 @@ import warnings
 random.seed()
 
 ############################################################################
-# Define some utility function
+# Define some utility functions:
 def checkContinue(str):
 	if str == 'n':
 		sys.exit('Executiuon terminated by user.')
@@ -168,10 +168,17 @@ def checkContinue(str):
 		choice = raw_input('Please enter y or n.')
 		checkCont(choice)
 		
-		
+
+#########################################################################
+# Prompt user for name of settings file to use:
+settings_file = raw_input("Please enter name of settings file to use for current session: ")
+if not os.path.isfile(settings_file):
+    raise IOError('Requested settings file not found. Please ensure that settings file name was specified correctly.')
+
+	
 #########################################################################
 # Load settings from settings.json into Python dict object:
-with open('settings.json') as json_data:
+with open(settings_file) as json_data:
 	settings = json.load(json_data)
 	
 # Define some general trial timing parameters (in seconds):    
