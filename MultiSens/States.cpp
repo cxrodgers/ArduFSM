@@ -73,7 +73,8 @@ int lickThresh = 800;
 int Device::deviceCounter = 0;
 int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 String stprState = "RETRACTED";
-int stpr_powerup_time = 100;
+int trial_start_signal_duration = 50; 
+int stpr_powerup_time = 150; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -265,17 +266,12 @@ void StimPeriod::s_setup(){
 
   delay(100);
 
-  digitalWrite(_timerPin, HIGH);
-  digitalWrite(LED_PIN, LOW);
-  delay(50);
-  digitalWrite(LED_PIN, HIGH);
-  digitalWrite(_timerPin, LOW);
-
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
       if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
+      signal_trial_start(); 
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
@@ -286,6 +282,7 @@ void StimPeriod::s_setup(){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
+      signal_trial_start(); 
       trigger_stepper();
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
@@ -552,6 +549,13 @@ void trigger_stepper(){
       }
   }
 
+void signal_trial_start(){
+  digitalWrite(TIMER_PIN, HIGH);
+  digitalWrite(LED_PIN, LOW);
+  delay(trial_start_signal_duration);
+  digitalWrite(LED_PIN, HIGH);
+  digitalWrite(TIMER_PIN, LOW);
+  }
 
 Device ** config_hw(){ 
     
