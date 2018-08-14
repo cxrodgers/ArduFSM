@@ -130,7 +130,7 @@ into States.cpp.
 #define NUM_DEVICES 2
 
 // Digital I/O:
-#define SOLENOID_PIN 2
+#define SOLENOID_PIN 3
 #define SPKR_COND_PIN1 4
 #define LED_PIN 5 // reserved for H-bridge
 #define STPR_PIN 6 // reserved for stepper motor driver STEP pin
@@ -258,5 +258,6 @@ void rotate_one_step();
 void rotate_back();
 void trigger_stepper();
 void trigger_audio();
+void signal_trial_start();
 
 #endif
