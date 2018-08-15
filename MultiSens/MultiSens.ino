@@ -121,7 +121,9 @@ void setup()
   pinMode(STPR_PIN, OUTPUT);
   pinMode(DIR_PIN, OUTPUT);
 
-  // disable stepper; counterintuitively, this requires setting ENBL to HIGH:
+  // initialize stepper into discrete stepper position by sending ENBL pin a brief pulse; this results in less variance in the stop position of the stepper; disable stepper; counterintuitively, this requires setting ENBL to HIGH:
+  digitalWrite(ENBL_PIN, LOW);
+  delay(200);
   digitalWrite(ENBL_PIN, HIGH);
    
   // random number seed
