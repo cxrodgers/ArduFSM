@@ -83,10 +83,10 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "IRI", "TO", "ITI", "RWIN", "MRT", 
   "TOE", "ISL", "VOL" 
   };
-float param_values[N_TRIAL_PARAMS] = {
+long param_values[N_TRIAL_PARAMS] = {
   0, 0, 2000, 0, 50, 
   500, 6000, 3000, 0, 1,
-  1, 0, 0.303    
+  1, 0, 4    
   };
 
 // Whether to report on each trial  
@@ -254,6 +254,7 @@ void StimPeriod::s_setup(){
   duration = param_values[tpidx_STIM_DUR];  
   licked = 0;
 
+  // Transmit the auditory stimulus ID:
   if (param_values[tpidx_SPKRIDX] == 1){
           digitalWrite(SPKR_COND_PIN1, HIGH);
           delay(10);
@@ -264,6 +265,10 @@ void StimPeriod::s_setup(){
           digitalWrite(SPKR_COND_PIN2, LOW);
   }
 
+  // Transmit the auditory stimulus volume:
+  if (param_values[tpidx_SPKRIDX] == 1 || param_values[]tpidx_SPKRIDX == 2){
+    
+    }
 
   delay(100);
 
