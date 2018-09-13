@@ -86,7 +86,7 @@ into States.cpp.
 // And we can argue about how these two categories map onto the categories above.
 //
 // Attempt to have 0 be the "error value" since it cannot intentially be set to 0.
-#define N_TRIAL_PARAMS 12
+#define N_TRIAL_PARAMS 13
 #define tpidx_STPRIDX 0 // reqd
 #define tpidx_SPKRIDX 1 // latch
 #define tpidx_STIM_DUR 2 // reqd
@@ -130,7 +130,8 @@ into States.cpp.
 #define NUM_DEVICES 2
 
 // Digital I/O:
-#define SOLENOID_PIN 3
+#define SOLENOID_PIN 2
+#define VOLUME_PIN 3
 #define SPKR_COND_PIN1 4
 #define LED_PIN 5 // reserved for H-bridge
 #define STPR_PIN 6 // reserved for stepper motor driver STEP pin

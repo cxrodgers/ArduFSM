@@ -75,18 +75,18 @@ int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
 int stpr_powerup_time = 150; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
-int stpr_powerdown_time = 200; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
+int stpr_powerdown_time = 300; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
   "STPRIDX", "SPKRIDX", "STIMDUR", "REW", "REW_DUR", 
   "IRI", "TO", "ITI", "RWIN", "MRT", 
-  "TOE", "ISL" 
+  "TOE", "ISL", "VOL" 
   };
-long param_values[N_TRIAL_PARAMS] = {
+float param_values[N_TRIAL_PARAMS] = {
   0, 0, 2000, 0, 50, 
   500, 6000, 3000, 0, 1,
-  1, 0   
+  1, 0, 0.303    
   };
 
 // Whether to report on each trial  
@@ -97,7 +97,7 @@ long param_values[N_TRIAL_PARAMS] = {
 bool param_report_ET[N_TRIAL_PARAMS] = {
   1, 1, 1, 1, 0, 
   0, 0, 0, 0, 0,
-  0, 1
+  0, 1, 1
 };
   
 char* results_abbrevs[N_TRIAL_RESULTS] = {"RESP", "OUTC"};
@@ -268,21 +268,27 @@ void StimPeriod::s_setup(){
   delay(100);
 
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
+     
+     /*
       if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
+      */
+      
       signal_trial_start(); 
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
-      delay(stpr_powerdown_time);
-      digitalWrite(ENBL_PIN, HIGH);
     }  else {
+
+      /*
       if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(ENBL_PIN, LOW);
         delay(stpr_powerup_time);
        }
+      */
+      
       signal_trial_start(); 
       trigger_stepper();
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
@@ -345,6 +351,10 @@ void StimPeriod::s_finish()
 }
 
 void rotate_to_sensor(){
+
+    digitalWrite(ENBL_PIN, LOW);
+    delay(stpr_powerup_time);
+    
     digitalWrite(DIR_PIN, LOW);
     //int hall_val = analogRead(HALL_PIN);
     while(analogRead(HALL_PIN)>HALL_THRESH){
@@ -354,6 +364,9 @@ void rotate_to_sensor(){
   }
   Serial.println("stepper extended");
   stprState  = "EXTENDED";
+
+  delay(stpr_powerdown_time);
+  digitalWrite(ENBL_PIN, HIGH);
 }
 
 void rotate_one_step()
@@ -365,11 +378,17 @@ void rotate_one_step()
 }
 
 void rotate_back(){
+  digitalWrite(ENBL_PIN, LOW);
+  delay(stpr_powerup_time);
+  
   digitalWrite(DIR_PIN, HIGH);
   //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
   stprState = "RETRACTED";
+
+  delay(stpr_powerdown_time);
+  digitalWrite(ENBL_PIN, HIGH);
 }
 
 // StateResponseWindow definitions:
