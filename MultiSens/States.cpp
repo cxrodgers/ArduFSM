@@ -76,6 +76,7 @@ String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
 int stpr_powerup_time = 150; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
 int stpr_powerdown_time = 300; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
+int max_volume = 8;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -267,7 +268,9 @@ void StimPeriod::s_setup(){
 
   // Transmit the auditory stimulus volume:
   if (param_values[tpidx_SPKRIDX] == 1 || param_values[]tpidx_SPKRIDX == 2){
-    
+      analogWrite(VOLUME_PIN, param_values[tpidx_VOLUME]/max_volume);
+      delay(50)
+      analogWrite(VOLUME_PIN, 0);
     }
 
   delay(100);

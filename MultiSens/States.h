@@ -99,6 +99,7 @@ into States.cpp.
 #define tpidx_MRT 9
 #define tpidx_TERMINATE_ON_ERR 10 
 #define tpidx_INTERSTIM_LATENCY 11
+#define tpidx_VOLUME 12
 
 //state indices for an array of state pointers
 #define N_CLASS_STATES 6
