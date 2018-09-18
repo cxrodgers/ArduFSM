@@ -269,7 +269,7 @@ void StimPeriod::s_setup(){
 
   if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
       if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(ENBL_PIN, LOW);
+        digitalWrite(SLP_PIN, HIGH);
         delay(stpr_powerup_time);
        }
       signal_trial_start(); 
@@ -277,10 +277,10 @@ void StimPeriod::s_setup(){
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
       delay(stpr_powerdown_time);
-      digitalWrite(ENBL_PIN, HIGH);
+      digitalWrite(SLP_PIN, LOW);
     }  else {
       if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(ENBL_PIN, LOW);
+        digitalWrite(SLP_PIN, HIGH);
         delay(stpr_powerup_time);
        }
       signal_trial_start(); 
@@ -288,7 +288,7 @@ void StimPeriod::s_setup(){
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
       delay(stpr_powerdown_time);
-      digitalWrite(ENBL_PIN, HIGH);
+      digitalWrite(SLP_PIN, LOW);
     } 
 
 }
@@ -325,11 +325,11 @@ void StimPeriod::s_finish()
   */
   
    if(stprState == "EXTENDED"){
-       digitalWrite(ENBL_PIN, LOW);
+       digitalWrite(SLP_PIN, HIGH);
        delay(stpr_powerup_time);
        rotate_back();
        delay(stpr_powerdown_time);
-       digitalWrite(ENBL_PIN, HIGH);
+       digitalWrite(SLP_PIN, LOW);
    }
     
   digitalWrite(SOLENOID_PIN, LOW);
