@@ -267,9 +267,9 @@ void StimPeriod::s_setup(){
   }
 
   // Transmit the auditory stimulus volume:
-  if (param_values[tpidx_SPKRIDX] == 1 || param_values[]tpidx_SPKRIDX == 2){
+  if (param_values[tpidx_SPKRIDX] == 1 || param_values[tpidx_SPKRIDX == 2]){
       analogWrite(VOLUME_PIN, param_values[tpidx_VOLUME]/max_volume);
-      delay(50)
+      delay(50);
       analogWrite(VOLUME_PIN, 0);
     }
 
