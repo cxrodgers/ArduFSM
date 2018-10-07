@@ -347,7 +347,7 @@ void StimPeriod::s_finish()
 void rotate_to_sensor(){
     digitalWrite(DIR_PIN, LOW);
     //int hall_val = analogRead(HALL_PIN);
-    while(analogRead(HALL_PIN)>HALL_THRESH){
+    while(analogRead(HALL_PIN)<HALL_THRESH){
         rotate_one_step(); //how to deal with direction??
         //delay(1);
         //hall_val = analogRead(HALL_PIN);
