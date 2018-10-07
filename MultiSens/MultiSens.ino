@@ -116,16 +116,16 @@ void setup()
   pinMode(SPKR_COND_PIN2, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(TIMER_PIN, OUTPUT);
-  pinMode(ENBL_PIN, OUTPUT); 
+  pinMode(SLP_PIN, OUTPUT); 
   pinMode(TIMER_PIN, OUTPUT); 
   pinMode(STPR_PIN, OUTPUT);
   pinMode(DIR_PIN, OUTPUT);
   pinMode(VOLUME_PIN, OUTPUT);
 
-  // initialize stepper into discrete stepper position by sending ENBL pin a brief pulse; this results in less variance in the stop position of the stepper; disable stepper; counterintuitively, this requires setting ENBL to HIGH:
-  digitalWrite(ENBL_PIN, LOW);
+  // initialize stepper into discrete stepper position by sending SLP pin a brief pulse;
+  digitalWrite(SLP_PIN, HIGH);
   delay(200);
-  digitalWrite(ENBL_PIN, HIGH);
+  digitalWrite(SLP_PIN, LOW);
    
   // random number seed
   randomSeed(analogRead(3));

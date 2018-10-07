@@ -279,7 +279,7 @@ void StimPeriod::s_setup(){
      
      /*
       if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(ENBL_PIN, LOW);
+        digitalWrite(SLP_PIN, HIGH);
         delay(stpr_powerup_time);
        }
       */
@@ -288,11 +288,13 @@ void StimPeriod::s_setup(){
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
+      delay(stpr_powerdown_time);
+      digitalWrite(SLP_PIN, LOW);
     }  else {
 
       /*
       if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(ENBL_PIN, LOW);
+        digitalWrite(SLP_PIN, HIGH);
         delay(stpr_powerup_time);
        }
       */
@@ -302,7 +304,7 @@ void StimPeriod::s_setup(){
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
       delay(stpr_powerdown_time);
-      digitalWrite(ENBL_PIN, HIGH);
+      digitalWrite(SLP_PIN, LOW);
     } 
 
 }
@@ -339,11 +341,11 @@ void StimPeriod::s_finish()
   */
   
    if(stprState == "EXTENDED"){
-       digitalWrite(ENBL_PIN, LOW);
+       digitalWrite(SLP_PIN, HIGH);
        delay(stpr_powerup_time);
        rotate_back();
        delay(stpr_powerdown_time);
-       digitalWrite(ENBL_PIN, HIGH);
+       digitalWrite(SLP_PIN, LOW);
    }
     
   digitalWrite(SOLENOID_PIN, LOW);
@@ -365,7 +367,7 @@ void rotate_to_sensor(){
     
     digitalWrite(DIR_PIN, LOW);
     //int hall_val = analogRead(HALL_PIN);
-    while(analogRead(HALL_PIN)>HALL_THRESH){
+    while(analogRead(HALL_PIN)<HALL_THRESH){
         rotate_one_step(); //how to deal with direction??
         //delay(1);
         //hall_val = analogRead(HALL_PIN);

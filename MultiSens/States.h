@@ -149,7 +149,7 @@ into States.cpp.
 #define LICK_DETECTOR_PIN A1
 
 #define NUM_STEPS 200
-#define HALL_THRESH 50
+#define HALL_THRESH 1000
 #define STPR1_SPEED 100
 #define STPR1_CW 50
 #define STPR1_CCW -50
