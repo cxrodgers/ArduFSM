@@ -3,15 +3,13 @@ Detection task (1 stim, placed below whiskers). Uses stepper motor
 Rewritten from Clay's program for learning arduino.
 To be used with optostim.
 */
-// set up behavior parameters that wont' change during session:
 
-String programName = "Detection_sss_longlever.pde" ; 
-String notes = "for triggering laser during random trials during Go-nogo detection task";
+ 
+#include "hwconstants.h"
 
-///////////////////////////////////////////////////
+
 // constants that frequently change:
 const int rewSolDur = 45; //how long solenoid valve should open to deliver water reward
-int unrewTO = 5000 ;// 3-7000 for well-trained; //  punishment timeout duration
 int rewStimFreq =50;
 //////////////////////////////////////////////////
 
@@ -19,32 +17,11 @@ int ITI = 500;
 int stimDuration = 1800; // how long stimulus should be available for sampling changed from 1.2 to 1 on 4/25/2017
 const long optoStartTime = 300000; // how long to wait before starting laser trials
 const int optoStimFreq = 50;
-// const int stimHoldDelay = 100; //changed from 100 on 170524 not in use
 const int stimCW = 30;
 const int stimCCW = -30;
-// constants won't change. They're used here to set pin numbers:
-//PCB board uses transistor-only 2 Digital pins needed 
 
-const int DIR_PIN = 8;  // direction
-const int STEP_PIN= 6;  // step pin
-const int enablePin = 7;
-const int rotation = 200; // # steps for the motor: 200 (full) steps/360deg. 1/4 for microstepping
-const int rotationSpeed = 500;// set in microseconds (set #steps/sec)
 int x =0 ; // for setting loop for stepper motor
 
-const int startPin = 2; // signals start of trial // triggers matlab
-const int optoPin = 13; // used to be vac pin
-const int lampPin = 4;
-const int hallPin = 1;     // the number of the hall effect sensor pin
-const int ledPin =  13; // the number of the LED pin
-const int leverPin = 10; //used to be pin 9 on orig OM2 boards
-const int rewPin = 5; // solenoid valve pin
-const int speakerPin = 11; //speaker pin
-
-//const int fiberPosPin = 4; // analog input from matlab to indicate which position fiber is placed
-// set up stepper motor
-//#include <Stepper.h>
-//Stepper stimStepper(stepsPerRevolution, motorPin1, motorPin2);
 
 // define variables that will change:
 
@@ -63,7 +40,7 @@ int rew = 0;
 int randSound = 0; // random noise for white noise audio stimuluspu
 int drinkDur = 500; // drink duration
 int rewToneDur = 500; // reward tone duration
-int trialStartTime =0;
+int unrewTO = 5000 ;// 3-7000 for well-trained; //  punishment timeout duration
 int liftLevThresh = 50; // how long lever has to be lifted to count as response. 100 normally
 int optoStart =0;
 int optoRand = 0;
@@ -77,30 +54,23 @@ long currentTime=0;
 long trigTime = 0;
 long levLiftTime = 0;
 long randNumber = 0;    // random number for whisker stimulus
-long ITIendTime = 0;
+
 
 void setup() {
   // initialize the LED pin as an output:
   digitalWrite(optoPin,LOW);
   pinMode(startPin, OUTPUT);
   pinMode(optoPin, OUTPUT);
-  //pinMode(ledPin, OUTPUT);  
+  pinMode(enablePin, OUTPUT); //enable for motor
   pinMode(leverPin, INPUT);
   pinMode(rewPin, OUTPUT);
   pinMode(speakerPin, OUTPUT);
-  pinMode(speakerPin, OUTPUT);
-  
-  pinMode(enablePin, OUTPUT); 
   pinMode(STEP_PIN,OUTPUT); // Step
   pinMode(DIR_PIN,OUTPUT); // Dir
   digitalWrite(enablePin,LOW); // Set Enable low
   
   Serial.begin(9600);    // initialize serial for output to Processing sketch
   randomSeed(analogRead(2));
-  Serial.println("Program name:");
-  Serial.println(programName);
-  Serial.println("Notes:");
-  Serial.println(notes);
   Serial.println("rewarded stimulus frequency = ");
   Serial.println(rewStimFreq);
 
@@ -116,9 +86,12 @@ void setup() {
   Serial.println("BEGIN DATA");
 }
 
-void loop(){
- ///////////////////START TRIALS: GO OR NOGO?
 
+void loop(){
+
+ ///////////////////START TRIALS
+  time = millis();
+    
  //make sure lever is pressed before starting trials.
   if (optoStart == 0){
     time = millis();
@@ -131,7 +104,7 @@ void loop(){
     
 ////////////////// START STIMULUS TRIAL: GO OR NOGO
  
-  leverState = digitalRead(leverPin); 
+  leverState = digitalRead(leverPin);
   if (leverState == HIGH){ // if lever is pressed
     if(prevLevState == 0) { // if previously not pressed --as in beginning of session
       levPressTime = millis();
@@ -158,6 +131,7 @@ void loop(){
      digitalWrite(lampPin, LOW); //signal for ttl pulse to signal start trial
      delay(25);
      digitalWrite(lampPin, HIGH);
+     //delay(100); // added 5/16/16
      Serial.println("Trial started at:");
      Serial.println(trigTime); // start counting trial duration
      //delay(10); 
@@ -179,7 +153,7 @@ void loop(){
          delay(50); //added 040715
        }
        else{
-         
+         digitalWrite(optoPin, LOW);
          Serial.println("dark");
          Serial.println(millis());
          delay(50); //added 0407
@@ -187,7 +161,7 @@ void loop(){
      }
      
      // present rewarded trials according to the defined reward stim frequency
-     randNumber = random(1,100); //pick random number 
+     randNumber = random(0,100); //pick random number 
      if (randNumber <= rewStimFreq){   //
        stimType = 1; // for rewarded trials
      }
@@ -200,46 +174,49 @@ void loop(){
        Serial.println("stimulus trial: bottom rewarded");
        Serial.println(millis());
   
-        // read the state of the hall effect sensor (for troubleshooting
+       // Move the stepper
        digitalWrite(enablePin, HIGH);
        delay(100);
-           // hallSensValue = analogRead(hallPin);
-           //leverState = digitalRead(leverPin);
-           // No need to check lever state again here
-           //if (leverState == HIGH) { // if lever is pressed for defined amount of time
-          digitalWrite(DIR_PIN,HIGH); // Set Dir high = cw
-          for(x = 0; x < rotation; x++){ // Loop 200 times
+
+       digitalWrite(DIR_PIN,HIGH); // Set Dir high = cw
+       for(x = 0; x < rotation; x++){ // Loop 200 times
           digitalWrite(STEP_PIN,HIGH); // Output high
           delayMicroseconds(rotationSpeed); 
           digitalWrite(STEP_PIN,LOW); // Output low
           delayMicroseconds(rotationSpeed);
-         } // note: arduino can't do anything else during this period
+       } // note: arduino can't do anything else during this period
       delay(50);
       
-      elapTime = 0; 
+      elapTime = 0;
       prevLevState = 0;
       levPressDur = 0;
       startLevLiftCheck = 0;
       
+      //reward when lever is lifted
       while (elapTime <= stimDuration){
-        currentTime = millis();
-        elapTime = currentTime - trigTime;
+        time = millis();
+        elapTime = time - trigTime;
         leverState = digitalRead(leverPin); 
           if (leverState == HIGH) { // if the lever is pressed start checking for lever lifts.
            startLevLiftCheck = 1;
           }           
           if (startLevLiftCheck == 1) {
-                // see how long animal lifts his paw off the lever during stim presentation
+            // see how long animal lifts his paw off the lever during stim presentation
             if (leverState == LOW) {   // Lever is lifted
               if (prevLevState == 1) {  //  but was previously pressed                                      
+                // Lever was previously down and just went up
+                // Store lever lift time as now
                 levLiftTime = millis();  // Store lever lift time as now
                 prevLevState = 0;
               }
               else { // if leverstate is 0 (lever lifted), record how long lifted.
+                // Lever was already up and is still up
+                // Recalculate duration
                 levLiftDur = millis() - levLiftTime;
               }
             }
             else { // not checking for lever lift
+              // Lever is down
               prevLevState = 1;
               levLiftDur = 0;
             }
@@ -249,26 +226,27 @@ void loop(){
                  //digitalWrite(optoPin, LOW); // REMOVE IF LASER SHOULD BE ON FOR WHOLE TRIAL
                  //digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
                  reward(); /////////////////// call reward function and print REWARD!!!!!
-              }
-            }  // end IF for levPressDur > 100 (REWARD sequence)        
-       } // end WHILE elapTime <= stimDur (check for lever lifts)
-           digitalWrite(optoPin, LOW);
-           digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
+            }
+          }  // end IF for levPressDur > 100 (REWARD sequence)        
+        } // end WHILE elapTime <= stimDur (check for lever lifts)
+        digitalWrite(optoPin, LOW);
+        digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
         delay(25);   //added 180619 see if it helps with motor turning in wrong direction
            
       // MOVE STIM BACK
       digitalWrite(DIR_PIN,LOW); // Set Dir low = ccw
-        for(x = 0; x < rotation; x++){ // Loop 200 times     
-          digitalWrite(STEP_PIN,HIGH); // Output high
-          delayMicroseconds(rotationSpeed); // Wait
-          digitalWrite(STEP_PIN,LOW); // Output low
-          delayMicroseconds(rotationSpeed); // Wait
-        }
+      for(x = 0; x < rotation; x++){ // Loop 200 times     
+        digitalWrite(STEP_PIN,HIGH); // Output high
+        delayMicroseconds(rotationSpeed); // Wait
+        digitalWrite(STEP_PIN,LOW); // Output low
+        delayMicroseconds(rotationSpeed); // Wait
+      }
         
-         prevLevState = 0;   // reset state variable to allow for consecutive triggers
-         //prevType = 1; // for stimCount to promote alternation
-         
+      prevLevState = 0;   // reset state variable to allow for consecutive triggers
+      //prevType = 1; // for stimCount to promote alternation
      } // END of if stimType = 1 (rewarded trial)
+     
+     
      //////////////////////////////////catch trials
      
      else{
@@ -277,10 +255,10 @@ void loop(){
        //move stim away (no hall effect sensor used)
        digitalWrite(DIR_PIN,LOW);
        for(x = 0; x < rotation; x++){ // Loop 200 times  
-        digitalWrite(STEP_PIN,HIGH); // Output high
-        delayMicroseconds(rotationSpeed); // Wait
-        digitalWrite(STEP_PIN,LOW); // Output low
-        delayMicroseconds(rotationSpeed); // Wait
+         digitalWrite(STEP_PIN,HIGH); // Output high
+         delayMicroseconds(rotationSpeed); // Wait
+         digitalWrite(STEP_PIN,LOW); // Output low
+         delayMicroseconds(rotationSpeed); // Wait
        }             
        // check if mouse lifts lever during catch trial
        elapTime = 0;
@@ -288,8 +266,8 @@ void loop(){
        levPressDur = 0;
        startLevLiftCheck = 0;
        while (elapTime <= stimDuration) {
-         currentTime = millis();
-         elapTime = currentTime - trigTime; 
+         time = millis();
+         elapTime = time - trigTime; 
          leverState = digitalRead(leverPin);
          if (leverState == HIGH){ // if the lever is pressed start checking for lever lifts.
            startLevLiftCheck = 1;
@@ -304,33 +282,33 @@ void loop(){
                levLiftDur = millis()-levLiftTime;
              }
            }
-         else{
+           else{
              prevLevState = 1;
              levLiftDur = 0;
            }
            
-         if (levLiftDur >= liftLevThresh){ // if lever lifted during catch trial.
-            // digitalWrite(optoPin, LOW);
-            // digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
-            punish();
+           if (levLiftDur >= liftLevThresh){ // if lever lifted during catch trial.
+             // digitalWrite(optoPin, LOW);
+             // digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
+             punish();
            }
-        }
+         }
        } // END while loop 
-          digitalWrite(optoPin, LOW);
-          digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
+       digitalWrite(optoPin, LOW);
+       digitalWrite(startPin, LOW); // turn off start pin at end of trial to trigger matlab
        //  move stimback to rest position
-        delay(50);   //added 180619 see if it helps with motor turning in wrong direction
-      digitalWrite(DIR_PIN,HIGH); //return to position
-      for(x = 0; x < rotation; x++){ // Loop 200 times   
-        digitalWrite(STEP_PIN,HIGH); // Output high
-        delayMicroseconds(rotationSpeed); // Wait
-        digitalWrite(STEP_PIN,LOW); // Output low
-        delayMicroseconds(rotationSpeed); // Wait
-      }
-        prevLevState = 0;  //reset state variable for consecutive triggers
+       delay(50);   //added 180619 see if it helps with motor turning in wrong direction
+       digitalWrite(DIR_PIN,HIGH); //return to position
+       for(x = 0; x < rotation; x++){ // Loop 200 times   
+         digitalWrite(STEP_PIN,HIGH); // Output high
+         delayMicroseconds(rotationSpeed); // Wait
+         digitalWrite(STEP_PIN,LOW); // Output low
+         delayMicroseconds(rotationSpeed); // Wait
+       }
+       prevLevState = 0;  //reset state variable for consecutive triggers
      }// END else 
    }
-     delay(ITI); //inter-trial interval    
+   delay(ITI); //inter-trial interval    
 
 } // END of loop
    
@@ -368,7 +346,8 @@ void punish() {
   //digitalWrite(airpuffPin, HIGH);    // give aversive light for wrong press
   Serial.println("unrewarded punishment");
   Serial.println(millis());
-  delay(10);  // changed this from 2000 because air puff goes on falling phase 
+  delay(10);  // changed this from 2000 because air puff goes on falling phase
+  
     rew = 0;
     cueTone();
     delay(10);
@@ -376,6 +355,8 @@ void punish() {
 } // END of punish function
 
 void cueTone() {  
+  // Bug, this overlaps with the global used for elapsed trial time
+  // But elapTime is overwritten in reward() and punish() so it's okay
   trigTime = millis();  
    if (rew == 1) {  // if its a reward tone
     while ((time-trigTime) < rewToneDur) {
@@ -395,8 +376,9 @@ void cueTone() {
         delayMicroseconds(randSound);
         time = millis();
       }
-    }    
+   }    
 } // END cueTone function
+
 // TONE WHEN MOTOR MOVES--HOPE TO MASK MOTOR SOUND
 void startTone() {
    tone(speakerPin, 30000, 200); // frequency and duration

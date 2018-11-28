@@ -2,8 +2,8 @@
 #define __HWCONSTANTS_H_INCLUDED__
 
 // Digital pins
-#define motorPin1 8
-#define motorPin2 6
+#define DIR_PIN 8
+#define STEP_PIN 6
 #define enablePin 7
 #define startPin 2
 #define optoPin 13
@@ -16,9 +16,10 @@
 // Analog
 // leverPin used to be DIO9
 #define hallPin 1
-#define leverPin 9
+#define leverPin 10
 
 // Other constants
-#define stepsPerRevolution 200
+#define rotation 200
+#define rotationSpeed 500
 
 #endif
