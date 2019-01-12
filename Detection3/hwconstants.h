@@ -19,7 +19,7 @@
 #define leverPin 10
 
 // Other constants
-#define rotation 200
+#define rotation 400
 #define rotationSpeed 500
 
 #endif
