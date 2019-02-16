@@ -231,6 +231,9 @@ def run_anova(numericated_trial_matrix):
 
 def count_hits_by_type_from_trials_info(trials_info, split_key='trial_type'):    
     """Returns (nhit, ntot) for each value of split_key in trials_info as dict."""
+    if len(trials_info) == 0:
+        raise ValueError("trial matrix is empty")
+    
     uniq_types = np.unique(trials_info[split_key])
     typ2perf = {}
     
