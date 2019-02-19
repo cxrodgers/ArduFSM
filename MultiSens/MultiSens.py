@@ -384,14 +384,15 @@ for phase in experiment:
             f.close()
             chtr.update() #write set trial parameter command from the input pipe to the Arduino, write any received messages to ardulines
         
-        time.sleep(2)
+        time.sleep(0.1)
         f = open(chtr.pipein.name, 'w') 
         f.write('RELEASE_TRL\n') #write the relase trial command to the chatter object's input pipe
         f.close()
         chtr.update() #write the release trial command from the input pipe to the Arduino, write any received messages to ardulines
         
         trialStart = time.time()
-        while (time.time() - trialStart < stimDur + responseWindow + minITI + random.uniform(0,maxITI-minITI)):
+	ITI = random.uniform(0,maxITI-minITI)
+        while (time.time() - trialStart < stimDur + responseWindow + minITI + ITI):
             chtr.update()
     
 chtr.close()
