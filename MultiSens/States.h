@@ -131,6 +131,7 @@ into States.cpp.
 #define NUM_DEVICES 2
 
 // Digital I/O:
+// Pins 0 and 1 reserved for serial communication
 #define SOLENOID_PIN 2
 #define VOLUME_PIN 3
 #define SPKR_COND_PIN1 4
