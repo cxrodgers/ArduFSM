@@ -120,6 +120,7 @@ void setup()
   pinMode(TIMER_PIN, OUTPUT); 
   pinMode(STPR_PIN, OUTPUT);
   pinMode(DIR_PIN, OUTPUT);
+  pinMode(VOLUME_PIN, OUTPUT);
 
   // initialize stepper into discrete stepper position by sending SLP pin a brief pulse;
   digitalWrite(SLP_PIN, HIGH);
