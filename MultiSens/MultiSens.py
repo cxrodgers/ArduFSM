@@ -348,7 +348,8 @@ experiment = copy.deepcopy(settings['Phases'])  # Extract the experiment structu
 for phase in experiment:
 	phase['trials'] = []
 	for condition in phase['conditions']:
-		for t in range(1, phase['trialsPerCond']+1):
+                n_trials = condition['NUM_TRIALS']
+		for t in range(1, n_trials+1):
 			phase['trials'].append(condition)
 
 # Shuffle trial order:
