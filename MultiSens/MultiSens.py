@@ -386,16 +386,20 @@ trlp_transmission_period = 1
 for phase in experiment: 
     for trial in phase['trials']:
             
+        # Choose ITI:
+        ITI = random.uniform(minITI, maxITI)
+            
         n = n + 1
         print('trial ' + str(n))
-    
+
+        # Start ITI:
+        start_ITI = time.time()
+        
+        # Transmit trial paramters:
         for key, value in trial.iteritems():
-            line = 'SET ' + key + ' ' + str(value) + '\n' 
-            f = open(chtr.pipein.name, 'w') #write the set trial parameter command to the chatter object's input pipe
-            f.write(line)
-            f.close()
             
             #Write set trial parameter command from the input pipe to the Arduino:
+            line = 'SET ' + key + ' ' + str(value) + '\n' 
             chat.write_to_device(chtr.ser, str(line))
             ack = 0
             
@@ -403,21 +407,39 @@ for phase in experiment:
             while not ack:
                     newlines = chat.read_from_device(chtr.ser)
                     for line in newlines:
-                            chat.write_to_user(chtr.ofi, line)
+                            chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
+                            chat.write_to_user(sys.stdout, line)
+                            sys.stdout.flush()
                             if key in line:
                                 ack = 1
-                    
         
-        #time.sleep(trlp_transmission_period)
+        # Wait out remainder of ITI:
+        trlp_transmission_end = time.time()
+        trlp_transmission_duration = trlp_transmission_end - start_ITI
+        if ITI > trlp_transmission_duration:
+                while (time.time() - trlp_transmission_end < ITI - trlp_transmission_duration):
+                        chtr.update()
+        
+        #Release trial:
         f = open(chtr.pipein.name, 'w') 
         f.write('RELEASE_TRL\n') #write the relase trial command to the chatter object's input pipe
         f.close()
         chtr.update() #write the release trial command from the input pipe to the Arduino, write any received messages to ardulines
         
-        trialStart = time.time()
-        ITI = random.uniform(0,maxITI-minITI)
-        wait_period = stimDur + responseWindow + minITI + ITI
-        while (time.time() - trialStart < wait_period):
-            chtr.update()
+        # Wait out trial:
+        trial_complete = 0
+        while not trial_complete:
+                newlines = chat.read_from_device(chtr.ser)
+                for line in newlines:
+                    chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
+                    chat.write_to_user(sys.stdout, line)
+                    sys.stdout.flush()
+                    if 'TRLR OUTC' in line:
+                        trial_complete = 1                
+        
+        #trialStart = time.time()
+        #wait_period = stimDur + responseWindow
+        #while (time.time() - trialStart < wait_period):
+         #   chtr.update()
     
 chtr.close()
