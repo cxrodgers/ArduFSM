@@ -96,8 +96,8 @@ random_water_mul = 1 + .2 * (np.random.random() - .5)
 adjusted_target_water_volume = target_water_volume * random_water_mul
 
 # Clamp
-if adjusted_target_water_volume < 3:
-    adjusted_target_water_volume = 3.
+if adjusted_target_water_volume < 2:
+    adjusted_target_water_volume = 2.
 if adjusted_target_water_volume > 9.:
     adjusted_target_water_volume = 9.
 
