@@ -132,9 +132,9 @@ into States.cpp.
 
 // Digital I/O:
 // Pins 0 and 1 reserved for serial communication
-#define SOLENOID_PIN 2
+#define SPKR_COND_PIN1 2
 #define VOLUME_PIN 3
-#define SPKR_COND_PIN1 4
+#define SOLENOID_PIN 4
 #define LED_PIN 5 // reserved for H-bridge
 #define STPR_PIN 6 // reserved for stepper motor driver STEP pin
 #define ENBL_PIN 7 // reserved for stepper motor driver ENABLE pin
