@@ -374,7 +374,7 @@ settings['SerialStartTime'] = time.strftime("%H:%M:%S")
 
 # Save to secondary storage:
 with open('metadata.json', 'w') as fp:
-        json.dump(settings, fp)
+        json.dump(settings, fp, indent=4)
 
 
 #########################################################################
