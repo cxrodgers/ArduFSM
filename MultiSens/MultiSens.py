@@ -410,7 +410,7 @@ for phase in experiment:
                             chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
                             chat.write_to_user(sys.stdout, line)
                             sys.stdout.flush()
-                            if key in line:
+                            if key in line and not ack:
                                 ack = 1
         
         # Wait out remainder of ITI:
