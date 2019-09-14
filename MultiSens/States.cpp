@@ -86,7 +86,7 @@ char* param_abbrevs[N_TRIAL_PARAMS] = {
   "TOE", "ISL", "VOL" 
   };
 long param_values[N_TRIAL_PARAMS] = {
-  0, 0, 2000, 0, 50, 
+  0, 0, 2000, 0, 10, 
   500, 6000, 3000, 0, 1,
   1, 0, 50    
   };
