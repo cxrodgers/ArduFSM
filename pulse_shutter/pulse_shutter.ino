@@ -8,7 +8,7 @@ const int output_pin = 3;
 const unsigned int pulse_duration_us = 2500;
 
 // how long to wait between pulses (ms)
-const unsigned long inter_pulse_interval_ms = 197;
+const unsigned long inter_pulse_interval_ms = 97;
 const unsigned int inter_pulse_interval_us = 500;
 
 // how long to wait after trigger before first pulse
