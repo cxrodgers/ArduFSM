@@ -32,8 +32,6 @@ from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
 n_dd_trials = 4
-N_OPTO_TRIALS = 4 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()
-OPTO_PERIODIC = False
 OPTO_FORCED = True
 
 class ForcedAlternation:
@@ -111,20 +109,14 @@ class ForcedAlternation:
             
             # Only do opto on forced if requested
             if OPTO_FORCED:
-                # Opto either periodic or random
-                if OPTO_PERIODIC: 
-                    # Every Nth trial exactly
-                    if np.mod(len(trial_matrix), N_OPTO_TRIALS) == (
-                        N_OPTO_TRIALS - 1):
-                        res['OPTO'] = YES
+                # Randomly do nothing or target either location
+                rand_number = np.random.rand()
+                if rand_number < (1 / 3.):
+                    res['OPTO'] = NO
+                elif rand_number < (2 / 3.):
+                    res['OPTO'] = 4
                 else:
-                    # With probability 1/N
-                    if np.random.rand() < (1. / N_OPTO_TRIALS):
-                        # Choose location randomly
-                        if np.random.rand() > 0.5:
-                            res['OPTO'] = 4
-                        else:
-                            res['OPTO'] = 5
+                    res['OPTO'] = 5
         
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -308,20 +300,14 @@ class RandomStim:
         res['DIRDEL'] = TrialSpeak.NO
         res['OPTO'] = NO
 
-        # Opto either periodic or random
-        if OPTO_PERIODIC: 
-            # Every Nth trial exactly
-            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == (
-                N_OPTO_TRIALS - 1):
-                res['OPTO'] = YES
+        # Randomly do nothing or target either location
+        rand_number = np.random.rand()
+        if rand_number < (1 / 3.):
+            res['OPTO'] = NO
+        elif rand_Number < (2 / 3.):
+            res['OPTO'] = 4
         else:
-            # With probability 1/N
-            if np.random.rand() < (1. / N_OPTO_TRIALS):
-                # Choose location randomly
-                if np.random.rand() > 0.5:
-                    res['OPTO'] = 4
-                else:
-                    res['OPTO'] = 5
+            res['OPTO'] = 5
         
         # Save current side for display
         self.params['side'] = res['RWSD']

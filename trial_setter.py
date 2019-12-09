@@ -2,6 +2,9 @@
 import TrialSpeak
 import TrialMatrix
 import pandas
+import os
+
+MANIPULATOR_PIPE = '/home/chris/manipulator_pipe'
 
 def send_params_and_release(params, chatter):
     # Set them
@@ -101,7 +104,7 @@ class TrialSetter:
         
         ## Trial releasing logic
         # Don't move unless a trial was just released
-        move_manipulator = False
+        move_manipulator_to = None
         
         # Was the last released trial the current one or the next one?
         if self.last_released_trial < current_trial:
@@ -116,7 +119,7 @@ class TrialSetter:
                 self.last_released_trial = current_trial + 1
                 
                 # move manipulator
-                move_manipulator = True
+                move_manipulator_to = params['OPTO']
                 
             elif is_current_trial_incomplete(translated_trial_matrix):
                 # Current trial has been released but not completed
@@ -129,7 +132,7 @@ class TrialSetter:
                 self.last_released_trial = current_trial + 1          
 
                 # move manipulator
-                move_manipulator = True                
+                move_manipulator_to = params['OPTO']
         
         elif self.last_released_trial == current_trial + 1:
             # Next trial has been released, but has not yet begun
@@ -139,24 +142,47 @@ class TrialSetter:
             raise "too many trials have been released, somehow"    
         
         # Move if requested (only after released)
-        if move_manipulator:
-            # move manipulator
-            pipeout = os.open(MANIPULATOR_PIPE, os.O_WRONLY | os.O_NONBLOCK)
-            os.write(pipeout, 'goto_interpos\n')
+        if move_manipulator_to is not None:
+            #~ try:
+                #~ move_manipulator_to = int(move_manipulator_to)
+            #~ except ValueError:
+                #~ raise ValueError(
+                    #~ "cannot intify move_manipulator_to: {}".format(
+                    #~ move_manipulator_to))
             
-            # Get this from the opto param instead
-            which_opto = translated_trial_matrix.loc[self.last_released_trial, 'OPTO']
-            if which_opto == 4:
+            # Open the pipe
+            pipeout = os.open(MANIPULATOR_PIPE, os.O_WRONLY | os.O_NONBLOCK)
+            
+            # Move accordingly
+            if move_manipulator_to == 2:
+                ## No opto, but move to a random target to maintain sounds
+                which_target = np.mod(current_trial, 2)
+                os.write(pipeout, 'goup\n')
+                os.write(pipeout, 'goto_interpos\n')
+                if which_target == 0:
+                    os.write(pipeout, 'goto_C1up\n')
+                    os.write(pipeout, 'goto_C1\n')
+                else:
+                    os.write(pipeout, 'goto_C3up\n')
+                    os.write(pipeout, 'goto_C3\n')
+
+            elif move_manipulator_to == 4:
+                ## Go to C1 and opto
                 os.write(pipeout, 'goup\n')
                 os.write(pipeout, 'goto_interpos\n')
                 os.write(pipeout, 'goto_C1up\n')
                 os.write(pipeout, 'goto_C1\n')
-            elif which_opto == 5:
+
+            elif move_manipulator_to == 5:
+                ## Go to C3 and opto
                 os.write(pipeout, 'goup\n')
                 os.write(pipeout, 'goto_interpos\n')
                 os.write(pipeout, 'goto_C3up\n')
                 os.write(pipeout, 'goto_C3\n')            
+
             else:
-                raise ValueError("misunderstood which_opto: {}".format(which_opto))
+                raise ValueError(
+                    "misunderstood move_manipulator_to: {}".format(
+                    move_manipulator_to))
         
         return translated_trial_matrix
