@@ -42,3 +42,8 @@ nosetests.xml
 #Logfiles
 WaitToStart/logfiles/
 Modular/logfiles/
+Detection2b/logfiles/
+Detection3/logfiles/
+
+# credentials
+db_credentials
