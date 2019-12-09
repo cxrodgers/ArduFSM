@@ -100,6 +100,9 @@ class TrialSetter:
         translated_trial_matrix = TrialSpeak.translate_trial_matrix(trial_matrix)
         
         ## Trial releasing logic
+        # Don't move unless a trial was just released
+        move_manipulator = False
+        
         # Was the last released trial the current one or the next one?
         if self.last_released_trial < current_trial:
             raise "unreleased trials have occurred, somehow"
@@ -112,6 +115,9 @@ class TrialSetter:
                 send_params_and_release(params, self.chatter)
                 self.last_released_trial = current_trial + 1
                 
+                # move manipulator
+                move_manipulator = True
+                
             elif is_current_trial_incomplete(translated_trial_matrix):
                 # Current trial has been released but not completed
                 pass
@@ -121,6 +127,9 @@ class TrialSetter:
                 params = self.scheduler.choose_params(translated_trial_matrix)
                 send_params_and_release(params, self.chatter)
                 self.last_released_trial = current_trial + 1          
+
+                # move manipulator
+                move_manipulator = True                
         
         elif self.last_released_trial == current_trial + 1:
             # Next trial has been released, but has not yet begun
@@ -128,5 +137,26 @@ class TrialSetter:
         
         else:
             raise "too many trials have been released, somehow"    
+        
+        # Move if requested (only after released)
+        if move_manipulator:
+            # move manipulator
+            pipeout = os.open(MANIPULATOR_PIPE, os.O_WRONLY | os.O_NONBLOCK)
+            os.write(pipeout, 'goto_interpos\n')
+            
+            # Get this from the opto param instead
+            which_opto = translated_trial_matrix.loc[self.last_released_trial, 'OPTO']
+            if which_opto == 4:
+                os.write(pipeout, 'goup\n')
+                os.write(pipeout, 'goto_interpos\n')
+                os.write(pipeout, 'goto_C1up\n')
+                os.write(pipeout, 'goto_C1\n')
+            elif which_opto == 5:
+                os.write(pipeout, 'goup\n')
+                os.write(pipeout, 'goto_interpos\n')
+                os.write(pipeout, 'goto_C3up\n')
+                os.write(pipeout, 'goto_C3\n')            
+            else:
+                raise ValueError("misunderstood which_opto: {}".format(which_opto))
         
         return translated_trial_matrix

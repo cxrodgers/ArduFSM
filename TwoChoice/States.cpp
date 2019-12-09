@@ -276,8 +276,9 @@ void StateWaitForServoMove::loop()
   // Now needs to be -2000 - __STATES_H_NOLICK_MAX_WAIT_MS in order to
   // turn on at the same point in the servo move cycle
   // Because the timer is __STATES_H_NOLICK_MAX_WAIT_MS longer
+  // Using >= here to incorporate the possibility of multiple opto targets
   if (
-    (param_values[tpidx_OPTO] == __TRIAL_SPEAK_YES) &&
+    (param_values[tpidx_OPTO] >= __TRIAL_SPEAK_YES) &&
     ((time - (long) timer) > (-2000 - __STATES_H_NOLICK_MAX_WAIT_MS))) { 
     digitalWrite(__HWCONSTANTS_H_OPTO, 1);
   }

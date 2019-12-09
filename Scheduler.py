@@ -120,7 +120,11 @@ class ForcedAlternation:
                 else:
                     # With probability 1/N
                     if np.random.rand() < (1. / N_OPTO_TRIALS):
-                        res['OPTO'] = YES
+                        # Choose location randomly
+                        if np.random.rand() > 0.5:
+                            res['OPTO'] = 4
+                        else:
+                            res['OPTO'] = 5
         
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -313,7 +317,11 @@ class RandomStim:
         else:
             # With probability 1/N
             if np.random.rand() < (1. / N_OPTO_TRIALS):
-                res['OPTO'] = YES
+                # Choose location randomly
+                if np.random.rand() > 0.5:
+                    res['OPTO'] = 4
+                else:
+                    res['OPTO'] = 5
         
         # Save current side for display
         self.params['side'] = res['RWSD']
