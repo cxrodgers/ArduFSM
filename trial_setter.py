@@ -3,6 +3,7 @@ import TrialSpeak
 import TrialMatrix
 import pandas
 import os
+import numpy as np
 
 MANIPULATOR_PIPE = '/home/chris/manipulator_pipe'
 
@@ -143,46 +144,44 @@ class TrialSetter:
         
         # Move if requested (only after released)
         if move_manipulator_to is not None:
-            #~ try:
-                #~ move_manipulator_to = int(move_manipulator_to)
-            #~ except ValueError:
-                #~ raise ValueError(
-                    #~ "cannot intify move_manipulator_to: {}".format(
-                    #~ move_manipulator_to))
+            # Open the pipe, failing silently if unable (e.g., reader is down)
+            do_move = True
+            try:
+                pipeout = os.open(MANIPULATOR_PIPE, os.O_WRONLY | os.O_NONBLOCK)
+            except OSError:
+                do_move = False
             
-            # Open the pipe
-            pipeout = os.open(MANIPULATOR_PIPE, os.O_WRONLY | os.O_NONBLOCK)
-            
-            # Move accordingly
-            if move_manipulator_to == 2:
-                ## No opto, but move to a random target to maintain sounds
-                which_target = np.mod(current_trial, 2)
-                os.write(pipeout, 'goup\n')
-                os.write(pipeout, 'goto_interpos\n')
-                if which_target == 0:
+            if do_move:
+                # Move accordingly
+                if move_manipulator_to == 2:
+                    ## No opto, but move to a random target to maintain sounds
+                    which_target = np.mod(current_trial, 2)
+                    os.write(pipeout, 'goup\n')
+                    os.write(pipeout, 'goto_interpos\n')
+                    if which_target == 0:
+                        os.write(pipeout, 'goto_C1up\n')
+                        os.write(pipeout, 'goto_C1\n')
+                    else:
+                        os.write(pipeout, 'goto_C3up\n')
+                        os.write(pipeout, 'goto_C3\n')
+
+                elif move_manipulator_to == 4:
+                    ## Go to C1 and opto
+                    os.write(pipeout, 'goup\n')
+                    os.write(pipeout, 'goto_interpos\n')
                     os.write(pipeout, 'goto_C1up\n')
                     os.write(pipeout, 'goto_C1\n')
-                else:
+
+                elif move_manipulator_to == 5:
+                    ## Go to C3 and opto
+                    os.write(pipeout, 'goup\n')
+                    os.write(pipeout, 'goto_interpos\n')
                     os.write(pipeout, 'goto_C3up\n')
-                    os.write(pipeout, 'goto_C3\n')
+                    os.write(pipeout, 'goto_C3\n')            
 
-            elif move_manipulator_to == 4:
-                ## Go to C1 and opto
-                os.write(pipeout, 'goup\n')
-                os.write(pipeout, 'goto_interpos\n')
-                os.write(pipeout, 'goto_C1up\n')
-                os.write(pipeout, 'goto_C1\n')
-
-            elif move_manipulator_to == 5:
-                ## Go to C3 and opto
-                os.write(pipeout, 'goup\n')
-                os.write(pipeout, 'goto_interpos\n')
-                os.write(pipeout, 'goto_C3up\n')
-                os.write(pipeout, 'goto_C3\n')            
-
-            else:
-                raise ValueError(
-                    "misunderstood move_manipulator_to: {}".format(
-                    move_manipulator_to))
+                else:
+                    raise ValueError(
+                        "misunderstood move_manipulator_to: {}".format(
+                        move_manipulator_to))
         
         return translated_trial_matrix
