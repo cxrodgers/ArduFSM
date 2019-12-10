@@ -304,7 +304,7 @@ class RandomStim:
         rand_number = np.random.rand()
         if rand_number < (1 / 3.):
             res['OPTO'] = NO
-        elif rand_Number < (2 / 3.):
+        elif rand_number < (2 / 3.):
             res['OPTO'] = 4
         else:
             res['OPTO'] = 5
@@ -411,6 +411,17 @@ class ForcedSide:
         res['DIRDEL'] = TrialSpeak.NO
         res['OPTO'] = NO
 
+        # Only do opto on forced if requested
+        if OPTO_FORCED:
+            # Randomly do nothing or target either location
+            rand_number = np.random.rand()
+            if rand_number < (1 / 3.):
+                res['OPTO'] = NO
+            elif rand_number < (2 / 3.):
+                res['OPTO'] = 4
+            else:
+                res['OPTO'] = 5
+
         # if the last three trials were all forced this way, direct deliver
         if len(trial_matrix) > n_dd_trials:
             force_on_2afc = (
@@ -424,11 +435,7 @@ class ForcedSide:
                 
             if force_on_2afc or force_on_gng:
                 res['DIRDEL'] = TrialSpeak.YES
-        
-            # Opto on every Nth trial
-            if np.mod(len(trial_matrix), N_OPTO_TRIALS) == N_OPTO_TRIALS - 1:
-                res['OPTO'] = YES
-            
+
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
         # and only untranslate at this point.
