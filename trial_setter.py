@@ -103,7 +103,7 @@ class TrialSetter:
         ## Trial releasing logic
         # Was the last released trial the current one or the next one?
         if self.last_released_trial < current_trial:
-            raise "unreleased trials have occurred, somehow"
+            raise ValueError("unreleased trials have occurred, somehow")
             
         elif self.last_released_trial == current_trial:
             # The current trial has been released, or no trials have been released
@@ -128,6 +128,6 @@ class TrialSetter:
             pass
         
         else:
-            raise "too many trials have been released, somehow"    
+            raise ValueError("too many trials have been released, somehow")
         
         return translated_trial_matrix
