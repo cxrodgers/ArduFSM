@@ -290,7 +290,7 @@ def get_rig_specific_licktrain(rigname):
 def assign_rig_specific_params(rigname, params_table):
     """Get rig-specific params and assign to init and current val in table"""
     d = get_rig_specific(rigname)
-    for param_name, param_value in d.items():
+    for param_name, param_value in list(d.items()):
         try:
             params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
@@ -300,7 +300,7 @@ def assign_rig_specific_params(rigname, params_table):
 def assign_rig_specific_params_licktrain(rigname, params_table):
     """Get rig-specific params and assign to init and current val in table"""
     d = get_rig_specific_licktrain(rigname)
-    for param_name, param_value in d.items():
+    for param_name, param_value in list(d.items()):
         try:
             params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:
@@ -310,7 +310,7 @@ def assign_rig_specific_params_licktrain(rigname, params_table):
 def assign_rig_specific_params_passive_detect(rigname, params_table):
     """Get rig-specific params and assign to init and current val in table"""
     d = get_rig_specific_passive_detect(rigname)
-    for param_name, param_value in d.items():
+    for param_name, param_value in list(d.items()):
         try:
             params_table.loc[param_name, 'init_val'] = param_value
         except KeyError:

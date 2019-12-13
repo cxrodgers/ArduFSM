@@ -27,6 +27,10 @@ this file should contain only bare-bones schedulers and each protocol
 contains its own more specific ones.
 """
 from __future__ import absolute_import
+from __future__ import division
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import numpy as np
 import my
 from .TrialSpeak import YES, NO, HIT
@@ -37,7 +41,7 @@ N_OPTO_TRIALS = 4 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()
 OPTO_PERIODIC = False
 OPTO_FORCED = True
 
-class ForcedAlternation:
+class ForcedAlternation(object):
     def __init__(self, trial_types, **kwargs):
         self.name = 'forced alternation'
         self.params = {
@@ -120,7 +124,7 @@ class ForcedAlternation:
                         res['OPTO'] = YES
                 else:
                     # With probability 1/N
-                    if np.random.rand() < (1. / N_OPTO_TRIALS):
+                    if np.random.rand() < (old_div(1., N_OPTO_TRIALS)):
                         res['OPTO'] = YES
         
         # Untranslate the rewside
@@ -212,7 +216,7 @@ class ForcedAlternationGNG(ForcedAlternation):
         return res    
 
 
-class ForcedAlternationLickTrain:
+class ForcedAlternationLickTrain(object):
     def __init__(self, trial_types, **kwargs):
         self.name = 'forced alternation lick train'
         self.params = {
@@ -276,7 +280,7 @@ class ForcedAlternationLickTrain:
         return self.generate_trial_params(trial_matrix)
 
 
-class RandomStim:
+class RandomStim(object):
     def __init__(self, trial_types, **kwargs):
         """Initialize a new RandomStim scheduler.
         
@@ -313,7 +317,7 @@ class RandomStim:
                 res['OPTO'] = YES
         else:
             # With probability 1/N
-            if np.random.rand() < (1. / N_OPTO_TRIALS):
+            if np.random.rand() < (old_div(1., N_OPTO_TRIALS)):
                 res['OPTO'] = YES
         
         # Save current side for display
@@ -334,7 +338,7 @@ class RandomStim:
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
 
-class RandomStimPassiveDetect:
+class RandomStimPassiveDetect(object):
     def __init__(self, trial_types, **kwargs):
         """Initialize a new RandomStim scheduler.
         
@@ -358,7 +362,7 @@ class RandomStimPassiveDetect:
         res = self.trial_types.ix[idx].to_dict()
         
         # Save current side for display
-        for key, val in res.items():
+        for key, val in list(res.items()):
             self.params[key] = val
         
         # remove the "name" line from trial_types
@@ -367,7 +371,7 @@ class RandomStimPassiveDetect:
         
         # upcase all the keys
         res2 = {}
-        for key, val in res.items():
+        for key, val in list(res.items()):
             res2[key.upper()] = val
         
         # Remember to untranslate here if necessary
@@ -381,7 +385,7 @@ class RandomStimPassiveDetect:
         """Called when params for next trial are needed."""
         return self.generate_trial_params(trial_matrix)
 
-class ForcedSide:
+class ForcedSide(object):
     """Forces trials from a given side"""
     def __init__(self, trial_types, side, **kwargs):
         """Initialize a new ForcedSide scheduler.
@@ -503,7 +507,7 @@ class SessionStarterSrvMax(ForcedAlternation):
         self.picked_trial_types = self.trial_types.loc[
             [closest_left, closest_right]].copy()
 
-class Auto:
+class Auto(object):
     """Class for automatic training.
     
     Always begins with SessionStarter, then goes random.
@@ -613,8 +617,8 @@ class Auto:
         side2perf_all = TrialMatrix.count_hits_by_type(
             recent_ttm, split_key='rewside')     
         if 'left' in side2perf_all and 'right' in side2perf_all:
-            lperf = side2perf_all['left'][0] / float(side2perf_all['left'][1])
-            rperf = side2perf_all['right'][0] / float(side2perf_all['right'][1])
+            lperf = old_div(side2perf_all['left'][0], float(side2perf_all['left'][1]))
+            rperf = old_div(side2perf_all['right'][0], float(side2perf_all['right'][1]))
             sideperf_diff = rperf - lperf
         else:
             sideperf_diff = 0

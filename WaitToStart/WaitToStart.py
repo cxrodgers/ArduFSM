@@ -11,6 +11,7 @@ As an example, user-defined variables LIGHTON and LIGHTOFF set
 House Light duration.
 """
 from __future__ import print_function
+from builtins import input
 
 import ArduFSM
 import os
@@ -52,7 +53,7 @@ try:
         chatter.update(echo_to_stdout=True)
 
     # Wait for keyboard press then start updating again
-    raw_input("Parameters set. Press enter to start.")
+    input("Parameters set. Press enter to start.")
 
     # Sent the TRL_RELEASED signal
     # This tells the arduino to finish setup() and start loop()

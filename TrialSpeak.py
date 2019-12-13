@@ -4,8 +4,14 @@ For instance, this module contains functions for reading log files, splitting
 them by trial, and also for generating commands to send to the arduino.
 """
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import pandas, numpy as np, my
-import StringIO
+import io
 
 ack_token = 'ACK'
 release_trial_token = 'RELEASE_TRL'
@@ -173,7 +179,7 @@ def my_replace(ser, d, nanval='nanval'):
     ser = ser.copy().astype(np.object)
     
     # Replace each key, value
-    for val, new_val in d.items():
+    for val, new_val in list(d.items()):
         ser[ser == val] = new_val
         if pandas.isnull(val):
             raise ValueError("cannot compare to nan")
@@ -224,7 +230,7 @@ def get_trial_start_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].iat[0]) / 1000.
+        return old_div(int(rows['time'].iat[0]), 1000.)
     
 def get_trial_release_time(parsed_lines):
     """Returns the time of trial release in seconds"""
@@ -234,7 +240,7 @@ def get_trial_release_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].iat[0]) / 1000.
+        return old_div(int(rows['time'].iat[0]), 1000.)
 
 def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     """Returns the value of trial parameters"""
@@ -269,7 +275,7 @@ def get_lick_times(spline, num):
     res = []
     masked_splines = [line for line in spline if has_lick_num(line, num)]
     for line in masked_splines:
-        res.append(int(line.split()[0]) / 1000.)
+        res.append(old_div(int(line.split()[0]), 1000.))
     return np.array(res)
 
 def identify_state_change_times(behavior_filename=None, logfile_df=None,
@@ -381,7 +387,7 @@ def get_trial_parameters2(pldf, logfile_lines):
 
     # read into table
     trlp_strings_a = np.asarray(logfile_lines)[trlp_idxs]
-    sio = StringIO.StringIO("".join(trlp_strings_a))
+    sio = io.StringIO("".join(trlp_strings_a))
     trlp_df = pandas.read_table(sio, sep=' ', 
         names=('time', 'command', 'trlp_name', 'trlp_value'),
         )
@@ -406,7 +412,7 @@ def get_trial_results2(pldf, logfile_lines):
 
     # read into table
     trlr_strings_a = np.asarray(logfile_lines)[trlr_idxs]
-    sio = StringIO.StringIO("".join(trlr_strings_a))
+    sio = io.StringIO("".join(trlr_strings_a))
     trlr_df = pandas.read_table(sio, sep=' ', 
         names=('time', 'command', 'trlr_name', 'trlr_value'),
         )
@@ -432,7 +438,7 @@ def get_trial_timings(pldf, logfile_lines,
         return None
     
     # read into table
-    sio = StringIO.StringIO("".join([logfile_lines[idx] for idx in idxs]))
+    sio = io.StringIO("".join([logfile_lines[idx] for idx in idxs]))
     parsed_command_lines = pandas.read_table(sio, sep=' ',
         names=('time', 'command'))
     
@@ -440,8 +446,8 @@ def get_trial_timings(pldf, logfile_lines,
     parsed_command_lines['trial'] = pldf['trial'][idxs].values
     
     # Pivot by trial
-    piv = parsed_command_lines.pivot_table(index='trial', values='time', 
-        columns='command') / 1000.
+    piv = old_div(parsed_command_lines.pivot_table(index='trial', values='time', 
+        columns='command'), 1000.)
     
     # Drop the "-1" trial
     piv = piv.drop(-1)
@@ -605,7 +611,7 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
     # run this...
     # Well this isn't that useful because it leaves dtypes messed up. Need
     # to find and drop the problematic lines.
-    for col, dtyp in dtype_d.items():
+    for col, dtyp in list(dtype_d.items()):
         try:
             rdf[col] = rdf[col].astype(dtyp)
         except ValueError:
@@ -700,7 +706,7 @@ def get_commands_from_parsed_lines(parsed_lines, command,
     res = res[keep_cols]
 
     # Coerce dtypes
-    for argname, dtyp in arg2dtype.items():
+    for argname, dtyp in list(arg2dtype.items()):
         try:
             res[argname] = res[argname].astype(dtyp)
         except ValueError:

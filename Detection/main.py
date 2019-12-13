@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import input
 # Main script to run to run Detection behavior
 
 import sys
@@ -35,7 +36,7 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
-if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+if input('Reupload protocol [y/N]? ').upper() == 'Y':
     if rigname in ['L0']:
         protocol_name = 'Detection'
     else:
@@ -142,7 +143,7 @@ filename = chatter.ofi.name
     
 # Get mouse name
 print("Filename:", filename)
-mousename = raw_input("Enter mouse name: ")
+mousename = input("Enter mouse name: ")
 mousename = mousename.strip()
 
 # Copy the file

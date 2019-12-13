@@ -1,4 +1,7 @@
 from __future__ import print_function
+from __future__ import division
+from builtins import input
+from past.utils import old_div
 # Main script to run to run TwoChoice behavior
 # Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
 # enough that the response is quick, but not so low that it takes up all the
@@ -132,15 +135,15 @@ print("On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
 
 # Get weight
 session_results['mouse_mass'] = \
-    raw_input("Enter mass of %s: " % runner_params['mouse'])
+    input("Enter mass of %s: " % runner_params['mouse'])
 
 # Get stepper in correct position
 if not runner_params['has_side_HE_sensor']:
     # Note this may not be a stimulus we're using in this stimulus set
-    raw_input("Rotate stepper to position %s" % 
+    input("Rotate stepper to position %s" % 
         params_table.loc['STPIP', 'init_val'])
 
-raw_input("Fill water reservoirs and press Enter to start")
+input("Fill water reservoirs and press Enter to start")
 
 ## Set up the scheduler
 if runner_params['scheduler'] == 'Auto':
@@ -311,35 +314,35 @@ except trial_setter_ui.QuitException as qe:
     # Get volumes and pipe position
     print("Preparing to save. Press CTRL+C to abort save.")
     if session_results.get('mouse_mass') in ['', None]:
-        session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
+        session_results['mouse_mass'] = input("Enter mouse mass: ")
     
     choice = 'N'
     while choice.upper().strip() == 'N':
-        session_results['l_volume'] = raw_input("Enter L water volume: ")
-        session_results['r_volume'] = raw_input("Enter R water volume: ")
+        session_results['l_volume'] = input("Enter L water volume: ")
+        session_results['r_volume'] = input("Enter R water volume: ")
         
         bad_data = False
         try:
             if nlrew == 0:
                 lmean = 0.
             else:
-                lmean = float(session_results['l_volume']) / nlrew
+                lmean = old_div(float(session_results['l_volume']), nlrew)
             if nrrew == 0:
                 rmean = 0.
             else:
-                rmean = float(session_results['r_volume']) / nrrew
+                rmean = old_div(float(session_results['r_volume']), nrrew)
         except ValueError:
             print("warning: cannot convert to float")
             bad_data = True
         
         if not bad_data:
             print("L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000))
-            choice = raw_input("Confirm? [Y/n] ")
+            choice = input("Confirm? [Y/n] ")
 
     session_results['l_valve_mean'] = lmean
     session_results['r_valve_mean'] = rmean
     
-    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
+    session_results['final_pipe'] = input("Enter final pipe position: ")
     
     # Dump the results
     logfile_dir = os.path.split(logfilename)[0]

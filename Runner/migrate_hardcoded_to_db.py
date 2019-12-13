@@ -1,5 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from builtins import zip
+from past.utils import old_div
 # Compare params derived from Hardcoded and Database
 # We'll make sure everything in the Hardcoded is also in the Database
 # We'll print CONFIRMED if the param in Hardcoded == param in Database
@@ -8,7 +11,7 @@ from __future__ import absolute_import
 # The (None, None) edge case is due to the fact that tuples are stored
 # in the Database
 
-1/0 # Don't use this anymore
+old_div(1,0) # Don't use this anymore
 
 from . import ParamLookups
 import runner.models
@@ -50,18 +53,18 @@ for model, hc_func, db_func in zip(model_l, hc_func_l, db_func_l):
             continue
         
         # Identify any hardcoded params that do not exist in the database
-        not_in_db = [k for k, v in hc_params.items() if k not in db_params]
+        not_in_db = [k for k, v in list(hc_params.items()) if k not in db_params]
         if len(not_in_db) > 0:
             print("NOT IN DB: " + ' '.join(not_in_db))
         else:
             print("CONFIRMED ALL IN DB")
 
         # Compare each param type
-        for typ, typ_db_params in db_params.items():
+        for typ, typ_db_params in list(db_params.items()):
             typ_hc_params = hc_params[typ]
             
             # Compare each individual param
-            for k, db_v in typ_db_params.items():
+            for k, db_v in list(typ_db_params.items()):
                 # Extract hardcoded param if it exists
                 # We will assume None if it's not listed in hardcoded param
                 hc_v = typ_hc_params.get(k, None)

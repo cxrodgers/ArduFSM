@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import input
 # Main script to run to run Detection behavior
 
 import sys
@@ -29,7 +30,7 @@ if not os.path.exists(serial_port):
 
 
 ## Upload
-if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+if input('Reupload protocol [y/N]? ').upper() == 'Y':
     os.system('arduino --board arduino:avr:uno --port %s \
         --pref sketchbook.path=/home/chris/dev/ArduFSM \
         --upload ~/dev/ArduFSM/%s/%s.ino' % (
@@ -86,7 +87,7 @@ filename = chatter.ofi.name
     
 # Get mouse name
 print("Filename:", filename)
-mousename = raw_input("Enter mouse name: ")
+mousename = input("Enter mouse name: ")
 mousename = mousename.strip()
 
 # Copy the file

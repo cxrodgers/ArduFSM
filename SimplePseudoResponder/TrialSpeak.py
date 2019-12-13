@@ -4,6 +4,10 @@ For instance, this module contains functions for reading log files, splitting
 them by trial, and also for generating commands to send to the arduino.
 """
 from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import pandas, numpy as np, my
 
 ack_token = 'ACK'
@@ -86,7 +90,7 @@ def get_trial_start_time(parsed_lines):
     rows = my.pick_rows(parsed_lines, command=start_trial_token)
     if len(rows) != 1:
         raise ValueError("trial start is not unique")
-    return int(rows['time'].irow(0)) / 1000.
+    return old_div(int(rows['time'].irow(0)), 1000.)
 
     
 def get_trial_release_time(parsed_lines):
@@ -97,7 +101,7 @@ def get_trial_release_time(parsed_lines):
     elif len(rows) == 0:
         return None
     else:
-        return int(rows['time'].irow(0)) / 1000.
+        return old_div(int(rows['time'].irow(0)), 1000.)
 
 def get_trial_parameters(parsed_lines, command_string=trial_param_token):
     """Returns the value of trial parameters"""

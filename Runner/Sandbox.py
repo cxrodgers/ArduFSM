@@ -4,6 +4,9 @@
 """
 from __future__ import print_function
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import os
 import subprocess
 import shutil
@@ -138,7 +141,7 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
     # Generate file contents
     config_filename = os.path.join(sketch_path, 'config.h')
     config_file_contents = ''
-    for param_name, param_value in c_parameters.items():
+    for param_name, param_value in list(c_parameters.items()):
         # Skip those with None (useful for ifndef)
         if param_value is None:
             continue
@@ -150,7 +153,7 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
             continue
         
         # Check that it's really a string, if not, could be weird errors
-        if type(param_value) is not str and type(param_value) is not unicode:
+        if type(param_value) is not str and type(param_value) is not str:
             raise TypeError("C param values must be strings, not type %r" 
                 % type(param_value))
         
@@ -198,7 +201,7 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
     # Non-blocking read magic
     import sys
     from threading import Thread
-    from Queue import Queue, Empty
+    from queue import Queue, Empty
     def enqueue_output(out, queue):
         for line in iter(out.readline, b''):
             queue.put(line)
