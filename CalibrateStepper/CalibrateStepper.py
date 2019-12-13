@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Main script to run to run CalibrateStepper behavior
 # Only sets parameters concerning stepper motor and servo motor movements
 # Receives voltage values from hall sensor and plots in a graph
@@ -89,7 +90,7 @@ if RUN_UI:
             "Quit Python, type resizewin to set window to 80x23, and restart.")
 
     except:
-        print "error encountered when starting UI"
+        print("error encountered when starting UI")
         raise
     
     finally:
@@ -149,7 +150,7 @@ try:
                 
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 
 except:
@@ -157,7 +158,7 @@ except:
 
 finally:
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
 
     
     if RUN_GUI:
@@ -166,7 +167,7 @@ finally:
         #~ print "GUI closed"
     
     if final_message is not None:
-        print final_message
+        print(final_message)
     
 
 

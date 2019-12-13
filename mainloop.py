@@ -1,8 +1,9 @@
 """Module for the main loop in Python"""
+from __future__ import absolute_import
 import os.path
 import pandas
 import numpy as np
-from TrialSpeak import YES, NO, MD
+from .TrialSpeak import YES, NO, MD
 
 
 def get_params_table():

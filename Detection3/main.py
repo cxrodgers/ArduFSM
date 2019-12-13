@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Main script to run to run Detection behavior
 
 import sys
@@ -59,7 +60,7 @@ try:
         chatter.update(echo_to_stdout=ECHO_TO_STDOUT)
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -74,17 +75,17 @@ except:
 
 finally:
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if final_message is not None:
-        print final_message
+        print(final_message)
 
 
 ## Save
 filename = chatter.ofi.name
     
 # Get mouse name
-print "Filename:", filename
+print("Filename:", filename)
 mousename = raw_input("Enter mouse name: ")
 mousename = mousename.strip()
 
@@ -93,8 +94,8 @@ if mousename != '':
     new_filename = filename + '.' + mousename
     assert not os.path.exists(new_filename)
     shutil.copyfile(filename, new_filename)  
-    print "Saved file as", new_filename
+    print("Saved file as", new_filename)
 else:
-    print "no mouse name entered"
+    print("no mouse name entered")
 
 

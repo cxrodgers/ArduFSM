@@ -10,6 +10,7 @@ over the serial port.
 As an example, user-defined variables LIGHTON and LIGHTOFF set 
 House Light duration.
 """
+from __future__ import print_function
 
 import ArduFSM
 import os
@@ -62,14 +63,14 @@ try:
         not chatter.last_sent_line_acknowledged):
         # Update the chatter
         chatter.update(echo_to_stdout=True)
-    print "Session has begun. Press CTRL+C to quit."
+    print("Session has begun. Press CTRL+C to quit.")
     
     # Now just update until CTRL+C is pressed
     while(True):
         chatter.update(echo_to_stdout=True)
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 finally:
     # Always close the chatter even if an error occurred

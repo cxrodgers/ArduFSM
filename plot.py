@@ -19,6 +19,8 @@ then we should just match on an index variable. If it is not intended to be
 the same, then we should relax that assumption, but right now I think the
 code assumes that it is.
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np, pandas, time
 import matplotlib.pyplot as plt
@@ -27,13 +29,13 @@ import scipy.stats
 
 # move these to TrialMatrix so we can phase this out
 #from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
-from TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
+from .TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 
 class TrialTypesError:
     pass
 
-import TrialSpeak, TrialMatrix
-from TrialSpeak import YES, NO
+from . import TrialSpeak, TrialMatrix
+from .TrialSpeak import YES, NO
 
 o2c = {'hit': 'lightgreen', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
@@ -372,7 +374,7 @@ class Plotter(object):
 
         except KeyboardInterrupt:
             plt.close('all')
-            print "Done."
+            print("Done.")
         except:
             raise
         finally:
@@ -478,7 +480,7 @@ class LickPlotter():
         try:
             self.handles['f'].canvas.manager.window.wm_geometry("+600+500")
         except AttributeError:
-            print "cannot move window"
+            print("cannot move window")
 
         plt.show()
     
@@ -621,8 +623,8 @@ class PlotterWithServoThrow(Plotter):
                 pick_kwargs.pop(key)
                 warn_missing_kwarg.append(key)
         if len(warn_missing_kwarg) > 0:
-            print "warning: missing kwargs to match trial type:" + \
-                ' '.join(warn_missing_kwarg)
+            print("warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg))
         
         # Iterate over trials
         # Could probably be done more efficiently with a groupby
@@ -668,16 +670,16 @@ class PlotterWithServoThrow(Plotter):
 
         # issue warnings
         if len(warn_type_error) > 0:
-            print "error: type error in pick on trials " + \
-                ' '.join(map(str, warn_type_error))
+            print("error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error)))
         if len(warn_missing_data) > 0:
-            print "error: missing data on trials " + \
-                ' '.join(map(str, warn_missing_data))
+            print("error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data)))
         if len(warn_no_matches) > 0:
-            print "error: no matches found in some trials " + \
-                ' '.join(map(str, warn_no_matches))
+            print("error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches)))
         elif len(warn_multiple_matches) > 0:
-            print "error: multiple matches found on some trials"
+            print("error: multiple matches found on some trials")
 
         # Put into trials_info and return
         trials_info['trial_type'] = trial_types_l
@@ -725,8 +727,8 @@ class PlotterPassiveDetect(Plotter):
                 pick_kwargs.pop(key)
                 warn_missing_kwarg.append(key)
         if len(warn_missing_kwarg) > 0:
-            print "warning: missing kwargs to match trial type:" + \
-                ' '.join(warn_missing_kwarg)
+            print("warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg))
         
         # Iterate over trials
         # Could probably be done more efficiently with a groupby
@@ -772,16 +774,16 @@ class PlotterPassiveDetect(Plotter):
 
         # issue warnings
         if len(warn_type_error) > 0:
-            print "error: type error in pick on trials " + \
-                ' '.join(map(str, warn_type_error))
+            print("error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error)))
         if len(warn_missing_data) > 0:
-            print "error: missing data on trials " + \
-                ' '.join(map(str, warn_missing_data))
+            print("error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data)))
         if len(warn_no_matches) > 0:
-            print "error: no matches found in some trials " + \
-                ' '.join(map(str, warn_no_matches))
+            print("error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches)))
         elif len(warn_multiple_matches) > 0:
-            print "error: multiple matches found on some trials"
+            print("error: multiple matches found on some trials")
 
         # Put into trials_info and return
         trials_info['trial_type'] = trial_types_l
@@ -814,7 +816,7 @@ def update_by_time_till_interrupt(plotter, filename):
 
     except KeyboardInterrupt:
         plt.close('all')
-        print "Done."
+        print("Done.")
     except:
         raise
     finally:

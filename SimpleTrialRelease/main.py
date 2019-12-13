@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Test script for SimpleTrialRelease
 import ArduFSM
 
@@ -12,9 +13,9 @@ try:
 
 ## End cleanly upon keyboard interrupt signal
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 except:
     raise
 finally:
     chatter.close()
-    print "Closed."
+    print("Closed.")

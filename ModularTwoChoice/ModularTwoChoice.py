@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Main script to run to run TwoChoice behavior
 # Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
 # enough that the response is quick, but not so low that it takes up all the
@@ -119,7 +120,7 @@ trial_types = get_trial_types(trial_types_name)
 ## User interaction
 session_results = {}
 # Print out the results from last time
-print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
+print("On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
     runner_params.get('recent_date_s', '?'),
     runner_params['mouse'],
     runner_params.get('recent_weight', 0),
@@ -127,7 +128,7 @@ print "On %s %s (%0.1fg) ran in %s and got %0.1f vs %0.1f with pipe @ %0.2f" % (
     runner_params.get('recent_left_perf', -1),
     runner_params.get('recent_right_perf', -1),
     runner_params.get('recent_pipe', -1),
-    )
+    ))
 
 # Get weight
 session_results['mouse_mass'] = \
@@ -189,7 +190,7 @@ if RUN_UI:
             "Quit Python, type resizewin to set window to 80x23, and restart.")
 
     except:
-        print "error encountered when starting UI"
+        print("error encountered when starting UI")
         raise
     
     finally:
@@ -209,7 +210,7 @@ try:
                 image_controls=webcam_controls,)
             wc.start()
         except IOError:
-            print "cannot find webcam at port", video_device
+            print("cannot find webcam at port", video_device)
             wc = None
             SHOW_WEBCAM = False
     else:
@@ -241,7 +242,7 @@ try:
             window_title, video_window_position[0], video_window_position[1])
         while os.system(cmd) != 0:
             # Should test here if it's been too long and then give up
-            print "Waiting for webcam window"
+            print("Waiting for webcam window")
             time.sleep(.5)
     
     while True:
@@ -296,7 +297,7 @@ try:
                 
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -308,7 +309,7 @@ except trial_setter_ui.QuitException as qe:
         rewdict['right manual'].sum() + rewdict['right direct'].sum())
     
     # Get volumes and pipe position
-    print "Preparing to save. Press CTRL+C to abort save."
+    print("Preparing to save. Press CTRL+C to abort save.")
     if session_results.get('mouse_mass') in ['', None]:
         session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
     
@@ -328,11 +329,11 @@ except trial_setter_ui.QuitException as qe:
             else:
                 rmean = float(session_results['r_volume']) / nrrew
         except ValueError:
-            print "warning: cannot convert to float"
+            print("warning: cannot convert to float")
             bad_data = True
         
         if not bad_data:
-            print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
+            print("L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000))
             choice = raw_input("Confirm? [Y/n] ")
 
     session_results['l_valve_mean'] = lmean
@@ -366,11 +367,11 @@ finally:
         wc.stop()
         wc.cleanup()
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if RUN_UI:
         ui.close()
-        print "UI closed"
+        print("UI closed")
     
     if RUN_GUI:
         pass
@@ -378,7 +379,7 @@ finally:
         #~ print "GUI closed"
     
     if final_message is not None:
-        print final_message
+        print(final_message)
     
 
 

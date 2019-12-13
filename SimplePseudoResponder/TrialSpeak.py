@@ -3,6 +3,7 @@
 For instance, this module contains functions for reading log files, splitting
 them by trial, and also for generating commands to send to the arduino.
 """
+from __future__ import print_function
 import pandas, numpy as np, my
 
 ack_token = 'ACK'
@@ -125,7 +126,7 @@ def check_if_trial_released(trial):
 def command_set_parameter(param_name, param_value):
     """Returns the command to use to set a parameter."""
     if int(param_value) == 0:
-        print "warning: cannot send zeros"
+        print("warning: cannot send zeros")
     return 'SET %s %s' % (param_name, str(int(param_value)))
 
 def command_release_trial():

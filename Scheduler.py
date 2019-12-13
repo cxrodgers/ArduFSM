@@ -26,10 +26,11 @@ are mixed together here. Not sure how to better handle it. Probably
 this file should contain only bare-bones schedulers and each protocol
 contains its own more specific ones.
 """
+from __future__ import absolute_import
 import numpy as np
 import my
-from TrialSpeak import YES, NO, HIT
-import TrialSpeak, TrialMatrix
+from .TrialSpeak import YES, NO, HIT
+from . import TrialSpeak, TrialMatrix
 
 n_dd_trials = 4
 N_OPTO_TRIALS = 4 # if not OPTO_PERIODIC, uses a cutoff of 1/N on rand()

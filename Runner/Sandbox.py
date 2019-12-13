@@ -2,11 +2,13 @@
 
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import os
 import subprocess
 import shutil
 import json
-import ParamLookups
+from . import ParamLookups
 import datetime 
 import time
 import platform
@@ -52,7 +54,7 @@ def create_sandbox(user_input, sandbox_root):
     logfile_path = os.path.join(script_path, 'logfiles')
 
     # Status
-    print "create sandbox in ", sandbox_path
+    print("create sandbox in ", sandbox_path)
 
     # Create directories if necessary
     for dirname in [experimenter_path, year_path, month_path, sandbox_path, 
@@ -144,7 +146,7 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
         # C-mangle the name
         mangled_name = ParamLookups.base.translate_c_parameter_name(param_name)
         if mangled_name is None:
-            print "warning: can't mangle parameter %s, skipping" % param_name
+            print("warning: can't mangle parameter %s, skipping" % param_name)
             continue
         
         # Check that it's really a string, if not, could be weird errors
@@ -157,8 +159,8 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
     
     # Write to the file
     if verbose:
-        print "C code written to %s:" % config_filename
-        print config_file_contents
+        print("C code written to %s:" % config_filename)
+        print(config_file_contents)
     with file(config_filename, 'w') as fi:
         fi.write(config_file_boilerplate_header)
         fi.write(config_file_contents)
@@ -208,7 +210,7 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
     while (not stop_looping and n_repeats < 2):
         n_repeats = n_repeats + 1
         if verbose:
-            print "compiling and uploading: " + ' '.join(cmd_string)
+            print("compiling and uploading: " + ' '.join(cmd_string))
         compile_proc = subprocess.Popen(cmd_string, 
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -225,7 +227,7 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
         killed = False
         while compile_proc.poll() is None:
             time.sleep(2)
-            print "working..."
+            print("working...")
             
             # Check for any new results on STDERR
             try:
@@ -251,7 +253,7 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
             # Check if upload failed
             if 'avrdude: ser_open(): can' in stderr_temp:
                 if n_repeats < 2:
-                    print "upload failed; trying again ..."
+                    print("upload failed; trying again ...")
                     time.sleep(3)
                 else:
                     raise IOError("repeated ser_open errors, giving up")
@@ -260,26 +262,26 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
             
             stdout = compile_proc.stdout.read()
             if verbose:
-                print "COMPILATION STDOUT:"
-                print stdout
-                print "COMPILATION STDERR:"
-                print stderr_temp
+                print("COMPILATION STDOUT:")
+                print(stdout)
+                print("COMPILATION STDERR:")
+                print(stderr_temp)
         
             # Check for compilation errors
             if compile_proc.returncode != 0:
-                print "error in compiling:"
-                print stderr_temp
+                print("error in compiling:")
+                print(stderr_temp)
                 raise IOError("compilation error")
             else:
-                print "successfully compiled and uploaded"
+                print("successfully compiled and uploaded")
     
 def write_python_parameters(sandbox_paths, python_parameters, script_name,
     verbose=False):
     """Write python_parameters to script directory in sandbox"""
     json_file = os.path.join(sandbox_paths['script'], 'parameters.json')
     if verbose:
-        print "dumping python parameters to %s" % json_file
-        print json.dumps(python_parameters, indent=4)
+        print("dumping python parameters to %s" % json_file)
+        print(json.dumps(python_parameters, indent=4))
     with file(json_file, 'w') as fi:
         json.dump(python_parameters, fi, indent=4)
   

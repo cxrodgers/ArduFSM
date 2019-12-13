@@ -3,6 +3,7 @@
 For instance, this module contains functions for reading log files, splitting
 them by trial, and also for generating commands to send to the arduino.
 """
+from __future__ import print_function
 import pandas, numpy as np, my
 import StringIO
 
@@ -128,7 +129,7 @@ def parse_lines_into_df_split_by_trial(lines, verbose=False):
     # Debug
     n_lost_lines = len(lines) - len(df)
     if verbose and n_lost_lines != 0:
-        print "warning: lost %d lines" % n_lost_lines
+        print("warning: lost %d lines" % n_lost_lines)
     
     # Split by trial
     trl_start_idxs = my.pick_rows(df, command=start_trial_token).index
@@ -324,7 +325,7 @@ def identify_state_change_times(behavior_filename=None, logfile_df=None,
         if error_on_multiple_changes:
             raise ValueError("non-unique state change on some trials")
         if warn_on_multiple_changes:
-            print "warning: non-unique state change on some trials"
+            print("warning: non-unique state change on some trials")
     
     # Take the first from each trial
     time_by_trial = gobj.first()
@@ -593,8 +594,8 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
     #new_time = rdf['time'].convert_objects(convert_numeric=True)
     new_time = pandas.to_numeric(rdf['time'], errors='coerce')
     if new_time.isnull().any():
-        print "warning: malformed time string at line(s) %r" % (
-            new_time.index[new_time.isnull()].values)
+        print("warning: malformed time string at line(s) %r" % (
+            new_time.index[new_time.isnull()].values))
     rdf['time'] = new_time
     rdf = rdf.ix[~rdf['time'].isnull()]
     rdf['time'] = rdf['time'].astype(np.int)
@@ -642,7 +643,7 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
             logfile, bad_args[0])
 
         if unsorted_times_action == 'warn':
-            print error_string
+            print(error_string)
         elif unsorted_times_action == 'error':
             raise ValueError(error_string)
         elif unsorted_times_action == 'ignore':
@@ -703,6 +704,6 @@ def get_commands_from_parsed_lines(parsed_lines, command,
         try:
             res[argname] = res[argname].astype(dtyp)
         except ValueError:
-            print "warning: cannot coerce column %s to %r" % (argname, dtyp)
+            print("warning: cannot coerce column %s to %r" % (argname, dtyp))
 
     return res

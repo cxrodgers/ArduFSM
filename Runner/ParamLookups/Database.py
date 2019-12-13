@@ -25,9 +25,10 @@ are set to '', should we interpret this as define it without a value, or
 don't define it?
 
 """
+from __future__ import absolute_import
 import django
 import runner.models
-import Hardcoded
+from . import Hardcoded
 
 def fix_ir_detector_params(res):
     """Deal with issues relating to IR detector params

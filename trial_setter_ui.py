@@ -1,9 +1,11 @@
 """Module for generating and interacting with the user."""
+from __future__ import print_function
+from __future__ import absolute_import
 import curses
 import numpy as np
 import os.path, shutil
-import TrialSpeak
-import Scheduler
+from . import TrialSpeak
+from . import Scheduler
 
 HEADINGS = """
 Actions                |          Parameters         |        Scheduler
@@ -109,7 +111,7 @@ class UIActionTaker:
             self.ui.ts_obj.params_table.loc[
                 param_name, 'current-value'] = int(param_value)
         else:
-            print "warning: no param named", param_name        
+            print("warning: no param named", param_name)        
         
         self.ui.draw_menu()
     

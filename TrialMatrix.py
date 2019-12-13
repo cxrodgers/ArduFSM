@@ -4,7 +4,8 @@ This module contains functions to form a matrix of parameters and outcomes
 on each trial. This is done using the communication protocol defined
 by TrialSpeak.
 """
-import TrialSpeak
+from __future__ import absolute_import
+from . import TrialSpeak
 import pandas, my, numpy as np
 
 def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):

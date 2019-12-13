@@ -28,14 +28,15 @@
 
 6.  The Python script is called in a subprocess.
 """
+from __future__ import absolute_import
 
 import os
 import shutil
 import json
 import subprocess
-import Sandbox
-import ParamLookups
-import ParamLookups.base
+from . import Sandbox
+from . import ParamLookups
+from . import ParamLookups.base
 
 # Create a place to keep sandboxes
 sandbox_root = os.path.expanduser('~/sandbox_root')

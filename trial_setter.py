@@ -1,6 +1,7 @@
 """Functions for trial setting logic"""
-import TrialSpeak
-import TrialMatrix
+from __future__ import absolute_import
+from . import TrialSpeak
+from . import TrialMatrix
 import pandas
 
 def send_params_and_release(params, chatter):
