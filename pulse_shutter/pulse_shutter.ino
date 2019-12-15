@@ -5,10 +5,10 @@ const int input_pin = 2;
 const int output_pin = 3;
 
 // how long the shutter is open (us)
-const unsigned int pulse_duration_us = 2500;
+const unsigned int pulse_duration_us = 1500;
 
 // how long to wait between pulses (ms)
-const unsigned long inter_pulse_interval_ms = 252;
+const unsigned long inter_pulse_interval_ms = 123;
 const unsigned int inter_pulse_interval_us = 500;
 
 // how long to wait after trigger before first pulse
