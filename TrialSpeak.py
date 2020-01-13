@@ -82,7 +82,7 @@ def split_by_trial(lines):
     
 def read_lines_from_file(filename):
     """Reads all lines from file and returns as list"""
-    with file(filename) as fi:
+    with open(filename) as fi:
         lines = fi.readlines()
     return lines
 
@@ -149,11 +149,11 @@ def parse_lines_into_df_split_by_trial(lines, verbose=False):
     res = []
     for nidx in range(len(trl_start_idxs) - 1):
         # Slice out, including first but excluding last
-        slc = df.ix[trl_start_idxs[nidx]:trl_start_idxs[nidx + 1] - 1]
+        slc = df.loc[trl_start_idxs[nidx]:trl_start_idxs[nidx + 1] - 1]
         res.append(slc)
     
     # Append anything left at the end (current trial, generally)
-    res.append(df.ix[trl_start_idxs[-1]:])
+    res.append(df.loc[trl_start_idxs[-1]:])
 
     return res
 
@@ -603,7 +603,7 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
         print("warning: malformed time string at line(s) %r" % (
             new_time.index[new_time.isnull()].values))
     rdf['time'] = new_time
-    rdf = rdf.ix[~rdf['time'].isnull()]
+    rdf = rdf.loc[~rdf['time'].isnull()]
     rdf['time'] = rdf['time'].astype(np.int)
     
     # Convert dtypes. We have to do it here, because if done during reading
@@ -644,7 +644,7 @@ def read_logfile_into_df(logfile, nargs=4, add_trial_column=True,
         first_bad_arg = bad_args[0]
         pre_bad_arg = np.max([first_bad_arg - 2, 0])
         post_bad_arg = np.min([first_bad_arg + 2, len(rrdf)])
-        bad_rows = rrdf.ix[rrdf.index[pre_bad_arg]:rrdf.index[post_bad_arg]]
+        bad_rows = rrdf.loc[rrdf.index[pre_bad_arg]:rrdf.index[post_bad_arg]]
         error_string = "unsorted times in logfile %s, starting at line %d" % (
             logfile, bad_args[0])
 
