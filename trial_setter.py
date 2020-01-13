@@ -9,7 +9,8 @@ import numpy as np
 # This is used to communicate with the manipulator mover script
 # This is only valid if N_OPTO_TARGETS==2 in Scheduler.py
 if Scheduler.N_OPTO_TARGETS == 2:
-    MANIPULATOR_PIPE = '/home/chris/dev/ArduFSM/manipulator_pipe'
+    THIS_DIRECTORY = os.path.split(__file__)[0]
+    MANIPULATOR_PIPE = os.path.join(THIS_DIRECTORY, 'manipulator_pipe')
 else:
     MANIPULATOR_PIPE = None
 
