@@ -1,11 +1,17 @@
 """Functions for trial setting logic"""
 import TrialSpeak
 import TrialMatrix
+import Scheduler
 import pandas
 import os
 import numpy as np
 
-MANIPULATOR_PIPE = '/home/chris/manipulator_pipe'
+# This is used to communicate with the manipulator mover script
+# This is only valid if N_OPTO_TARGETS==2 in Scheduler.py
+if Scheduler.N_OPTO_TARGETS == 2:
+    MANIPULATOR_PIPE = '/home/chris/dev/ArduFSM/manipulator_pipe'
+else:
+    MANIPULATOR_PIPE = None
 
 def send_params_and_release(params, chatter):
     # Set them
@@ -143,7 +149,8 @@ class TrialSetter:
             raise "too many trials have been released, somehow"    
         
         # Move if requested (only after released)
-        if move_manipulator_to is not None:
+        # And don't do anything at all if MANIPULATOR_PIPE is None
+        if MANIPULATOR_PIPE is not None and move_manipulator_to is not None:
             # Open the pipe, failing silently if unable (e.g., reader is down)
             do_move = True
             try:

@@ -31,8 +31,20 @@ import my
 from TrialSpeak import YES, NO, HIT
 import TrialSpeak, TrialMatrix
 
+# How many errors before direct delivery
 n_dd_trials = 4
+
+# Frequency of opto
+# Choose by thresholding rand() at 1/N_OPTO_TRIALS
+N_OPTO_TRIALS = 4
+
+# Whether to apply opto to the forced trials
 OPTO_FORCED = True
+
+# How many opto targets
+# If 1, then code opto as NO/YES
+# If 2, then code opto as NO/4/5
+N_OPTO_TARGETS = 2 
 
 class ForcedAlternation:
     def __init__(self, trial_types, **kwargs):
@@ -109,14 +121,23 @@ class ForcedAlternation:
             
             # Only do opto on forced if requested
             if OPTO_FORCED:
-                # Randomly do nothing or target either location
-                rand_number = np.random.rand()
-                if rand_number < (1 / 3.):
-                    res['OPTO'] = NO
-                elif rand_number < (2 / 3.):
-                    res['OPTO'] = 4
+                # Depends on how many targets
+                if N_OPTO_TARGETS == 2:
+                    # Two-target version
+                    # Randomly do nothing or target either location
+                    rand_number = np.random.rand()
+                    if rand_number < (1 / 3.):
+                        res['OPTO'] = NO
+                    elif rand_number < (2 / 3.):
+                        res['OPTO'] = 4
+                    else:
+                        res['OPTO'] = 5
+                elif N_OPTO_TARGETS == 1:
+                    # One-target version
+                    if np.random.rand() < (1. / N_OPTO_TRIALS):
+                        res['OPTO'] = YES
                 else:
-                    res['OPTO'] = 5
+                    raise ValueError("invalid N_OPTO_TARGETS: {}".format(N_OPTO_TARGETS))
         
         # Untranslate the rewside
         # This should be done more consistently, eg, use real phrases above here
@@ -300,14 +321,23 @@ class RandomStim:
         res['DIRDEL'] = TrialSpeak.NO
         res['OPTO'] = NO
 
-        # Randomly do nothing or target either location
-        rand_number = np.random.rand()
-        if rand_number < (1 / 3.):
-            res['OPTO'] = NO
-        elif rand_number < (2 / 3.):
-            res['OPTO'] = 4
+        # Depends on how many targets
+        if N_OPTO_TARGETS == 2:
+            # Two-target version
+            # Randomly do nothing or target either location
+            rand_number = np.random.rand()
+            if rand_number < (1 / 3.):
+                res['OPTO'] = NO
+            elif rand_number < (2 / 3.):
+                res['OPTO'] = 4
+            else:
+                res['OPTO'] = 5
+        elif N_OPTO_TARGETS == 1:
+            # One-target version
+            if np.random.rand() < (1. / N_OPTO_TRIALS):
+                res['OPTO'] = YES
         else:
-            res['OPTO'] = 5
+            raise ValueError("invalid N_OPTO_TARGETS: {}".format(N_OPTO_TARGETS))
         
         # Save current side for display
         self.params['side'] = res['RWSD']
@@ -413,14 +443,23 @@ class ForcedSide:
 
         # Only do opto on forced if requested
         if OPTO_FORCED:
-            # Randomly do nothing or target either location
-            rand_number = np.random.rand()
-            if rand_number < (1 / 3.):
-                res['OPTO'] = NO
-            elif rand_number < (2 / 3.):
-                res['OPTO'] = 4
+            # Depends on how many targets
+            if N_OPTO_TARGETS == 2:
+                # Two-target version
+                # Randomly do nothing or target either location
+                rand_number = np.random.rand()
+                if rand_number < (1 / 3.):
+                    res['OPTO'] = NO
+                elif rand_number < (2 / 3.):
+                    res['OPTO'] = 4
+                else:
+                    res['OPTO'] = 5
+            elif N_OPTO_TARGETS == 1:
+                # One-target version
+                if np.random.rand() < (1. / N_OPTO_TRIALS):
+                    res['OPTO'] = YES
             else:
-                res['OPTO'] = 5
+                raise ValueError("invalid N_OPTO_TARGETS: {}".format(N_OPTO_TARGETS))
 
         # if the last three trials were all forced this way, direct deliver
         if len(trial_matrix) > n_dd_trials:
