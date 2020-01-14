@@ -358,8 +358,19 @@ void StimPeriod::s_finish()
 void rotate_to_sensor(){
 
     numSteps = 0;
-    digitalWrite(ENBL_PIN, LOW);
-    delay(stpr_powerup_time);
+    digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
+    delay(stpr_powerup_time);  
+    // ^ THIS LINE ADDS AN EXTRA DELAY BETWEEN TONE AND POLE!!
+    // The powerup delay was supposed to be in Stim_period::s_setup(), 
+    // before trigger_audio() and trigger_stepper(), but this line 
+    // gets called between trigger_audio() and when the stepper actually 
+    // starts rotating, adding an extra delay! However, it seems that this 
+    // extra time is actually necessary anyway, since deleting this line 
+    // causes the movement of the stepper to be much more erratic.
+    // Nevertheless, this extra delay for powering the coils should 
+    // probably go before either trigger_audio() or trigger_stepper() 
+    // is called so that it doesn't get in between the onset of the 
+    // auditory stimulus and the onset of the whisker stimulus.
     
     digitalWrite(DIR_PIN, LOW);
     //int hall_val = analogRead(HALL_PIN);
@@ -373,7 +384,7 @@ void rotate_to_sensor(){
   stprState  = "EXTENDED";
 
   delay(stpr_powerdown_time);
-  digitalWrite(ENBL_PIN, HIGH);
+  digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
 }
 
 void rotate_one_step()
@@ -385,8 +396,8 @@ void rotate_one_step()
 }
 
 void rotate_back(){
-  digitalWrite(ENBL_PIN, LOW);
-  delay(stpr_powerup_time);
+  digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
+  delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
   
   digitalWrite(DIR_PIN, HIGH);
   //delay(1);
@@ -395,7 +406,7 @@ void rotate_back(){
   stprState = "RETRACTED";
 
   delay(stpr_powerdown_time);
-  digitalWrite(ENBL_PIN, HIGH);
+  digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
 }
 
 // StateResponseWindow definitions:
