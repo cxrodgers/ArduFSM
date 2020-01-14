@@ -367,7 +367,7 @@ print(len(all_trials))
 
 
 os.chdir(baseDir)
-chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'])
+chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'], serial_timeout=0.03)
 
 # Save serial communication start time to settings:
 settings['SerialStartTime'] = time.strftime("%H:%M:%S")
@@ -440,6 +440,6 @@ for phase in experiment:
         #trialStart = time.time()
         #wait_period = stimDur + responseWindow
         #while (time.time() - trialStart < wait_period):
-         #   chtr.update()
+        #   chtr.update()
     
 chtr.close()
