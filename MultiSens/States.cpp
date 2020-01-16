@@ -75,7 +75,7 @@ int Device::deviceCounter = 0;
 int numSteps;
 String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
-int stpr_powerup_time = 150; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
+int stpr_powerup_time = 300; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
 int stpr_powerdown_time = 150; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
 float max_volume = 100.0;
 
@@ -358,8 +358,8 @@ void StimPeriod::s_finish()
 void rotate_to_sensor(){
 
     numSteps = 0;
-    digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
-    delay(stpr_powerup_time);  
+    //digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
+    //delay(stpr_powerup_time);  
     // ^ THIS LINE ADDS AN EXTRA DELAY BETWEEN TONE AND POLE!!
     // The powerup delay was supposed to be in Stim_period::s_setup(), 
     // before trigger_audio() and trigger_stepper(), but this line 
