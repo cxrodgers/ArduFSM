@@ -124,8 +124,8 @@ void setup()
 
   // initialize stepper into discrete stepper position by sending SLP pin a brief pulse;
   digitalWrite(SLP_PIN, HIGH);
-  delay(200);
-  digitalWrite(SLP_PIN, LOW);
+  //delay(200);
+  //digitalWrite(SLP_PIN, LOW);
    
   // random number seed
   randomSeed(analogRead(3));
