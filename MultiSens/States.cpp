@@ -278,7 +278,7 @@ void StimPeriod::s_setup(){
 
   delay(100);
 
-  if(param_values[tpidx_INTERSTIM_LATENCY] > 0){
+  if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
       if (param_values[tpidx_STPRIDX] == 1){
         digitalWrite(SLP_PIN, HIGH);
         delay(stpr_powerup_time);
