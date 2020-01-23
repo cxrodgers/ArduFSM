@@ -78,6 +78,7 @@ int trial_start_signal_duration = 50;
 int stpr_powerup_time = 300; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
 int stpr_powerdown_time = 150; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
 float max_volume = 100.0;
+bool steps_counted = 0;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -378,12 +379,25 @@ void rotate_to_sensor(){
     
     digitalWrite(DIR_PIN, HIGH); // changed
     //int hall_val = analogRead(HALL_PIN);
-    while(analogRead(HALL_PIN)<HALL_THRESH){
-        rotate_one_step(); //how to deal with direction??
-        numSteps = numSteps + 1;
-        //delay(1);
-        //hall_val = analogRead(HALL_PIN);
-  }
+
+    // if steps haven't been counted yet, count the number of steps to HES
+    if(~steps_counted){
+        while(analogRead(HALL_PIN)<HALL_THRESH){
+          rotate_one_step(); //how to deal with direction??
+          numSteps = numSteps + 1;
+          //delay(1);
+          //hall_val = analogRead(HALL_PIN);
+        }
+        steps_counted = 1;
+
+    // if steps to HES have already been counted, don't count again; this will make stepper go faster
+    } else{
+          while(analogRead(HALL_PIN)<HALL_THRESH){
+          rotate_one_step(); 
+        }
+    }
+    
+
   Serial.println("stepper extended");
   stprState  = "EXTENDED";
 
