@@ -376,7 +376,7 @@ void rotate_to_sensor(){
     // is called so that it doesn't get in between the onset of the 
     // auditory stimulus and the onset of the whisker stimulus.
     
-    digitalWrite(DIR_PIN, LOW);
+    digitalWrite(DIR_PIN, HIGH); // changed
     //int hall_val = analogRead(HALL_PIN);
     while(analogRead(HALL_PIN)<HALL_THRESH){
         rotate_one_step(); //how to deal with direction??
@@ -403,7 +403,7 @@ void rotate_back(){
   digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
   delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
   
-  digitalWrite(DIR_PIN, HIGH);
+  digitalWrite(DIR_PIN, LOW); //changed
   //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
