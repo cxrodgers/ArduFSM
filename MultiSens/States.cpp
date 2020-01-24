@@ -77,6 +77,7 @@ String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
 float max_volume = 100.0;
 bool steps_counted = 0;
+int catch_steps = 800;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -303,10 +304,20 @@ void StimPeriod::loop(){
 void StimPeriod::s_finish()
 {
   digitalWrite(DIR_PIN, LOW); //changed
+ 
+  /*
   if(stprState == "EXTENDED"){
       rotate_back();
   }
-    
+  */
+  
+  if(param_values[tpidx_STPRIDX]==1){
+        rotate_back();
+  }
+  else {
+        rotate_steps(catch_steps);
+  }
+  
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
   if ( licked == 1 ){ 
@@ -532,6 +543,9 @@ void trigger_stepper(){
     if(param_values[tpidx_STPRIDX]==1){
         rotate_to_sensor();
       }
+    else {
+        rotate_steps(catch_steps);
+      }
   }
 
 void signal_trial_start(){
@@ -540,6 +554,10 @@ void signal_trial_start(){
   delay(trial_start_signal_duration);
   digitalWrite(LED_PIN, HIGH);
   digitalWrite(TIMER_PIN, LOW);
+  }
+
+void rotate_steps(int n){
+  for(int i = 0; i < n + 1; i++){rotate_one_step();}
   }
 
 Device ** config_hw(){ 
