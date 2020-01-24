@@ -75,8 +75,6 @@ int Device::deviceCounter = 0;
 int numSteps;
 String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
-int stpr_powerup_time = 300; // number of milliseconds between when the stepper driver is enabled and when the step signal is sent; this is necessary to ensure that stepper actually stops
-int stpr_powerdown_time = 150; // found empirically that a longer power-down time results in less variance in the stop position of the stepper
 float max_volume = 100.0;
 bool steps_counted = 0;
 
@@ -281,72 +279,32 @@ void StimPeriod::s_setup(){
 
   digitalWrite(DIR_PIN, HIGH); // changed
   if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
-      /*
-      if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(SLP_PIN, HIGH);
-        delay(stpr_powerup_time);
-       }
-      */
       signal_trial_start(); 
       trigger_audio();
       delay(param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_stepper();
-      //delay(stpr_powerdown_time);
-      //digitalWrite(SLP_PIN, LOW);
     }  else {
-      /*
-      if (param_values[tpidx_STPRIDX] == 1){
-        digitalWrite(SLP_PIN, HIGH);
-        delay(stpr_powerup_time);
-       }
-       */
       signal_trial_start(); 
       trigger_stepper();
       delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
       trigger_audio();
-      //delay(stpr_powerdown_time);
-      //digitalWrite(SLP_PIN, LOW);
     } 
 
 }
 
 void StimPeriod::loop(){
   unsigned long time = millis();
-
-  /*
-  if(param_values[tpidx_SPKRIDX==1]){
-      tone(SPKR_PIN,random(10000,20000));
-  }
-  */
-    
-  /*
-  for ( int i = 0; i < NUM_DEVICES; i++ ){
-    devPtrs[i] -> loop(devFcns[i]);
-  }
-  */
-  
   //on rewarded trials, make reward coterminous with stimulus
   if ( param_values[tpidx_REW] == 1 && (timer - time) < param_values[tpidx_REW_DUR] ){
     digitalWrite(SOLENOID_PIN, HIGH);
   }
-
 }
 
 void StimPeriod::s_finish()
 {
-  
-  /*
-  for ( int i = 0; i < NUM_DEVICES; i++ ){
-    devPtrs[i] -> s_finish();
-  }
-  */
   digitalWrite(DIR_PIN, LOW); //changed
   if(stprState == "EXTENDED"){
-      //digitalWrite(SLP_PIN, HIGH);
-      //delay(stpr_powerup_time);
       rotate_back();
-      //delay(stpr_powerdown_time);
-      //digitalWrite(SLP_PIN, LOW);
   }
     
   digitalWrite(SOLENOID_PIN, LOW);
@@ -362,26 +320,9 @@ void StimPeriod::s_finish()
 }
 
 void rotate_to_sensor(){
-
-    numSteps = 0;
-    //digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
-    //delay(stpr_powerup_time);  
-    // ^ THIS LINE ADDS AN EXTRA DELAY BETWEEN TONE AND POLE!!
-    // The powerup delay was supposed to be in Stim_period::s_setup(), 
-    // before trigger_audio() and trigger_stepper(), but this line 
-    // gets called between trigger_audio() and when the stepper actually 
-    // starts rotating, adding an extra delay! However, it seems that this 
-    // extra time is actually necessary anyway, since deleting this line 
-    // causes the movement of the stepper to be much more erratic.
-    // Nevertheless, this extra delay for powering the coils should 
-    // probably go before either trigger_audio() or trigger_stepper() 
-    // is called so that it doesn't get in between the onset of the 
-    // auditory stimulus and the onset of the whisker stimulus.
-    
-    //int hall_val = analogRead(HALL_PIN);
-
     // if steps haven't been counted yet, count the number of steps to HES
     if(~steps_counted){
+
         while(analogRead(HALL_PIN)<HALL_THRESH){
           rotate_one_step(); //how to deal with direction??
           numSteps = numSteps + 1;
@@ -397,12 +338,8 @@ void rotate_to_sensor(){
         }
     }
     
-
   Serial.println("stepper extended");
   stprState  = "EXTENDED";
-
-  delay(stpr_powerdown_time);
-  digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
 }
 
 void rotate_one_step()
@@ -414,16 +351,9 @@ void rotate_one_step()
 }
 
 void rotate_back(){
-  //digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
-  //delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
-  
-  //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
   stprState = "RETRACTED";
-
-  //delay(stpr_powerdown_time);
-  //digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
 }
 
 // StateResponseWindow definitions:
