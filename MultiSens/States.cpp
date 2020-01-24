@@ -414,16 +414,16 @@ void rotate_one_step()
 }
 
 void rotate_back(){
-  digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
-  delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
+  //digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
+  //delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
   
   //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
   stprState = "RETRACTED";
 
-  delay(stpr_powerdown_time);
-  digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
+  //delay(stpr_powerdown_time);
+  //digitalWrite(ENBL_PIN, HIGH); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
 }
 
 // StateResponseWindow definitions:
