@@ -322,7 +322,7 @@ void StimPeriod::s_finish()
 void rotate_to_sensor(){
     // if steps haven't been counted yet, count the number of steps to HES
     if(~steps_counted){
-
+        numSteps = 0;
         while(analogRead(HALL_PIN)<HALL_THRESH){
           rotate_one_step(); //how to deal with direction??
           numSteps = numSteps + 1;
