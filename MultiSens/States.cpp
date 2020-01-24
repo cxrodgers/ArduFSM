@@ -279,6 +279,7 @@ void StimPeriod::s_setup(){
 
   delay(100);
 
+  digitalWrite(DIR_PIN, HIGH); // changed
   if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
       /*
       if (param_values[tpidx_STPRIDX] == 1){
@@ -339,14 +340,14 @@ void StimPeriod::s_finish()
     devPtrs[i] -> s_finish();
   }
   */
-  
-   if(stprState == "EXTENDED"){
-       //digitalWrite(SLP_PIN, HIGH);
-       //delay(stpr_powerup_time);
-       rotate_back();
-       //delay(stpr_powerdown_time);
-       //digitalWrite(SLP_PIN, LOW);
-   }
+  digitalWrite(DIR_PIN, LOW); //changed
+  if(stprState == "EXTENDED"){
+      //digitalWrite(SLP_PIN, HIGH);
+      //delay(stpr_powerup_time);
+      rotate_back();
+      //delay(stpr_powerdown_time);
+      //digitalWrite(SLP_PIN, LOW);
+  }
     
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
@@ -377,7 +378,6 @@ void rotate_to_sensor(){
     // is called so that it doesn't get in between the onset of the 
     // auditory stimulus and the onset of the whisker stimulus.
     
-    digitalWrite(DIR_PIN, HIGH); // changed
     //int hall_val = analogRead(HALL_PIN);
 
     // if steps haven't been counted yet, count the number of steps to HES
@@ -417,7 +417,6 @@ void rotate_back(){
   digitalWrite(ENBL_PIN, LOW); // This line no longer does anything, since pin 7 no longer controls the ENBL_PIN on the Feb 2018 version of the OM2
   delay(stpr_powerup_time); // THIS LINE INCREASES THE AMOUNT OF TIME THE POLE IS IN THE WHISKER FIELD!! 
   
-  digitalWrite(DIR_PIN, LOW); //changed
   //delay(1);
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
   Serial.println("stepper retracted");
