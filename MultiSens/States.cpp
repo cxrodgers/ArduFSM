@@ -73,11 +73,12 @@ int lickThresh = 800;
 int Device::deviceCounter = 0;
 //int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 int numSteps;
+int catchSteps;
 String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
 float max_volume = 100.0;
 bool steps_counted = 0;
-int catch_steps = 800;
+bool catch_steps_counted = 0;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -315,7 +316,7 @@ void StimPeriod::s_finish()
         rotate_back();
   }
   else {
-        rotate_steps(catch_steps);
+        rotate_steps(catchSteps);
   }
   
   digitalWrite(SOLENOID_PIN, LOW);
@@ -352,6 +353,31 @@ void rotate_to_sensor(){
   Serial.println("stepper extended");
   stprState  = "EXTENDED";
 }
+
+
+void rotate_to_sensor2(){
+    // if steps haven't been counted yet, count the number of steps to HES
+    if(~catch_steps_counted){
+        catchSteps = 0;
+        while(analogRead(HALL_PIN2)<HALL_THRESH){
+          rotate_one_step(); //how to deal with direction??
+          catchSteps = catchSteps + 1;
+          //delay(1);
+          //hall_val = analogRead(HALL_PIN);
+        }
+        catch_steps_counted = 1;
+
+    // if steps to HES have already been counted, don't count again; this will make stepper go faster
+    } else{
+          while(analogRead(HALL_PIN2)<HALL_THRESH){
+          rotate_one_step(); 
+        }
+    }
+    
+  Serial.println("stepper extended");
+  stprState  = "EXTENDED";
+}
+
 
 void rotate_one_step()
 {
@@ -544,7 +570,7 @@ void trigger_stepper(){
         rotate_to_sensor();
       }
     else {
-        rotate_steps(catch_steps);
+        rotate_to_sensor2();
       }
   }
 
