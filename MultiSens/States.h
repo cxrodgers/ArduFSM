@@ -148,7 +148,7 @@ into States.cpp.
 // Analog inputs:
 #define HALL_PIN A0 // reserved for hall effect sensor
 #define HALL_PIN2 A1
-#define LICK_DETECTOR_PIN A1
+//#define LICK_DETECTOR_PIN A1
 
 #define NUM_STEPS 200
 #define HALL_THRESH 1000
