@@ -25,7 +25,7 @@
 "Speaker": "Green",
 "StimDur_s": 2,
 "ResponseWindow_s": 0,
-"LabView_onset_delay_ms": 170,
+"LabView_onset_delay_ms": 220,
 "MinITI_s": 2,
 "MaxITI_s": 4,
 "Phases": [
