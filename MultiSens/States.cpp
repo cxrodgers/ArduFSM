@@ -74,7 +74,6 @@ int Device::deviceCounter = 0;
 //int numSteps = floor((REVERSE_ROTATION_DEGREES/360.0) * NUM_STEPS) * MICROSTEP;
 int numSteps;
 int catchSteps;
-String stprState = "RETRACTED";
 int trial_start_signal_duration = 50; 
 float max_volume = 100.0;
 bool steps_counted = 0;
@@ -305,20 +304,12 @@ void StimPeriod::loop(){
 void StimPeriod::s_finish()
 {
   digitalWrite(DIR_PIN, LOW); //changed
- 
-  /*
-  if(stprState == "EXTENDED"){
-      rotate_back();
-  }
-  */
-  
   if(param_values[tpidx_STPRIDX]==1){
         rotate_back();
   }
   else {
         rotate_steps(catchSteps);
   }
-  
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
   if ( licked == 1 ){ 
@@ -349,9 +340,6 @@ void rotate_to_sensor(){
           rotate_one_step(); 
         }
     }
-    
-  Serial.println("stepper extended");
-  stprState  = "EXTENDED";
 }
 
 
@@ -373,9 +361,6 @@ void rotate_to_sensor2(){
           rotate_one_step(); 
         }
     }
-    
-  Serial.println("stepper extended");
-  stprState  = "EXTENDED";
 }
 
 
@@ -389,8 +374,6 @@ void rotate_one_step()
 
 void rotate_back(){
   for(int i = 0; i < numSteps; i++){rotate_one_step();}
-  Serial.println("stepper retracted");
-  stprState = "RETRACTED";
 }
 
 // StateResponseWindow definitions:
