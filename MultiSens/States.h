@@ -148,7 +148,7 @@ into States.cpp.
 // Analog inputs:
 #define HALL_PIN A0 // reserved for hall effect sensor
 #define HALL_PIN2 A1
-#define LICK_DETECTOR_PIN A2 // not sure if OM2 is wired for this; not a problem now because not actually detecting licks, but might have to change if detecting licks 
+#define LICK_DETECTOR_PIN A1 //
 
 #define NUM_STEPS 200
 #define HALL_THRESH 1000
