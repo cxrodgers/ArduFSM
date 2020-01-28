@@ -373,7 +373,17 @@ void rotate_one_step()
 }
 
 void rotate_back(){
-  for(int i = 0; i < numSteps; i++){rotate_one_step();}
+  for(int i = 0; i < numSteps; i++){
+    int x = analogRead(A1); 
+    // Above line is only included to ensure 
+    // that the stepper rotates backwards with 
+    // approx. the same speed with which it rotates 
+    // forward; without the above line, the stepper 
+    // rotates forwards slower because it has to read
+    // from the Hall effect sensor between each step 
+    // check whether it's reached the HES yet. 
+    
+    rotate_one_step();}
 }
 
 // StateResponseWindow definitions:
