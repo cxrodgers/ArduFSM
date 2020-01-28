@@ -349,6 +349,7 @@ all_trials = []
 for phase in experiment:
         phase['trials'] = []
         for condition in phase['conditions']:
+                condition["STIMDUR"] = settings['StimDur_s'] * 1000;
                 n_trials = condition['NUM_TRIALS']
                 for t in range(1, n_trials+1):
                         phase['trials'].append(condition)
