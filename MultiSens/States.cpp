@@ -279,18 +279,10 @@ void StimPeriod::s_setup(){
   delay(100);
 
   digitalWrite(DIR_PIN, HIGH); // changed
-  if(param_values[tpidx_INTERSTIM_LATENCY] >= 0){
-      signal_trial_start(); 
-      trigger_audio();
-      delay(param_values[tpidx_INTERSTIM_LATENCY]);
-      trigger_stepper();
-    }  else {
-      signal_trial_start(); 
-      trigger_stepper();
-      delay(-1 * param_values[tpidx_INTERSTIM_LATENCY]);
-      trigger_audio();
-    } 
-
+  signal_trial_start(); 
+  trigger_audio();
+  delay(param_values[tpidx_INTERSTIM_LATENCY]);
+  trigger_stepper();
 }
 
 void StimPeriod::loop(){
