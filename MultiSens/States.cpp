@@ -78,6 +78,10 @@ int trial_start_signal_duration = 50;
 float max_volume = 100.0;
 bool steps_counted = 0;
 bool catch_steps_counted = 0;
+int spkr_cond_sig_dur = 10;
+int vol_sig_dur = 204;
+int wait_spkr_info = 100;
+int spkr_trigger_dur = 10;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -259,25 +263,29 @@ void StimPeriod::s_setup(){
   // Transmit the auditory stimulus ID:
   if (param_values[tpidx_SPKRIDX] == 1){
           digitalWrite(SPKR_COND_PIN1, HIGH);
-          delay(10);
+          delay(spkr_cond_sig_dur);
           digitalWrite(SPKR_COND_PIN1, LOW);          
-        } else if (param_values[tpidx_SPKRIDX] == 2){
+  } else if (param_values[tpidx_SPKRIDX] == 2){
           digitalWrite(SPKR_COND_PIN2, HIGH);
-          delay(10);
+          delay(spkr_cond_sig_dur);
           digitalWrite(SPKR_COND_PIN2, LOW);
+  } else{
+          delay(spkr_cond_sig_dur); // just to make this consistent across trial type
   }
 
   // Transmit the auditory stimulus volume:
   if (param_values[tpidx_SPKRIDX] == 1 || param_values[tpidx_SPKRIDX] == 2){
-      Serial.println("long divided by float = ");
-      Serial.println(round(((param_values[tpidx_VOLUME]/max_volume)*255)));
+      //Serial.println("long divided by float = ");
+      //Serial.println(round(((param_values[tpidx_VOLUME]/max_volume)*255)));
       analogWrite(VOLUME_PIN, round(((param_values[tpidx_VOLUME]/max_volume)*255)));
-      delay(204);
+      delay(vol_sig_dur);
       analogWrite(VOLUME_PIN, 0);
-    }
+  } else{
+      delay(vol_sig_dur); // just to make this consistent across trial types
+  }
 
-  delay(100);
-
+  delay(wait_spkr_info);
+  
   digitalWrite(DIR_PIN, HIGH); // changed
   signal_trial_start(); 
   trigger_audio();
@@ -295,6 +303,19 @@ void StimPeriod::loop(){
 
 void StimPeriod::s_finish()
 {
+
+  // Need to wait a little here to compensate
+  // for time spent in s_setup() transmitting 
+  // various parameters and waiting for them
+  // to be transmitted; s_finish() begins 2
+  // seconds after s_setup() begins, but the
+  // whisker stim isn't actually extended until
+  // a few hundred ms after s_setup() begins
+  // due to transmitting various parameters, so
+  // the same amount of time needs to be added here
+  // so that the actual whisker pole isn't retracted
+  // until a full 2 s after it's extended:
+  delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + spkr_trigger_dur);  
   digitalWrite(DIR_PIN, LOW); //changed
   if(param_values[tpidx_STPRIDX]==1){
         rotate_back();
@@ -545,7 +566,7 @@ void trigger_audio(){
     if(param_values[tpidx_SPKRIDX]!=0  ){
       Serial.println("playing audio");
       digitalWrite(SPKR_PIN, HIGH);
-      delay(10);    
+      delay(spkr_trigger_dur);    
       digitalWrite(SPKR_PIN, LOW);
     }
   }
