@@ -214,7 +214,7 @@ stpr_minus_spkr_ms = -1 * spkr_minus_stpr_ms
 spkr_dur_s = stimDur + (stpr_2_whisker_ms - spkr_minus_stpr_ms)/1000.0
 
 # Adjust the stimulus duration to account for the amount of time it takes for the stepper to reach the whsikers:
-stimEpochDur = stimDur +  stpr_2_whisker_ms/1000.0
+stimDurAdjusted = stimDur +  stpr_2_whisker_ms/1000.0
 
 
 # If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
@@ -378,7 +378,7 @@ settings['libraries'] = libDicts
 settings['whisker_2_s1_latency_ms'] = whisker_2_s1_ms
 settings['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
 settings['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
-settings['stimEpochDur'] = stimEpochDur
+settings['stimDurAdjusted'] = stimDurAdjusted
         
         
 #########################################################################
@@ -391,7 +391,7 @@ all_trials = []
 for phase in experiment:
         phase['trials'] = []
         for condition in phase['conditions']:
-                condition["STIMDUR"] = stimEpochDur * 1000;
+                condition["STIMDUR"] = stimDurAdjusted * 1000;
                 
                 # If the speaker needs to come on after the stepper, then don't make States.cpp call delay() between calling trigger_audio() and trigger_stepper(); HardwareTriggeredNoise_dk.vi will be responsible for implementing a delay before the speaker comes on
                 if stpr_minus_spkr_ms < 0:
