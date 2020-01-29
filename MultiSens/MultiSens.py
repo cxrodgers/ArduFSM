@@ -183,7 +183,7 @@ with open(settings_file) as json_data:
         settings = json.load(json_data)
         
 # Define some general trial timing parameters (in seconds):    
-stimDur = settings['StimDur_s']
+stimDur= settings['StimDur_s']
 responseWindow = settings['ResponseWindow_s']
 minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
 maxITI = settings['MaxITI_s']  
@@ -209,15 +209,21 @@ print('Time of S1 whisker response onset minus time of S1 auditory response onse
 # Calculate the latency between when the stepper comes on and when the speaker comes on:
 spkr_minus_stpr_ms = stpr_2_whisker_ms + whisker_2_s1_ms - spkr_2_s1_ms - tgt_som_minus_aud_ms
 stpr_minus_spkr_ms = -1 * spkr_minus_stpr_ms
-spkr_dur = stimDur - spkr_minus_stpr_ms/1000.0
+
+# Calculate the appropriate duration to make the auditory stimulus in order to ensure that the auditory stimulus ends at the same time the stepper is retracting:
+spkr_dur_s = stimDur + (stpr_2_whisker_ms - spkr_minus_stpr_ms)/1000.0
+
+# Adjust the stimulus duration to account for the amount of time it takes for the stepper to reach the whsikers:
+stimEpochDur = stimDur +  stpr_2_whisker_ms/1000.0
+
 
 # If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
 if spkr_minus_stpr_ms >= 0:
     print('Speaker should turn on ' + str(spkr_minus_stpr_ms) + ' ms after stepper onset.')
-    cont = raw_input('Please ensure that ''onset delay'' is set to %d ms and ''sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_minus_stpr_ms, spkr_dur))
+    cont = raw_input('Please ensure that ''onset delay'' is set to %d ms and ''sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_minus_stpr_ms, spkr_dur_s))
 else: 
     print('Speaker should turn on ' + str(-1 * spkr_minus_stpr_ms) + ' ms before stepper onset.')
-    cont = raw_input('Please ensure that ''onset delay'' is set to 0 ms and sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_dur))
+    cont = raw_input('Please ensure that ''onset delay'' is set to 0 ms and sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_dur_s))
 
 
 #########################################################################
@@ -372,6 +378,7 @@ settings['libraries'] = libDicts
 settings['whisker_2_s1_latency_ms'] = whisker_2_s1_ms
 settings['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
 settings['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
+settings['stimEpochDur'] = stimEpochDur
         
         
 #########################################################################
@@ -384,7 +391,7 @@ all_trials = []
 for phase in experiment:
         phase['trials'] = []
         for condition in phase['conditions']:
-                condition["STIMDUR"] = settings['StimDur_s'] * 1000;
+                condition["STIMDUR"] = stimEpochDur * 1000;
                 
                 # If the speaker needs to come on after the stepper, then don't make States.cpp call delay() between calling trigger_audio() and trigger_stepper(); HardwareTriggeredNoise_dk.vi will be responsible for implementing a delay before the speaker comes on
                 if stpr_minus_spkr_ms < 0:
