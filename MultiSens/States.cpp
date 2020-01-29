@@ -315,7 +315,7 @@ void StimPeriod::s_finish()
   // the same amount of time needs to be added here
   // so that the actual whisker pole isn't retracted
   // until a full 2 s after it's extended:
-  delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + spkr_trigger_dur);  
+  delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + trial_start_signal_duration + spkr_trigger_dur);  
   digitalWrite(DIR_PIN, LOW); //changed
   if(param_values[tpidx_STPRIDX]==1){
         rotate_back();
