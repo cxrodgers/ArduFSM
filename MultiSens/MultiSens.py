@@ -156,6 +156,7 @@ import socket
 import copy
 import warnings
 random.seed()
+timing_file = "C:\\Users\\lab\\Documents\\Arduino\\ArduFSM\\MultiSens\\timing_assumptions.json"
 
 ############################################################################
 # Define some utility functions:
@@ -186,6 +187,37 @@ stimDur = settings['StimDur_s']
 responseWindow = settings['ResponseWindow_s']
 minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
 maxITI = settings['MaxITI_s']  
+tgt_som_minus_aud_ms = settings['tgt_som_minus_aud_ms']
+
+
+#########################################################################
+# Load various timing assumptions from timing_assumptions.json into Python dict object:
+with open(timing_file) as json_data:
+        timing_assumptions = json.load(json_data)
+
+# Define some timing parameters used to determine how to set the latency between the stepper onset and speaker onset:    
+whisker_2_s1_ms = timing_assumptions['whisker_2_s1_latency_ms']
+spkr_2_s1_ms = timing_assumptions['speaker_2_s1_latency_ms']
+stpr_2_whisker_ms = timing_assumptions['stepper_on_2_whisker_latency_ms'] 
+
+# Print some debug messages confirming assumptions about timing. 
+print('Assuming latency between stepper onset and whisker contact is ' + str(stpr_2_whisker_ms) + ' ms.')
+print('Assuming latency between whisker contact and S1 response onset is ' + str(whisker_2_s1_ms) + ' ms.')
+print('Assuming latency between speaker onset and S1 response onset is ' + str(spkr_2_s1_ms) + ' ms.')
+print('Time of S1 whisker response onset minus time of S1 auditory response onset should be ' + str(tgt_som_minus_aud_ms) + ' ms.')
+
+# Calculate the latency between when the stepper comes on and when the speaker comes on:
+spkr_minus_stpr_ms = stpr_2_whisker_ms + whisker_2_s1_ms - spkr_2_s1_ms - tgt_som_minus_aud_ms
+stpr_minus_spkr_ms = -1 * spkr_minus_stpr_ms
+spkr_dur = stimDur - spkr_minus_stpr_ms/1000.0
+
+# If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
+if spkr_minus_stpr_ms >= 0:
+    print('Speaker should turn on ' + str(spkr_minus_stpr_ms) + ' ms after stepper onset.')
+    cont = raw_input('Please ensure that ''onset delay'' is set to %d ms and ''sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_minus_stpr_ms, spkr_dur))
+else: 
+    print('Speaker should turn on ' + str(-1 * spkr_minus_stpr_ms) + ' ms before stepper onset.')
+    cont = raw_input('Please ensure that ''onset delay'' is set to 0 ms and sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_dur))
 
 
 #########################################################################
@@ -337,6 +369,9 @@ for lib in libLines:
         libDicts.append(libDict)
         
 settings['libraries'] = libDicts
+settings['whisker_2_s1_latency_ms'] = whisker_2_s1_ms
+settings['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
+settings['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
         
         
 #########################################################################
@@ -350,6 +385,14 @@ for phase in experiment:
         phase['trials'] = []
         for condition in phase['conditions']:
                 condition["STIMDUR"] = settings['StimDur_s'] * 1000;
+                
+                # If the speaker needs to come on after the stepper, then don't make States.cpp call delay() between calling trigger_audio() and trigger_stepper(); HardwareTriggeredNoise_dk.vi will be responsible for implementing a delay before the speaker comes on
+                if stpr_minus_spkr_ms < 0:
+                    condition["ISL"] = 0
+                
+                # If the stepper needs to come on after the stepper, then make States.cpp call delay() for the appropriate amount of time between calling trigger_audio() and trigger_stepper()
+                else:
+                    condition["ISL"] = stpr_minus_spkr_ms 
                 n_trials = condition['NUM_TRIALS']
                 for t in range(1, n_trials+1):
                         phase['trials'].append(condition)
