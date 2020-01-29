@@ -568,7 +568,9 @@ void signal_trial_start(){
   }
 
 void rotate_steps(int n){
-  for(int i = 0; i < n + 1; i++){rotate_one_step();}
+  for(int i = 0; i < n + 1; i++){
+    int x = analogRead(A0);
+    rotate_one_step();}
   }
 
 Device ** config_hw(){ 
