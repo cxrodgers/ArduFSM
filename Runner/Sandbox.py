@@ -235,7 +235,7 @@ def compile_and_upload(sandbox_paths, specific_parameters, verbose=False):
             # Check for any new results on STDERR
             try:
                 while True:
-                    line = q.get_nowait()
+                    line = q.get_nowait().decode('utf-8')
                     stderr_temp += line
             except Empty:
                 # no output
@@ -320,7 +320,7 @@ def call_python_script(script_path, script_name, ncols=80, nrows=23,
             '--working-directory=%s' % os.path.abspath(script_path),
             '--geometry=%dx%d+%d+%d' % (ncols, nrows, xpos, ypos),
             '--zoom=%0.2f' % zoom,  
-            '-x',
+            '--', # used to be -x
             'bash', '-l', '-c',
             "ipython --pylab=qt -i %s" % script_name,
             ])
