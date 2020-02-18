@@ -14,6 +14,10 @@ import platform
 def read_from_device(device):
     """Receives information from device and appends"""
     new_lines = device.readlines()
+    
+    # Decode bytes to text
+    new_lines = [line.decode('utf-8') for line in new_lines]
+
     return new_lines
 
 def write_to_user(buffer, data):
@@ -23,8 +27,8 @@ def write_to_user(buffer, data):
     """
     # No matter what, pipe new_lines to savefile here
     for line in data:
-        if sys.version_info>=(3,1):
-            line = str(line)
+        #~ if sys.version_info>=(3,1):
+            #~ line = str(line)
         buffer.write(line)
     buffer.flush()
 
@@ -72,8 +76,9 @@ def read_from_user(buffer, buffer_size=1024):
 def write_to_device(device, data):
     # I suspect this fails silently if the arduino's buffer is full
     if data is not None:
-        if sys.version_info>=(3,1):
-            data = bytes(data, 'UTF-8')
+        # CR: now data seems to be bytes already
+        #~ if sys.version_info>=(3,1):
+            #~ data = bytes(data, 'UTF-8')
         device.write(data)
 
 
