@@ -843,7 +843,7 @@ def update_by_time(plotter, filename):
     ax = plotter['ax']
     #~ label2lines = plotter['label2lines']    
     
-    with file(filename) as fi:
+    with open(filename) as fi:
         lines = fi.readlines()
 
     #rew_lines = filter(lambda line: line.startswith('REWARD'), lines)

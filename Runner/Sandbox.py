@@ -164,7 +164,7 @@ def write_c_config_file(sketch_path, c_parameters, verbose=False):
     if verbose:
         print("C code written to %s:" % config_filename)
         print(config_file_contents)
-    with file(config_filename, 'w') as fi:
+    with open(config_filename, 'w') as fi:
         fi.write(config_file_boilerplate_header)
         fi.write(config_file_contents)
         fi.write(config_file_boilerplate_footer)
@@ -285,7 +285,7 @@ def write_python_parameters(sandbox_paths, python_parameters, script_name,
     if verbose:
         print("dumping python parameters to %s" % json_file)
         print(json.dumps(python_parameters, indent=4))
-    with file(json_file, 'w') as fi:
+    with open(json_file, 'w') as fi:
         json.dump(python_parameters, fi, indent=4)
   
 def call_python_script(script_path, script_name, ncols=80, nrows=23, 

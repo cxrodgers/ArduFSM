@@ -58,7 +58,7 @@ def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
     return trial_types
 
 # Load the parameters file
-with file('parameters.json') as fi:
+with open('parameters.json') as fi:
     runner_params = json.load(fi)
 
 # Check the serial port exists
@@ -393,7 +393,7 @@ except trial_setter_ui.QuitException as qe:
     
     # Dump the results
     logfile_dir = os.path.split(logfilename)[0]
-    with file(os.path.join(logfile_dir, 'results'), 'w') as fi:
+    with open(os.path.join(logfile_dir, 'results'), 'w') as fi:
         json.dump(session_results, fi, indent=4)
     
     # Rename the directory with the mouse name
