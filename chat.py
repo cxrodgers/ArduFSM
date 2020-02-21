@@ -38,6 +38,9 @@ def read_from_user(buffer, buffer_size=1024):
     """Read what the user wrote and returns it
     
     `buffer`: a named pipe (on Unix-based systems) or file (on Windows-based systems)
+    
+    Returns : string
+        The byte data is decoded into a string and returned.
     """
     #Implementation of this function will depend on the OS...
     platformName = platform.system()
@@ -45,6 +48,9 @@ def read_from_user(buffer, buffer_size=1024):
     if platformName.find('Windows',0) == -1:
         try:
             data = os.read(buffer, buffer_size)
+            if data is not None:
+                # decode it
+                data = data.decode('utf-8')
         except OSError as err:
             # Test whether this is the expected error
             if (err.errno == errno.EAGAIN or 
@@ -74,12 +80,11 @@ def read_from_user(buffer, buffer_size=1024):
     return data
 
 def write_to_device(device, data):
+    """Convert `data` to bytes and write to `device`"""
     # I suspect this fails silently if the arduino's buffer is full
     if data is not None:
-        # CR: now data seems to be bytes already
-        #~ if sys.version_info>=(3,1):
-            #~ data = bytes(data, 'UTF-8')
-        device.write(data)
+        # Convert to bytes
+        device.write(bytes(data, 'utf-8'))
 
 
 class Chatter(object):
@@ -183,17 +188,16 @@ class Chatter(object):
         
         # Read any new text from the user and send to device
         self.new_user_text = read_from_user(self.pipein)
-        #print('new_user_text = ' + self.new_user_text) #DK 160319 here for debugging
+        assert (
+            self.new_user_text is None or 
+            type(self.new_user_text) is str
+            )
         write_to_device(self.ser, self.new_user_text)
         
         # Read any new lines from the device and send to user
         self.new_device_lines = read_from_device(self.ser)
-        """
-        #DK 160319 here for debugging
-        print('new_device_lines = ') 
-        for line in self.new_device_lines:
-            print(line)
-        """
+        for llline in self.new_device_lines:
+            assert type(llline) is str
         write_to_user(self.ofi, self.new_device_lines)
         
         # Echo
