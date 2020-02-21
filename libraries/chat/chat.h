@@ -23,7 +23,7 @@ int handle_chat(char* received_chat,
   char *argument2);
 
 //// General chat stuff
-char* receive_chat();
+void receive_chat(char*);
 
 
 #endif
