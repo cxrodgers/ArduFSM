@@ -341,7 +341,10 @@ try:
                 plotter2.handles['f'].canvas.draw()
                 
             
-            plt.pause(.01)
+            #~ plt.pause(.01)
+            #https://stackoverflow.com/questions/45729092/make-interactive-matplotlib-window-not-pop-to-front-on-each-update-windows-7
+            plotter.graphics_handles['f'].canvas.draw_idle()
+            plotter.graphics_handles['f'].canvas.start_event_loop(0.001)
             
                 
 
