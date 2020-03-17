@@ -349,7 +349,7 @@ except KeyboardInterrupt:
     print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
-    final_message = qe.message
+    final_message = str(qe)
 
     rewdict = ArduFSM.plot.count_rewards(splines)
     nlrew = (rewdict['left auto'].sum() + 
