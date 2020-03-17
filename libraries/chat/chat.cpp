@@ -22,7 +22,7 @@ unsigned long interval = 1000;
 
 
 //// Functions for receiving chats
-char* receive_chat()
+void receive_chat(char* received_chat)
 { /* Basic function to receive chats.
   
   Checks Serial.available
@@ -33,7 +33,6 @@ char* receive_chat()
   // If characters available, add to buffer
   int n_chars = Serial.available();
   char got = 'X';
-  char return_value[__CHAT_H_RECEIVE_BUFFER_SZ] = "";
   
   for(int ichar = 0; ichar < n_chars; ichar++)
   {
@@ -76,15 +75,11 @@ char* receive_chat()
     Serial.print(" ACK ");
     Serial.print(receive_line); // still ends with \n
     
-    // Store in return value and reset line to empty
-    strncpy(return_value, receive_line, __CHAT_H_RECEIVE_BUFFER_SZ);
+    // Store in received_chat and reset line to empty
+    strncpy(received_chat, receive_line, __CHAT_H_RECEIVE_BUFFER_SZ);
     strncpy(receive_line, "", __CHAT_H_RECEIVE_BUFFER_SZ);
   }
-  
-  return return_value;
 }
-
-
 
 
 //// Begin TrialSpeak code.
@@ -96,7 +91,7 @@ int communications(unsigned long time)
     Receives any chat and handles it, including calling take_action.
   */
   // comm variables
-  char* received_chat;
+  char received_chat[__CHAT_H_RECEIVE_BUFFER_SZ] = "";
   char protocol_cmd[__CHAT_H_MAX_TOKEN_LEN] = "";
   char argument1[__CHAT_H_MAX_TOKEN_LEN] = "";
   char argument2[__CHAT_H_MAX_TOKEN_LEN] = "";
@@ -114,7 +109,7 @@ int communications(unsigned long time)
 
   
   //// Receive and deal with chat
-  received_chat = receive_chat();
+  receive_chat(received_chat);
   if (strlen(received_chat) > 0)
   {
     // Attempt to parse

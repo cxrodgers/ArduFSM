@@ -43,6 +43,7 @@ Once the trial parameters are received, the Arduino will wait to begin the upcom
 
 RELEASE_TRL
 """
+from builtins import str
 
 import chat
 import time

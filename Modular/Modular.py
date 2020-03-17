@@ -10,6 +10,8 @@ over the serial port.
 As an example, user-defined variables LIGHTON_DUR and LIGHTOFF_DUR set 
 House Light duration.
 """
+from __future__ import print_function
+from builtins import input
 
 import ArduFSM
 import os
@@ -51,7 +53,7 @@ try:
         chatter.update(echo_to_stdout=True)
 
     # Wait for keyboard press then start updating again
-    raw_input("Parameters set. Press enter to start.")
+    input("Parameters set. Press enter to start.")
 
     # Sent the TRL_RELEASED signal
     # This tells the arduino to finish setup() and start loop()
@@ -63,14 +65,14 @@ try:
         not chatter.last_sent_line_acknowledged):
         # Update the chatter
         chatter.update(echo_to_stdout=True)
-    print "Session has begun. Press CTRL+C to quit."
+    print("Session has begun. Press CTRL+C to quit.")
     
     # Now just update until CTRL+C is pressed
     while(True):
         chatter.update(echo_to_stdout=True)
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 finally:
     # Always close the chatter even if an error occurred

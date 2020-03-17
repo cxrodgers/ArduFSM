@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from builtins import input
+from past.utils import old_div
 # Main script to run to run TwoChoice behavior
 # Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
 # enough that the response is quick, but not so low that it takes up all the
@@ -54,7 +58,7 @@ def get_trial_types(name, directory='~/dev/ArduFSM/stim_sets'):
     return trial_types
 
 # Load the parameters file
-with file('parameters.json') as fi:
+with open('parameters.json') as fi:
     runner_params = json.load(fi)
 
 # Check the serial port exists
@@ -90,7 +94,7 @@ SHOW_SENSOR_PLOT = False
 ## Reward amounts
 # Target amount for this mouse (nL)
 target_water_volume = runner_params['target_water_volume']
-norm_target_water_volume = runner_params['target_water_volume'] / 5000.0
+norm_target_water_volume = old_div(runner_params['target_water_volume'], 5000.0)
 
 # Clamp
 if norm_target_water_volume < .8:
@@ -159,23 +163,23 @@ try:
     recent_weight = float(runner_params['recent_weight'])
 except (ValueError, KeyError):
     recent_weight = -1.0
-print "Previously mouse %s weighed %0.1fg and the pipe was at %0.2f" % (
+print("Previously mouse %s weighed %0.1fg and the pipe was at %0.2f" % (
     runner_params['mouse'],
     recent_weight,
     recent_pipe,
-    )
+    ))
 
 # Get weight
 session_results['mouse_mass'] = \
-    raw_input("Enter mass of %s: " % runner_params['mouse'])
+    input("Enter mass of %s: " % runner_params['mouse'])
 
 # Get stepper in correct position
 if not runner_params['has_side_HE_sensor']:
     # Note this may not be a stimulus we're using in this stimulus set
-    raw_input("Rotate stepper to position %s" % 
+    input("Rotate stepper to position %s" % 
         params_table.loc['STPIP', 'init_val'])
 
-raw_input("Fill water reservoirs and press Enter to start")
+input("Fill water reservoirs and press Enter to start")
 
 ## Set up the scheduler
 if runner_params['scheduler'] == 'Auto':
@@ -231,7 +235,7 @@ if RUN_UI:
             "Quit Python, type resizewin to set window to 80x23, and restart.")
 
     except:
-        print "error encountered when starting UI"
+        print("error encountered when starting UI")
         raise
     
     finally:
@@ -251,11 +255,11 @@ try:
                 image_controls=webcam_controls,)
             wc.start()
         except IOError:
-            print "cannot find webcam at port", video_device
+            print("cannot find webcam at port", video_device)
             wc = None
             SHOW_WEBCAM = False
         except OSError:
-            print "something went wrong with webcam process"
+            print("something went wrong with webcam process")
             wc = None
             SHOW_WEBCAM = False
     else:
@@ -287,7 +291,7 @@ try:
             window_title, video_window_position[0], video_window_position[1])
         while os.system(cmd) != 0:
             # Should test here if it's been too long and then give up
-            print "Waiting for webcam window"
+            print("Waiting for webcam window")
             time.sleep(.5)
     
     while True:
@@ -342,7 +346,7 @@ try:
                 
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -354,42 +358,42 @@ except trial_setter_ui.QuitException as qe:
         rewdict['right manual'].sum() + rewdict['right direct'].sum())
     
     # Get volumes and pipe position
-    print "Preparing to save. Press CTRL+C to abort save."
+    print("Preparing to save. Press CTRL+C to abort save.")
     if session_results.get('mouse_mass') in ['', None]:
-        session_results['mouse_mass'] = raw_input("Enter mouse mass: ")
+        session_results['mouse_mass'] = input("Enter mouse mass: ")
     
     choice = 'N'
     while choice.upper().strip() == 'N':
-        session_results['l_volume'] = raw_input("Enter L water volume: ")
-        session_results['r_volume'] = raw_input("Enter R water volume: ")
+        session_results['l_volume'] = input("Enter L water volume: ")
+        session_results['r_volume'] = input("Enter R water volume: ")
         
         bad_data = False
         try:
             if nlrew == 0:
                 lmean = 0.
             else:
-                lmean = float(session_results['l_volume']) / nlrew
+                lmean = old_div(float(session_results['l_volume']), nlrew)
             if nrrew == 0:
                 rmean = 0.
             else:
-                rmean = float(session_results['r_volume']) / nrrew
+                rmean = old_div(float(session_results['r_volume']), nrrew)
         except ValueError:
-            print "warning: cannot convert to float"
+            print("warning: cannot convert to float")
             bad_data = True
         
         if not bad_data:
-            print "L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000)
-            choice = raw_input("Confirm? [Y/n] ")
+            print("L mean: %0.1f; R mean: %0.1f" % (lmean * 1000, rmean * 1000))
+            choice = input("Confirm? [Y/n] ")
 
     session_results['l_valve_mean'] = lmean
     session_results['r_valve_mean'] = rmean
     
-    print "Previous pipe position was %s" % recent_pipe
-    session_results['final_pipe'] = raw_input("Enter final pipe position: ")
+    print("Previous pipe position was %s" % recent_pipe)
+    session_results['final_pipe'] = input("Enter final pipe position: ")
     
     # Dump the results
     logfile_dir = os.path.split(logfilename)[0]
-    with file(os.path.join(logfile_dir, 'results'), 'w') as fi:
+    with open(os.path.join(logfile_dir, 'results'), 'w') as fi:
         json.dump(session_results, fi, indent=4)
     
     # Rename the directory with the mouse name
@@ -413,11 +417,11 @@ finally:
         wc.stop()
         wc.cleanup()
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if RUN_UI:
         ui.close()
-        print "UI closed"
+        print("UI closed")
     
     if RUN_GUI:
         pass
@@ -425,7 +429,7 @@ finally:
         #~ print "GUI closed"
     
     if final_message is not None:
-        print final_message
+        print(final_message)
     
 
 

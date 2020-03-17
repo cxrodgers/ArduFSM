@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import input
 # Main script to run to run Detection behavior
 
 import sys
@@ -34,7 +36,7 @@ params_table = mainloop.assign_rig_specific_params(rigname, params_table)
 params_table['current-value'] = params_table['init_val'].copy()
 
 ## Upload
-if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+if input('Reupload protocol [y/N]? ').upper() == 'Y':
     if rigname in ['L0']:
         protocol_name = 'Detection'
     else:
@@ -110,7 +112,7 @@ try:
             plt.draw()
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -125,7 +127,7 @@ except:
 
 finally:
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if RUN_GUI:
         pass
@@ -133,15 +135,15 @@ finally:
         #~ print "GUI closed"
     
     if final_message is not None:
-        print final_message
+        print(final_message)
 
 
 ## Save
 filename = chatter.ofi.name
     
 # Get mouse name
-print "Filename:", filename
-mousename = raw_input("Enter mouse name: ")
+print("Filename:", filename)
+mousename = input("Enter mouse name: ")
 mousename = mousename.strip()
 
 # Copy the file
@@ -149,8 +151,8 @@ if mousename != '':
     new_filename = filename + '.' + mousename
     assert not os.path.exists(new_filename)
     shutil.copyfile(filename, new_filename)  
-    print "Saved file as", new_filename
+    print("Saved file as", new_filename)
 else:
-    print "no mouse name entered"
+    print("no mouse name entered")
 
 

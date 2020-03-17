@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Main script to run to run PassiveDetect
 # Timings: set 'serial_timeout' in chatter, and 'timeout' in UI, to be low
 # enough that the response is quick, but not so low that it takes up all the
@@ -76,7 +77,7 @@ if RUN_UI:
             "Quit Python, type resizewin to set window to 80x23, and restart.")
 
     except:
-        print "error encountered when starting UI"
+        print("error encountered when starting UI")
         raise
     
     finally:
@@ -123,7 +124,7 @@ try:
 
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -138,11 +139,11 @@ except:
 
 finally:
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if RUN_UI:
         ui.close()
-        print "UI closed"
+        print("UI closed")
     
     if RUN_GUI:
         pass
@@ -150,7 +151,7 @@ finally:
         #~ print "GUI closed"
     
     if final_message is not None:
-        print final_message
+        print(final_message)
     
 
 

@@ -1,3 +1,7 @@
+from __future__ import print_function
+from builtins import bytes
+from builtins import str
+from builtins import object
 import serial
 import time
 import datetime
@@ -73,7 +77,7 @@ def write_to_device(device, data):
         device.write(data)
 
 
-class Chatter:
+class Chatter(object):
     """Object to manage chat between serial device and user.
     
     The user may write text to an input pipe, and it will be relayed to

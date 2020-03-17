@@ -1,9 +1,14 @@
 """Module for generating and interacting with the user."""
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import chr
+from builtins import str
+from builtins import object
 import curses
 import numpy as np
 import os.path, shutil
-import TrialSpeak
-import Scheduler
+from . import TrialSpeak
+from . import Scheduler
 
 HEADINGS = """
 Actions                |          Parameters         |        Scheduler
@@ -19,7 +24,7 @@ class QuitException(Exception):
     pass
 
 ## Functions that are triggered by various user actions
-class UIActionTaker:
+class UIActionTaker(object):
     """Implements the actions that are parsed by the UI.
     
     This object has a link to the ui itself, so it often effects these
@@ -109,7 +114,7 @@ class UIActionTaker:
             self.ui.ts_obj.params_table.loc[
                 param_name, 'current-value'] = int(param_value)
         else:
-            print "warning: no param named", param_name        
+            print("warning: no param named", param_name)        
         
         self.ui.draw_menu()
     
@@ -423,7 +428,7 @@ class UI(object):
         uparams = self.ts_obj.params_table[
             self.ts_obj.params_table['ui-accessible']]
         
-        for nparam, (name, value) in enumerate(uparams['current-value'].iteritems()):
+        for nparam, (name, value) in enumerate(uparams['current-value'].items()):
             s = '%s = %s' % (name, str(value))
             self.stdscr.addstr(start_row + nparam, col, s)
     

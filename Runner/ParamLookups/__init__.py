@@ -20,9 +20,11 @@ Each parameter dict has the following structure:
 This could potentially be a list of parameters, each with fields
 'human-readable-name', 'code-name', 'value'
 """
-import base
-import Hardcoded
+from __future__ import print_function
+from __future__ import absolute_import
+from . import base
+from . import Hardcoded
 try:
-    import Database
+    from . import Database
 except ImportError:
-    print "warning: cannot import Database"
+    print("warning: cannot import Database")

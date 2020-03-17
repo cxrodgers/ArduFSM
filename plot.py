@@ -19,6 +19,13 @@ then we should just match on an index variable. If it is not intended to be
 the same, then we should relax that assumption, but right now I think the
 code assumes that it is.
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from builtins import map
+from builtins import range
+from past.utils import old_div
+from builtins import object
 
 import numpy as np, pandas, time
 import matplotlib.pyplot as plt
@@ -27,20 +34,20 @@ import scipy.stats
 
 # move these to TrialMatrix so we can phase this out
 #from trials_info_tools import count_hits_by_type_from_trials_info, calculate_nhit_ntot
-from TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
+from .TrialMatrix import count_hits_by_type_from_trials_info, calculate_nhit_ntot
 
-class TrialTypesError:
+class TrialTypesError(object):
     pass
 
-import TrialSpeak, TrialMatrix
-from TrialSpeak import YES, NO
+from . import TrialSpeak, TrialMatrix
+from .TrialSpeak import YES, NO
 
 o2c = {'hit': 'lightgreen', 'error': 'r', 'spoil': 'k', 'curr': 'white'}
 
 
 def format_perf_string(nhit, ntot):
     """Helper function for turning hits and totals into a fraction."""
-    perf = nhit / float(ntot) if ntot > 0 else 0.
+    perf = old_div(nhit, float(ntot)) if ntot > 0 else 0.
     res = '%d/%d=%0.2f' % (nhit, ntot, perf)
     return res
 
@@ -65,13 +72,13 @@ def count_rewards(splines):
     # Iterate over trials
     for nspline, spline in enumerate(splines):        
         # Iterate over events
-        for evname, token in evname2token.items():
+        for evname, token in list(evname2token.items()):
             # Count events of this type in this trial
             n_events = np.sum([s.strip().endswith(token) for s in spline])
             evname2list[evname].append(n_events)
     
     # Arrayify
-    res = dict([(evname, np.asarray(l)) for evname, l in evname2list.items()])
+    res = dict([(evname, np.asarray(l)) for evname, l in list(evname2list.items())])
     return res
 
 
@@ -103,7 +110,7 @@ class Plotter(object):
         
         # Make handles to each outcome
         label2lines = {}
-        for outcome, color in o2c.items():
+        for outcome, color in list(o2c.items()):
             if color == 'white':
                 label2lines[outcome], = ax.plot(
                     [None], [None], 'o', label=outcome, color=color)
@@ -232,7 +239,7 @@ class Plotter(object):
         f = self.graphics_handles['f']
         
         # Use the ytick_labels calculated above
-        ax.set_yticks(range(len(trial_type_names)))
+        ax.set_yticks(list(range(len(trial_type_names))))
         ax.set_yticklabels(ytick_labels, size='small')
         
         # The ylimits go BACKWARDS so that trial types are from top to bottom
@@ -372,7 +379,7 @@ class Plotter(object):
 
         except KeyboardInterrupt:
             plt.close('all')
-            print "Done."
+            print("Done.")
         except:
             raise
         finally:
@@ -421,7 +428,7 @@ class PlotterByStimNumber(Plotter):
             res.append(side + ' %d' % sn)        
         return res
 
-class SensorPlotter():
+class SensorPlotter(object):
     """Plots sensor values by step"""
     def __init__(self):
         self.handles = {}
@@ -433,11 +440,11 @@ class SensorPlotter():
         """Update plot with new sensor values"""
         # Extract sensor values from each SENH line
         rec_l = []
-        senh_lines = filter(lambda l: ' SENH ' in l, logfile_lines)
+        senh_lines = [l for l in logfile_lines if ' SENH ' in l]
         for line in senh_lines:
             post_senh_text = line.split(' SENH ')[1]
             sensor_history = post_senh_text.split()
-            rec_l.append(map(int, sensor_history))
+            rec_l.append(list(map(int, sensor_history)))
 
         # Plot each
         for line in self.handles['ax'].lines:
@@ -445,7 +452,7 @@ class SensorPlotter():
         for rec in rec_l:
             self.handles['ax'].plot(rec)
 
-class LickPlotter():
+class LickPlotter(object):
     """Plots licks by time"""
     def __init__(self):
         self.handles = {}
@@ -478,21 +485,21 @@ class LickPlotter():
         try:
             self.handles['f'].canvas.manager.window.wm_geometry("+600+500")
         except AttributeError:
-            print "cannot move window"
+            print("cannot move window")
 
         plt.show()
     
     def update(self, logfile_lines):
         # Extract licks
         l_rec_l = []
-        lick_lines = filter(lambda l: 'DBG L:' in l, logfile_lines)
+        lick_lines = [l for l in logfile_lines if 'DBG L:' in l]
         for line in lick_lines:
             c, m, x = line.split('=')[1:4]
             c = int(c.split(';')[0])
             m = int(m.split(';')[0])    
             x = int(x.split('.')[0])
             l_rec_l.append({'c': c, 'm': m, 'x': x, 
-                'time': int(line.split(' ')[0]) / 1000.})
+                'time': old_div(int(line.split(' ')[0]), 1000.)})
         try:
             l_resdf = pandas.DataFrame.from_records(l_rec_l).set_index('time')
         except KeyError:
@@ -500,14 +507,14 @@ class LickPlotter():
 
         # Extract licks
         r_rec_l = []
-        lick_lines = filter(lambda l: 'DBG R:' in l, logfile_lines)
+        lick_lines = [l for l in logfile_lines if 'DBG R:' in l]
         for line in lick_lines:
             c, m, x = line.split('=')[1:4]
             c = int(c.split(';')[0])
             m = int(m.split(';')[0])    
             x = int(x.split('.')[0])
             r_rec_l.append({'c': c, 'm': m, 'x': x, 
-                'time': int(line.split(' ')[0]) / 1000.})
+                'time': old_div(int(line.split(' ')[0]), 1000.)})
         try:
             r_resdf = pandas.DataFrame.from_records(r_rec_l).set_index('time')
         except KeyError:
@@ -515,13 +522,13 @@ class LickPlotter():
 
         # Extact touches
         tch_rec_l = []
-        lick_lines = filter(lambda l: 'TCH' in l, logfile_lines)
+        lick_lines = [l for l in logfile_lines if 'TCH' in l]
         for line in lick_lines:
             tch_type = int(line.split()[2])
             if tch_type == 0:
                 continue
             else:
-                tch_rec_l.append({'time': int(line.split()[0]) / 1000., 
+                tch_rec_l.append({'time': old_div(int(line.split()[0]), 1000.), 
                     'tch': tch_type})
         try:
             tch_resdf = pandas.DataFrame.from_records(tch_rec_l).set_index('time')
@@ -616,13 +623,13 @@ class PlotterWithServoThrow(Plotter):
         
         # Test for missing kwargs
         warn_missing_kwarg = []
-        for key, val in pick_kwargs.items():
+        for key, val in list(pick_kwargs.items()):
             if val not in trials_info.columns:
                 pick_kwargs.pop(key)
                 warn_missing_kwarg.append(key)
         if len(warn_missing_kwarg) > 0:
-            print "warning: missing kwargs to match trial type:" + \
-                ' '.join(warn_missing_kwarg)
+            print("warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg))
         
         # Iterate over trials
         # Could probably be done more efficiently with a groupby
@@ -634,7 +641,7 @@ class PlotterWithServoThrow(Plotter):
         for idx, ti_row in trials_info.iterrows():
             # Pick the matching row in trial_types
             trial_pick_kwargs = dict([
-                (k, ti_row[v]) for k, v in pick_kwargs.items() 
+                (k, ti_row[v]) for k, v in list(pick_kwargs.items()) 
                 if not pandas.isnull(ti_row[v])])
             
             # Try to pick
@@ -668,16 +675,16 @@ class PlotterWithServoThrow(Plotter):
 
         # issue warnings
         if len(warn_type_error) > 0:
-            print "error: type error in pick on trials " + \
-                ' '.join(map(str, warn_type_error))
+            print("error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error)))
         if len(warn_missing_data) > 0:
-            print "error: missing data on trials " + \
-                ' '.join(map(str, warn_missing_data))
+            print("error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data)))
         if len(warn_no_matches) > 0:
-            print "error: no matches found in some trials " + \
-                ' '.join(map(str, warn_no_matches))
+            print("error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches)))
         elif len(warn_multiple_matches) > 0:
-            print "error: multiple matches found on some trials"
+            print("error: multiple matches found on some trials")
 
         # Put into trials_info and return
         trials_info['trial_type'] = trial_types_l
@@ -720,13 +727,13 @@ class PlotterPassiveDetect(Plotter):
         
         # Test for missing kwargs
         warn_missing_kwarg = []
-        for key, val in pick_kwargs.items():
+        for key, val in list(pick_kwargs.items()):
             if val not in trials_info.columns:
                 pick_kwargs.pop(key)
                 warn_missing_kwarg.append(key)
         if len(warn_missing_kwarg) > 0:
-            print "warning: missing kwargs to match trial type:" + \
-                ' '.join(warn_missing_kwarg)
+            print("warning: missing kwargs to match trial type:" + \
+                ' '.join(warn_missing_kwarg))
         
         # Iterate over trials
         # Could probably be done more efficiently with a groupby
@@ -738,7 +745,7 @@ class PlotterPassiveDetect(Plotter):
         for idx, ti_row in trials_info.iterrows():
             # Pick the matching row in trial_types
             trial_pick_kwargs = dict([
-                (k, ti_row[v]) for k, v in pick_kwargs.items() 
+                (k, ti_row[v]) for k, v in list(pick_kwargs.items()) 
                 if not pandas.isnull(ti_row[v])])
             
             # Try to pick
@@ -756,7 +763,7 @@ class PlotterPassiveDetect(Plotter):
             # error-check and reduce to single index
             if len(pick_idxs) == 0:
                 # no match, use the first trial type
-                1/0
+                old_div(1,0)
                 warn_no_matches.append(idx)
                 pick_idx = 0
             elif len(pick_idxs) > 1:
@@ -772,16 +779,16 @@ class PlotterPassiveDetect(Plotter):
 
         # issue warnings
         if len(warn_type_error) > 0:
-            print "error: type error in pick on trials " + \
-                ' '.join(map(str, warn_type_error))
+            print("error: type error in pick on trials " + \
+                ' '.join(map(str, warn_type_error)))
         if len(warn_missing_data) > 0:
-            print "error: missing data on trials " + \
-                ' '.join(map(str, warn_missing_data))
+            print("error: missing data on trials " + \
+                ' '.join(map(str, warn_missing_data)))
         if len(warn_no_matches) > 0:
-            print "error: no matches found in some trials " + \
-                ' '.join(map(str, warn_no_matches))
+            print("error: no matches found in some trials " + \
+                ' '.join(map(str, warn_no_matches)))
         elif len(warn_multiple_matches) > 0:
-            print "error: multiple matches found on some trials"
+            print("error: multiple matches found on some trials")
 
         # Put into trials_info and return
         trials_info['trial_type'] = trial_types_l
@@ -814,7 +821,7 @@ def update_by_time_till_interrupt(plotter, filename):
 
     except KeyboardInterrupt:
         plt.close('all')
-        print "Done."
+        print("Done.")
     except:
         raise
     finally:
@@ -836,16 +843,14 @@ def update_by_time(plotter, filename):
     ax = plotter['ax']
     #~ label2lines = plotter['label2lines']    
     
-    with file(filename) as fi:
+    with open(filename) as fi:
         lines = fi.readlines()
 
     #rew_lines = filter(lambda line: line.startswith('REWARD'), lines)
-    rew_lines_l = filter(lambda line: 'EVENT REWARD_L' in line, lines)
-    rew_times_l = np.array(map(lambda line: int(line.split()[0])/1000., 
-        rew_lines_l))
-    rew_lines_r = filter(lambda line: 'EVENT REWARD_R' in line, lines)
-    rew_times_r = np.array(map(lambda line: int(line.split()[0])/1000., 
-        rew_lines_r))
+    rew_lines_l = [line for line in lines if 'EVENT REWARD_L' in line]
+    rew_times_l = np.array([old_div(int(line.split()[0]),1000.) for line in rew_lines_l])
+    rew_lines_r = [line for line in lines if 'EVENT REWARD_R' in line]
+    rew_times_r = np.array([old_div(int(line.split()[0]),1000.) for line in rew_lines_r])
 
     if len(rew_times_l) + len(rew_times_r) == 0:
         counts_l, edges = [0], [0, 1]
@@ -879,14 +884,14 @@ def typ2perf2ytick_labels(trial_type_names, typ2perf, typ2perf_all):
             nhits, ntots = typ2perf[typnum]
             tick_label += ' Unf:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
-                tick_label += '=%0.2f' % (float(nhits) / ntots)
+                tick_label += '=%0.2f' % (old_div(float(nhits), ntots))
             tick_label += '.'
         
         if typnum in typ2perf_all:
             nhits, ntots = typ2perf_all[typnum]
             tick_label += ' All:%03d/%03d' % (nhits, ntots)
             if ntots > 0:
-                tick_label += '=%0.2f' % (float(nhits) / ntots)
+                tick_label += '=%0.2f' % (old_div(float(nhits), ntots))
             tick_label += '.'        
     
         ytick_labels.append(tick_label)

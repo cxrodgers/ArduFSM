@@ -28,6 +28,7 @@
 
 6.  The Python script is called in a subprocess.
 """
+from __future__ import absolute_import
 
-import ParamLookups
-import Sandbox
+from . import ParamLookups
+from . import Sandbox

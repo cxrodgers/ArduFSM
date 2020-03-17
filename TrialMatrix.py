@@ -4,7 +4,10 @@ This module contains functions to form a matrix of parameters and outcomes
 on each trial. This is done using the communication protocol defined
 by TrialSpeak.
 """
-import TrialSpeak
+from __future__ import absolute_import
+from __future__ import division
+from past.utils import old_div
+from . import TrialSpeak
 import pandas, my, numpy as np
 
 def make_trial_matrix_from_file(log_filename, translate=True, numericate=False):
@@ -230,7 +233,13 @@ def run_anova(numericated_trial_matrix):
 
 
 def count_hits_by_type_from_trials_info(trials_info, split_key='trial_type'):    
-    """Returns (nhit, ntot) for each value of split_key in trials_info as dict."""
+    """Returns (nhit, ntot) for each value of split_key in trials_info as dict.
+    
+    If trials_info has zero length: return {}
+    """
+    if len(trials_info) == 0:
+        return {}
+    
     uniq_types = np.unique(trials_info[split_key])
     typ2perf = {}
     
@@ -261,15 +270,15 @@ def calculate_nhit_ntot(df):
 def calculate_safe_perf(df):
     """Returns nhits / ntots, unless NaN, in which case 0."""
     nhit, ntot = calculate_nhit_ntot(df)
-    return nhit / float(ntot) if ntot > 0 else 0.
+    return old_div(nhit, float(ntot)) if ntot > 0 else 0.
 
 def add_rwin_and_choice_times_to_trial_matrix(tm, bfile):
     """Add choice_time, rwin_time, and rt to trial matrix"""
     # Get the choice time and reaction time
     # Don't warn because can go in and out of response window state
-    tm['choice_time'] = TrialSpeak.identify_state_change_times(
-        bfile, state0=7, warn_on_multiple_changes=False) / 1000.
-    tm['rwin_time'] = TrialSpeak.identify_state_change_times(
-        bfile, state1=7, warn_on_multiple_changes=False) / 1000.
+    tm['choice_time'] = old_div(TrialSpeak.identify_state_change_times(
+        bfile, state0=7, warn_on_multiple_changes=False), 1000.)
+    tm['rwin_time'] = old_div(TrialSpeak.identify_state_change_times(
+        bfile, state1=7, warn_on_multiple_changes=False), 1000.)
     tm['rt'] = (tm['choice_time'] - tm['rwin_time'])  
     return tm
