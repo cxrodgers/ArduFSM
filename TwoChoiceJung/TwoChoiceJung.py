@@ -246,7 +246,7 @@ try:
         window_title = os.path.split(video_filename)[1]
         try:
             wc = my.video.WebcamController(device=video_device, 
-                output_filename=video_filename,
+                output_filename=None,
                 window_title=window_title,
                 image_controls=webcam_controls,)
             wc.start()
