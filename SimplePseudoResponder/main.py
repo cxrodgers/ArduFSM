@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Test script for SimpleTrialRelease
 import ArduFSM
 import TrialSpeak, TrialMatrix
@@ -56,7 +57,7 @@ try:
         if trial_matrix is None: # or if splines is empty?
             # It's the first tiral
             # Send each initial param
-            for param_name, param_val in initial_params.items():
+            for param_name, param_val in list(initial_params.items()):
                 chatter.write_to_device(
                     TrialSpeak.command_set_parameter(
                         param_name, param_val))            
@@ -74,7 +75,7 @@ try:
             params = generate_trial_params(trial_matrix)
 
             # Set them
-            for param_name, param_val in params.items():
+            for param_name, param_val in list(params.items()):
                 chatter.write_to_device(
                     TrialSpeak.command_set_parameter(
                         param_name, param_val))
@@ -87,9 +88,9 @@ try:
 
 ## End cleanly upon keyboard interrupt signal
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 except:
     raise
 finally:
     chatter.close()
-    print "Closed."
+    print("Closed.")

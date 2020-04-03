@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import input
 # Main script to run to run Detection behavior
 
 import sys
@@ -28,7 +30,7 @@ if not os.path.exists(serial_port):
 
 
 ## Upload
-if raw_input('Reupload protocol [y/N]? ').upper() == 'Y':
+if input('Reupload protocol [y/N]? ').upper() == 'Y':
     os.system('arduino --board arduino:avr:uno --port %s \
         --pref sketchbook.path=/home/chris/dev/ArduFSM \
         --upload ~/dev/ArduFSM/%s/%s.ino' % (
@@ -59,7 +61,7 @@ try:
         chatter.update(echo_to_stdout=ECHO_TO_STDOUT)
 
 except KeyboardInterrupt:
-    print "Keyboard interrupt received"
+    print("Keyboard interrupt received")
 
 except trial_setter_ui.QuitException as qe:
     final_message = qe.message
@@ -74,18 +76,18 @@ except:
 
 finally:
     chatter.close()
-    print "chatter closed"
+    print("chatter closed")
     
     if final_message is not None:
-        print final_message
+        print(final_message)
 
 
 ## Save
 filename = chatter.ofi.name
     
 # Get mouse name
-print "Filename:", filename
-mousename = raw_input("Enter mouse name: ")
+print("Filename:", filename)
+mousename = input("Enter mouse name: ")
 mousename = mousename.strip()
 
 # Copy the file
@@ -93,8 +95,8 @@ if mousename != '':
     new_filename = filename + '.' + mousename
     assert not os.path.exists(new_filename)
     shutil.copyfile(filename, new_filename)  
-    print "Saved file as", new_filename
+    print("Saved file as", new_filename)
 else:
-    print "no mouse name entered"
+    print("no mouse name entered")
 
 

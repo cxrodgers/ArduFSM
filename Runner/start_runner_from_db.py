@@ -28,13 +28,15 @@
 
 6.  The Python script is called in a subprocess.
 """
+from __future__ import absolute_import
+from builtins import input
 
 import os
 import shutil
 import json
 import subprocess
-import Sandbox
-import ParamLookups
+from . import Sandbox
+from . import ParamLookups
 
 # Create a place to keep sandboxes
 sandbox_root = os.path.expanduser('~/sandbox_root')
@@ -54,11 +56,11 @@ def get_dummy_user_input():
 
 def get_user_input_from_keyboard():
     """Get user to type the board, box, and mouse"""
-    board = raw_input("Enter board: ")
+    board = input("Enter board: ")
     board = board.upper().strip()
-    box = raw_input("Enter box: ")
+    box = input("Enter box: ")
     box = box.upper().strip()
-    mouse = raw_input("Enter mouse: ")
+    mouse = input("Enter mouse: ")
     mouse = mouse.upper().strip()
     
     return {
@@ -68,7 +70,7 @@ def get_user_input_from_keyboard():
     }
     
 # Get mouse name
-mouse_name = raw_input("Enter mouse: ")
+mouse_name = input("Enter mouse: ")
 mouse_name = mouse_name.upper().strip()
 
 # Look up the specific parameters

@@ -25,9 +25,10 @@ are set to '', should we interpret this as define it without a value, or
 don't define it?
 
 """
+from __future__ import absolute_import
 import django
 import runner.models
-import Hardcoded
+from . import Hardcoded
 
 def fix_ir_detector_params(res):
     """Deal with issues relating to IR detector params
@@ -79,9 +80,9 @@ def remove_None_from_dict(d):
     '' is to be interpreted as anything other than None/Null.
     """
     res = {}
-    for typ, subdict in d.items():
+    for typ, subdict in list(d.items()):
         res_l = []
-        for k, v in subdict.items():
+        for k, v in list(subdict.items()):
             if v is not None and v != (None, None) and v != '':
                 res_l.append((k, v))
         res[typ] = dict(res_l)

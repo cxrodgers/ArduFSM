@@ -1,13 +1,15 @@
 """Function to get specific parameters using either Hardcoded or Database
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
-import Hardcoded
+from . import Hardcoded
 try:
-    import Database
+    from . import Database
     Getter = Database
 except ImportError:
-    print "warning: cannot import Database"
+    print("warning: cannot import Database")
     Getter = Hardcoded
 
 

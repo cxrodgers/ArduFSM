@@ -1,7 +1,9 @@
 """Functions for trial setting logic"""
-import TrialSpeak
-import TrialMatrix
-import Scheduler
+from __future__ import absolute_import
+from builtins import object
+from . import TrialSpeak
+from . import TrialMatrix
+from . import Scheduler
 import pandas
 import os
 import numpy as np
@@ -16,7 +18,7 @@ else:
 
 def send_params_and_release(params, chatter):
     # Set them
-    for param_name, param_val in params.items():
+    for param_name, param_val in list(params.items()):
         chatter.queued_write_to_device(
             TrialSpeak.command_set_parameter(
                 param_name, param_val))
@@ -46,7 +48,7 @@ def generate_trial_types():
 
 
 
-class TrialSetter:
+class TrialSetter(object):
     """Object to determine state of trial and call scheduler as necessary"""
     def __init__(self, chatter, params_table, scheduler):
         self.initial_params_sent = False
@@ -76,7 +78,7 @@ class TrialSetter:
             if not self.initial_params_sent:
                 # Send each initial param
                 iparams = self.params_table[self.params_table['send_on_init']]
-                for param_name, param_val in iparams['init_val'].iteritems():
+                for param_name, param_val in iparams['init_val'].items():
                     cmd = TrialSpeak.command_set_parameter(param_name, param_val) 
                     self.chatter.queued_write_to_device(cmd)
                     self.params_table.loc[
@@ -116,7 +118,7 @@ class TrialSetter:
         
         # Was the last released trial the current one or the next one?
         if self.last_released_trial < current_trial:
-            raise "unreleased trials have occurred, somehow"
+            raise ValueError("unreleased trials have occurred, somehow")
             
         elif self.last_released_trial == current_trial:
             # The current trial has been released, or no trials have been released
@@ -147,7 +149,7 @@ class TrialSetter:
             pass
         
         else:
-            raise "too many trials have been released, somehow"    
+            raise ValueError("too many trials have been released, somehow")
         
         # Move if requested (only after released)
         # And don't do anything at all if MANIPULATOR_PIPE is None
