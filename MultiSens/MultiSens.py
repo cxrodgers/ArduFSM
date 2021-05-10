@@ -191,40 +191,8 @@ tgt_som_minus_aud_ms = settings['tgt_som_minus_aud_ms']
 
 
 #########################################################################
-# Load various timing assumptions from timing_assumptions.json into Python dict object:
-with open(timing_file) as json_data:
-        timing_assumptions = json.load(json_data)
 
-# Define some timing parameters used to determine how to set the latency between the stepper onset and speaker onset:    
-whisker_2_s1_ms = timing_assumptions['whisker_2_s1_latency_ms']
-spkr_2_s1_ms = timing_assumptions['speaker_2_s1_latency_ms']
-stpr_2_whisker_ms = timing_assumptions['stepper_on_2_whisker_latency_ms'] 
-
-# Print some debug messages confirming assumptions about timing. 
-print('Assuming latency between stepper onset and whisker contact is ' + str(stpr_2_whisker_ms) + ' ms.')
-print('Assuming latency between whisker contact and S1 response onset is ' + str(whisker_2_s1_ms) + ' ms.')
-print('Assuming latency between speaker onset and S1 response onset is ' + str(spkr_2_s1_ms) + ' ms.')
-print('Time of S1 whisker response onset minus time of S1 auditory response onset should be ' + str(tgt_som_minus_aud_ms) + ' ms.')
-
-# Calculate the latency between when the stepper comes on and when the speaker comes on:
-spkr_minus_stpr_ms = stpr_2_whisker_ms + whisker_2_s1_ms - spkr_2_s1_ms - tgt_som_minus_aud_ms
-stpr_minus_spkr_ms = -1 * spkr_minus_stpr_ms
-
-# Calculate the appropriate duration to make the auditory stimulus in order to ensure that the auditory stimulus ends at the same time the stepper is retracting:
-spkr_dur_s = stimDur + (stpr_2_whisker_ms - spkr_minus_stpr_ms)/1000.0
-
-# Adjust the stimulus duration to account for the amount of time it takes for the stepper to reach the whsikers:
-stimDurAdjusted = stimDur +  stpr_2_whisker_ms/1000.0
-
-
-# If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
-if spkr_minus_stpr_ms >= 0:
-    print('Speaker should turn on ' + str(spkr_minus_stpr_ms) + ' ms after stepper onset.')
-    cont = raw_input('Please ensure that ''onset delay'' is set to %d ms and ''sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_minus_stpr_ms, spkr_dur_s))
-else: 
-    print('Speaker should turn on ' + str(-1 * spkr_minus_stpr_ms) + ' ms before stepper onset.')
-    cont = raw_input('Please ensure that ''onset delay'' is set to 0 ms and sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_dur_s))
-
+timing_params = define_timimg_params(timing_file)
 
 #########################################################################
 # Define and save metadata to secondary storage:
@@ -232,153 +200,8 @@ else:
 settings['Hostname'] = socket.gethostname()
 settings['Date'] = time.strftime("%Y-%m-%d")
 
-# Get version information for source files in main sketch directory:
-sources = [x for x in os.listdir(os.getcwd()) if ('.pyc' not in x) and ('.cpp' in x or '.h' in x or '.ino' in x or '.py' in x or '.vi' in x)]  #Find all source files in the main sketch directory:
-baseDir = os.getcwd()
-baseCmd = 'git log -n 1 --pretty=format:%H -- '
-srcDicts = []
-for s in sources:
-        
-        warns = []
-        
-        # ... get  its full path:
-        fullPath = baseDir + '\\' + s
-        srcDict = {"path": fullPath}
-        
-        # ...  try to find the SHA1 of its latest git commit:	
-        fullCmd = baseCmd + ' -- ' + '"' + s + '"'
-        proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
-        sha1, err = proc2.communicate()
+src_metadata = get_src_metadata()
 
-        # ... if a SHA1 was successfully retrieved, then add it to the dict:
-        if sha1:
-                srcDict["SHA1"] = sha1
-        # ... otherwise, output a warning that the file is not under git control and give the user a chance to abort execution
-        else:
-                warnTxt = s + ' not under git control. It is advised that all source code files be under git control.'
-                warns.append(warnTxt)
-                warnings.warn(warnTxt)		
-                choice = raw_input("Proceed anyway? ([y]/n)")
-                checkContinue(choice)
-
-        # Check whether there are any uncommitted changes:
-        proc = subprocess.Popen('git diff -- ' + s, stdout=subprocess.PIPE, shell=True)
-        diff, err = proc.communicate()
-        
-        # ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
-        if diff:
-                warnTxt = 'Uncommitted changes detected in ' + s + '. It is advised to commit or stash any changes before proceeding.'
-                warns.append(warnTxt)
-                warnings.warn(warnTxt)
-                choice = raw_input("Proceed anyway? ([y]/n)")
-                checkContinue(choice)
-        
-        if warns: 
-                srcDict["Warnings"] = warns
-        
-        # ... append dictionary for current source code file to list
-        srcDicts.append(srcDict)
-
-# Write list of dicts, one for each source code file, to settings:
-settings['srcFiles'] =srcDicts
-
-
-# Get version information for Arduino libraries:
-inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
-arduinoPath = 'C:\\Program Files (x86)\\Arduino'
-os.chdir(arduinoPath)
-verifyCmd = 'arduino_debug -v --verify ' + '"' + baseDir + '\\' + inos[0] + '"'
-print(verifyCmd)
-out, err = subprocess.Popen(verifyCmd, stdout=subprocess.PIPE, shell=True).communicate() # compile the sketch using the Arduino command-line interface
-out = out.splitlines() 
-libLines = [z for z in out if 'Using library' in z] # find any lines in the output that start with 'Using library'
-libDicts = []
-for lib in libLines:
-        
-        warns = []
-        
-        # get the path of the library:
-        ind = lib.find(':')
-        libPath = lib[ind+2:]
-
-        # if the line ends in '(legacy)' because it's been previously compiled, exclude '(legacy)' to isolate the path to the library
-        if libPath[-len(' (legacy)'):]  == ' (legacy)':
-                libPath = libPath[:-len(' (legacy)')]
-        print(libPath)
-        
-        # get the name of the library:
-        ind2 = libPath.rfind('\\')
-        libName = libPath[ind2+1:]
-        print(libName)
-        libDict = {"libPath": libPath}
-        os.chdir(libPath) # cd to the library directory
-        
-        # Check if the library has uncommitted changes.  This part is a bit cludgey due to the way the repos are organized. Library directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 	
-        
-        # If the library is a full repo in its own right:
-        if 'libraries' not in os.listdir(os.getcwd()):
-
-                # ... try to get the SHA1 of the directory's latest  git commit
-                try:
-                        sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
-                # ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
-                except subprocess.CalledProcessError as e:
-                        warns.append(e.output)
-                
-                #  Check whether there are any uncommitted changes:
-                proc = subprocess.Popen('git diff', stdout=subprocess.PIPE, shell=True)
-                diff, err = proc.communicate()		
-                
-                # ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
-                if diff:
-                        warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
-                        warns.append(warnTxt)
-                        warnings.warn(warnTxt)
-                        choice = raw_input("Proceed anyway? ([y]/n)")
-                        checkContinue(choice)
-                        
-                        
-        # If the library is a sparse checkout of ArduFSM:		
-        else:
-                # get the names of the .h and .cpp files in the top-level directory:
-                srcFiles = [x for x in os.listdir(os.getcwd()) if '.h' in x or '.cpp' in x]
-                os.chdir('libraries\\' + libName)
-                
-                # for each file in the top-level directory, make sure it has the same hash object as the corresponding file in the lower-level directory (that was originally pulled from the repo)
-                for s in srcFiles:
-                        outerSHA1 = subprocess.check_output(['git', 'hash-object', s])
-                        innerSHA1 = subprocess.check_output(['git', 'hash-object', s])	
-
-                # ... if there is a mismatch, warn the user and offer a chance to abort execution
-                if outerSHA1 != innerSHA1:
-                        warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
-                        warns.append(warnTxt)
-                        warnings.warn(warnTxt)
-                        choice = raw_input("Proceed anyway? ([y]/n)")
-                        checkContinue(choice)				
-
-                # ... if there's no mistmatch or if the user instructs the program to proceed anyway, try to get the directory's latest SHA1
-                try:
-                        sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
-                # ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
-                except subprocess.CalledProcessError as e:
-                        warns.append(e.output)
-        
-        if sha1:
-                libDict['SHA1'] = sha1
-        else:
-                warns.append('At least one source file in library not under git control.')
-                
-        if warns:
-                libDict['Warnings'] = warns
-                
-        libDicts.append(libDict)
-        
-settings['libraries'] = libDicts
-settings['whisker_2_s1_latency_ms'] = whisker_2_s1_ms
-settings['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
-settings['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
-settings['stimDurAdjusted'] = stimDurAdjusted
         
         
 #########################################################################
@@ -494,3 +317,215 @@ for phase in experiment:
         #   chtr.update()
     
 chtr.close()
+
+
+
+def define_timing_params(timing_file):
+    
+    """
+    """
+    
+    timing_params = dict()
+    
+    # Load various timing assumptions from timing_assumptions.json into Python dict object:
+    with open(timing_file) as json_data:
+            timing_assumptions = json.load(json_data)
+    
+    # Define some timing parameters used to determine how to set the latency between the stepper onset and speaker onset:    
+    whisker_2_s1_ms = timing_assumptions['whisker_2_s1_latency_ms']
+    spkr_2_s1_ms = timing_assumptions['speaker_2_s1_latency_ms']
+    stpr_2_whisker_ms = timing_assumptions['stepper_on_2_whisker_latency_ms'] 
+    
+    # Print some debug messages confirming assumptions about timing. 
+    print('Assuming latency between stepper onset and whisker contact is ' + str(stpr_2_whisker_ms) + ' ms.')
+    print('Assuming latency between whisker contact and S1 response onset is ' + str(whisker_2_s1_ms) + ' ms.')
+    print('Assuming latency between speaker onset and S1 response onset is ' + str(spkr_2_s1_ms) + ' ms.')
+    print('Time of S1 whisker response onset minus time of S1 auditory response onset should be ' + str(tgt_som_minus_aud_ms) + ' ms.')
+    
+    # Calculate the latency between when the stepper comes on and when the speaker comes on:
+    spkr_minus_stpr_ms = stpr_2_whisker_ms + whisker_2_s1_ms - spkr_2_s1_ms - tgt_som_minus_aud_ms
+    stpr_minus_spkr_ms = -1 * spkr_minus_stpr_ms
+    
+    # Calculate the appropriate duration to make the auditory stimulus in order to ensure that the auditory stimulus ends at the same time the stepper is retracting:
+    spkr_dur_s = stimDur + (stpr_2_whisker_ms - spkr_minus_stpr_ms)/1000.0
+    
+    # Adjust the stimulus duration to account for the amount of time it takes for the stepper to reach the whsikers:
+    stimDurAdjusted = stimDur +  stpr_2_whisker_ms/1000.0
+    
+    
+    # If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
+    if spkr_minus_stpr_ms >= 0:
+        print('Speaker should turn on ' + str(spkr_minus_stpr_ms) + ' ms after stepper onset.')
+        cont = raw_input('Please ensure that ''onset delay'' is set to %d ms and ''sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_minus_stpr_ms, spkr_dur_s))
+    else: 
+        print('Speaker should turn on ' + str(-1 * spkr_minus_stpr_ms) + ' ms before stepper onset.')
+        cont = raw_input('Please ensure that ''onset delay'' is set to 0 ms and sound duration'' is set to %.3f s in HardwareTriggeredNoise_dk.vi . (Press any key to continue) ' % (spkr_dur_s))
+
+    timing_params['whisker_2_s1_latency_ms'] = whisker_2_s1_ms
+    timing_params['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
+    timing_params['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
+    timing_params['stimDurAdjusted'] = stimDurAdjusted
+
+    return timing_params
+    
+
+
+def get_src_metadata():
+    
+    src_metadata = dict()
+    
+    # Get version information for source files in main sketch directory:
+    sources = [x for x in os.listdir(os.getcwd()) if ('.pyc' not in x) and ('.cpp' in x or '.h' in x or '.ino' in x or '.py' in x or '.vi' in x)]  #Find all source files in the main sketch directory:
+    baseDir = os.getcwd()
+    baseCmd = 'git log -n 1 --pretty=format:%H -- '
+    srcDicts = []
+    for s in sources:
+            
+            warns = []
+            
+            # ... get  its full path:
+            fullPath = baseDir + '\\' + s
+            srcDict = {"path": fullPath}
+            
+            # ...  try to find the SHA1 of its latest git commit:	
+            fullCmd = baseCmd + ' -- ' + '"' + s + '"'
+            proc2 = subprocess.Popen(fullCmd, stdout=subprocess.PIPE, shell=True)
+            sha1, err = proc2.communicate()
+    
+            # ... if a SHA1 was successfully retrieved, then add it to the dict:
+            if sha1:
+                    srcDict["SHA1"] = sha1
+            # ... otherwise, output a warning that the file is not under git control and give the user a chance to abort execution
+            else:
+                    warnTxt = s + ' not under git control. It is advised that all source code files be under git control.'
+                    warns.append(warnTxt)
+                    warnings.warn(warnTxt)		
+                    choice = raw_input("Proceed anyway? ([y]/n)")
+                    checkContinue(choice)
+    
+            # Check whether there are any uncommitted changes:
+            proc = subprocess.Popen('git diff -- ' + s, stdout=subprocess.PIPE, shell=True)
+            diff, err = proc.communicate()
+            
+            # ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
+            if diff:
+                    warnTxt = 'Uncommitted changes detected in ' + s + '. It is advised to commit or stash any changes before proceeding.'
+                    warns.append(warnTxt)
+                    warnings.warn(warnTxt)
+                    choice = raw_input("Proceed anyway? ([y]/n)")
+                    checkContinue(choice)
+            
+            if warns: 
+                    srcDict["Warnings"] = warns
+            
+            # ... append dictionary for current source code file to list
+            srcDicts.append(srcDict)
+    
+    # Write list of dicts, one for each source code file, to settings:
+    src_metadata['srcFiles'] =srcDicts
+    
+    
+    # Get version information for Arduino libraries:
+    inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
+    arduinoPath = 'C:\\Program Files (x86)\\Arduino'
+    os.chdir(arduinoPath)
+    verifyCmd = 'arduino_debug -v --verify ' + '"' + baseDir + '\\' + inos[0] + '"'
+    print(verifyCmd)
+    out, err = subprocess.Popen(verifyCmd, stdout=subprocess.PIPE, shell=True).communicate() # compile the sketch using the Arduino command-line interface
+    out = out.splitlines() 
+    libLines = [z for z in out if 'Using library' in z] # find any lines in the output that start with 'Using library'
+    libDicts = []
+    for lib in libLines:
+            
+            warns = []
+            
+            # get the path of the library:
+            ind = lib.find(':')
+            libPath = lib[ind+2:]
+    
+            # if the line ends in '(legacy)' because it's been previously compiled, exclude '(legacy)' to isolate the path to the library
+            if libPath[-len(' (legacy)'):]  == ' (legacy)':
+                    libPath = libPath[:-len(' (legacy)')]
+            print(libPath)
+            
+            # get the name of the library:
+            ind2 = libPath.rfind('\\')
+            libName = libPath[ind2+1:]
+            print(libName)
+            libDict = {"libPath": libPath}
+            os.chdir(libPath) # cd to the library directory
+            
+            # Check if the library has uncommitted changes.  This part is a bit cludgey due to the way the repos are organized. Library directories are either a) repos in their own right, or b) a sparse checkout of the full ArduFSM directory.  How to check the latest commit information differs based on which one it is. 	
+            
+            # If the library is a full repo in its own right:
+            if 'libraries' not in os.listdir(os.getcwd()):
+    
+                    # ... try to get the SHA1 of the directory's latest  git commit
+                    try:
+                            sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
+                    # ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
+                    except subprocess.CalledProcessError as e:
+                            warns.append(e.output)
+                    
+                    #  Check whether there are any uncommitted changes:
+                    proc = subprocess.Popen('git diff', stdout=subprocess.PIPE, shell=True)
+                    diff, err = proc.communicate()		
+                    
+                    # ... if there are uncommitted changes, throw a warning and ask the user to commit or stash any changes:
+                    if diff:
+                            warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
+                            warns.append(warnTxt)
+                            warnings.warn(warnTxt)
+                            choice = raw_input("Proceed anyway? ([y]/n)")
+                            checkContinue(choice)
+                            
+                            
+            # If the library is a sparse checkout of ArduFSM:		
+            else:
+                    # get the names of the .h and .cpp files in the top-level directory:
+                    srcFiles = [x for x in os.listdir(os.getcwd()) if '.h' in x or '.cpp' in x]
+                    os.chdir('libraries\\' + libName)
+                    
+                    # for each file in the top-level directory, make sure it has the same hash object as the corresponding file in the lower-level directory (that was originally pulled from the repo)
+                    for s in srcFiles:
+                            outerSHA1 = subprocess.check_output(['git', 'hash-object', s])
+                            innerSHA1 = subprocess.check_output(['git', 'hash-object', s])	
+    
+                    # ... if there is a mismatch, warn the user and offer a chance to abort execution
+                    if outerSHA1 != innerSHA1:
+                            warnTxt = 'Uncommitted changes detected in library ' + libName + '. It is advised to commit or stash any changes before proceeding'
+                            warns.append(warnTxt)
+                            warnings.warn(warnTxt)
+                            choice = raw_input("Proceed anyway? ([y]/n)")
+                            checkContinue(choice)				
+    
+                    # ... if there's no mistmatch or if the user instructs the program to proceed anyway, try to get the directory's latest SHA1
+                    try:
+                            sha1 = subprocess.check_output(['git', 'log', '-n 1', '--pretty=format:%H'], stderr=subprocess.STDOUT)
+                    # ... include an exception if the library isn't under git control. Maybe this should be changed to a warning?
+                    except subprocess.CalledProcessError as e:
+                            warns.append(e.output)
+            
+            if sha1:
+                    libDict['SHA1'] = sha1
+            else:
+                    warns.append('At least one source file in library not under git control.')
+                    
+            if warns:
+                    libDict['Warnings'] = warns
+                    
+            libDicts.append(libDict)
+            
+    src_metadata['libraries'] = libDicts
+    
+    
+
+def foo():
+    pass
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
