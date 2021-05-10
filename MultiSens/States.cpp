@@ -82,6 +82,7 @@ int spkr_cond_sig_dur = 10;
 int vol_sig_dur = 204;
 int wait_spkr_info = 100;
 int spkr_trigger_dur = 10;
+int total_steps = NUM_STEPS * MICROSTEP
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -398,6 +399,14 @@ void rotate_back(){
     
     rotate_one_step();}
 }
+
+
+void full_turn(){
+  for(int i = 0; i < total_steps + 1; i++){
+    rotate_one_step();
+  }
+}
+
 
 // StateResponseWindow definitions:
 void StateResponseWindow::update()

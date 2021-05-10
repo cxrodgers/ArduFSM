@@ -264,5 +264,6 @@ void trigger_stepper();
 void trigger_audio();
 void signal_trial_start();
 void rotate_steps(int n);
+void full_turn();
 
 #endif
