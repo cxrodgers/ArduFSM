@@ -82,7 +82,7 @@ int spkr_cond_sig_dur = 10;
 int vol_sig_dur = 204;
 int wait_spkr_info = 100;
 int spkr_trigger_dur = 10;
-int total_steps = NUM_STEPS * MICROSTEP
+int total_steps = NUM_STEPS * MICROSTEP;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -318,10 +318,7 @@ void StimPeriod::s_finish()
   // until a full 2 s after it's extended:
   delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + trial_start_signal_duration + spkr_trigger_dur);  
   digitalWrite(DIR_PIN, LOW); //changed
-  if(param_values[tpidx_STPRIDX]==1){
-        rotate_back();
-  }
-  else {
+  if(param_values[tpidx_STPRIDX]==0){
         rotate_steps(catchSteps);
   }
   digitalWrite(SOLENOID_PIN, LOW);
@@ -582,9 +579,15 @@ void trigger_audio(){
 
 void trigger_stepper(){
     if(param_values[tpidx_STPRIDX]==1){
-        rotate_to_sensor();
+        digitalWrite(DIR_PIN, HIGH);
+        full_turn();
       }
-    else {
+    else if (param_values[tpidx_STPRIDX]==2){
+        digitalWrite(DIR_PIN, LOW);
+        full_turn();
+      }
+    else if (param_values[tpidx_STPRIDX]==0){
+        digitalWrite(DIR_PIN, HIGH);
         rotate_to_sensor2();
       }
   }
