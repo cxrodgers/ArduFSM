@@ -155,6 +155,7 @@ import subprocess
 import socket
 import copy
 import warnings
+import numpy as np
 random.seed()
 
 ############################################################################
@@ -170,7 +171,6 @@ def checkContinue(str):
                 
 
 #########################################################################
-
 
 
 
