@@ -171,123 +171,7 @@ def checkContinue(str):
                 
 
 #########################################################################
-# Prompt user for name of settings file to use:
-settings_file = raw_input("Please enter name of settings file to use for current session: ")
-if not os.path.isfile(settings_file):
-    raise IOError('Requested settings file not found. Please ensure that settings file name was specified correctly.')
 
-        
-#########################################################################
-# Load settings from settings.json into Python dict object:
-with open(settings_file) as json_data:
-        settings = json.load(json_data)
-        
-# Define some general trial timing parameters (in seconds):    
-stimDur= settings['StimDur_s']
-responseWindow = settings['ResponseWindow_s']
-minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
-maxITI = settings['MaxITI_s']  
-tgt_som_minus_aud_ms = settings['tgt_som_minus_aud_ms']
-
-
-#########################################################################
-
-timing_params = define_timimg_params(timing_file)
-
-#########################################################################
-# Define and save metadata to secondary storage:
-
-settings['Hostname'] = socket.gethostname()
-settings['Date'] = time.strftime("%Y-%m-%d")
-
-src_metadata = get_src_metadata()
-
-        
-        
-#########################################################################
-
-
-#########################################################################
-# Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
-
-
-os.chdir(baseDir)
-chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'], serial_timeout=0.03)
-
-# Save serial communication start time to settings:
-settings['SerialStartTime'] = time.strftime("%H:%M:%S")
-
-# Save to secondary storage:
-with open('metadata.json', 'w') as fp:
-        json.dump(settings, fp, indent=4)
-
-
-#########################################################################
-# Iterate through every phase of the experiment:
-
-n = 0
-trlp_transmission_period = 1
-
-for phase in experiment: 
-    for trial in phase['trials']:
-            
-        # Choose ITI:
-        ITI = random.uniform(minITI, maxITI)
-            
-        n = n + 1
-        print('trial ' + str(n))
-
-        # Start ITI:
-        start_ITI = time.time()
-        
-        # Transmit trial paramters:
-        for key, value in trial.iteritems():
-            
-            #Write set trial parameter command from the input pipe to the Arduino:
-            line = 'SET ' + key + ' ' + str(value) + '\n' 
-            chat.write_to_device(chtr.ser, str(line))
-            ack = 0
-            
-            #Wait for trial parameter acknowledgement from Arduino:
-            while not ack:
-                    newlines = chat.read_from_device(chtr.ser)
-                    for line in newlines:
-                            chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
-                            chat.write_to_user(sys.stdout, line)
-                            sys.stdout.flush()
-                            if key in line and not ack:
-                                ack = 1
-        
-        # Wait out remainder of ITI:
-        trlp_transmission_end = time.time()
-        trlp_transmission_duration = trlp_transmission_end - start_ITI
-        if ITI > trlp_transmission_duration:
-                while (time.time() - trlp_transmission_end < ITI - trlp_transmission_duration):
-                        chtr.update()
-        
-        #Release trial:
-        f = open(chtr.pipein.name, 'w') 
-        f.write('RELEASE_TRL\n') #write the relase trial command to the chatter object's input pipe
-        f.close()
-        chtr.update() #write the release trial command from the input pipe to the Arduino, write any received messages to ardulines
-        
-        # Wait out trial:
-        trial_complete = 0
-        while not trial_complete:
-                newlines = chat.read_from_device(chtr.ser)
-                for line in newlines:
-                    chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
-                    chat.write_to_user(sys.stdout, line)
-                    sys.stdout.flush()
-                    if 'TRLR OUTC' in line:
-                        trial_complete = 1                
-        
-        #trialStart = time.time()
-        #wait_period = stimDur + responseWindow
-        #while (time.time() - trialStart < wait_period):
-        #   chtr.update()
-    
-chtr.close()
 
 
 
@@ -394,7 +278,7 @@ def get_src_metadata():
     
     # Write list of dicts, one for each source code file, to settings:
     src_metadata['srcFiles'] =srcDicts
-    
+
     
     # Get version information for Arduino libraries:
     inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
@@ -489,6 +373,8 @@ def get_src_metadata():
             
     src_metadata['libraries'] = libDicts
     
+    return src_metadata
+    
     
 
 def define_expt_structure(settings):
@@ -530,11 +416,114 @@ def define_expt_structure(settings):
 
 
 
-def foo():
-    pass
-
 def main():
-    pass
+    # Prompt user for name of settings file to use:
+    settings_file = raw_input("Please enter name of settings file to use for current session: ")
+    if not os.path.isfile(settings_file):
+        raise IOError('Requested settings file not found. Please ensure that settings file name was specified correctly.')
+    
+    # Load settings from settings.json into Python dict object:
+    with open(settings_file) as json_data:
+            settings = json.load(json_data)
+            
+    # Define some parameters and metadata:
+    timing_params = define_timing_params(timing_file)
+    settings['Hostname'] = socket.gethostname()
+    settings['Date'] = time.strftime("%Y-%m-%d")
+    settings['whisker_2_s1_ms'] = timing_params['whisker_2_s1_latency_ms']
+    settings['spkr_2_s1_ms'] = timing_params['speaker_2_s1_latency_ms']
+    settings['stpr_2_whisker_ms'] = timing_params['stepper_on_2_whisker_latency_ms']
+    settings['stpr_2_whisker_ms'] = timing_params['stimDurAdjusted']
+
+    src_metadata = get_src_metadata()
+    settings['libraries'] = src_metadata['libraries']
+    settings['srcFiles'] = src_metadata['srcFiles']
+    
+    # Extract some some timing parameters that need to be used by main function:    
+    stimDur= settings['StimDur_s']
+    responseWindow = settings['ResponseWindow_s']
+    minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
+    maxITI = settings['MaxITI_s']  
+    tgt_som_minus_aud_ms = settings['tgt_som_minus_aud_ms']
+    
+    # Define experiment structure:
+    experiment = define_expt_structure(settings)
+    
+    # Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
+    os.chdir(baseDir)
+    chtr = chat.Chatter(serial_port=settings['SerialPort'], baud_rate=settings['BaudRate'], serial_timeout=0.03)
+    
+    # Save serial communication start time to settings:
+    settings['SerialStartTime'] = time.strftime("%H:%M:%S")
+    
+    # Save to secondary storage:
+    with open('metadata.json', 'w') as fp:
+            json.dump(settings, fp, indent=4)
+    
+    # Iterate through every phase of the experiment:
+    n = 0
+    trlp_transmission_period = 1
+    
+    for phase in experiment: 
+        for trial in phase['trials']:
+                
+            # Choose ITI:
+            ITI = random.uniform(minITI, maxITI)
+            n = n + 1
+            print('trial ' + str(n))
+    
+            # Start ITI:
+            start_ITI = time.time()
+            
+            # Transmit trial paramters:
+            for key, value in trial.iteritems():
+                
+                #Write set trial parameter command from the input pipe to the Arduino:
+                line = 'SET ' + key + ' ' + str(value) + '\n' 
+                chat.write_to_device(chtr.ser, str(line))
+                ack = 0
+                
+                #Wait for trial parameter acknowledgement from Arduino:
+                while not ack:
+                        newlines = chat.read_from_device(chtr.ser)
+                        for line in newlines:
+                                chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
+                                chat.write_to_user(sys.stdout, line)
+                                sys.stdout.flush()
+                                if key in line and not ack:
+                                    ack = 1
+            
+            # Wait out remainder of ITI:
+            trlp_transmission_end = time.time()
+            trlp_transmission_duration = trlp_transmission_end - start_ITI
+            if ITI > trlp_transmission_duration:
+                    while (time.time() - trlp_transmission_end < ITI - trlp_transmission_duration):
+                            chtr.update()
+            
+            #Release trial:
+            f = open(chtr.pipein.name, 'w') 
+            f.write('RELEASE_TRL\n') #write the relase trial command to the chatter object's input pipe
+            f.close()
+            chtr.update() #write the release trial command from the input pipe to the Arduino, write any received messages to ardulines
+            
+            # Wait out trial:
+            trial_complete = 0
+            while not trial_complete:
+                    newlines = chat.read_from_device(chtr.ser)
+                    for line in newlines:
+                        chat.write_to_user(chtr.ofi, line) # write trial parameter acknowledgement from Arduino to ardulines file
+                        chat.write_to_user(sys.stdout, line)
+                        sys.stdout.flush()
+                        if 'TRLR OUTC' in line:
+                            trial_complete = 1                
+            
+            #trialStart = time.time()
+            #wait_period = stimDur + responseWindow
+            #while (time.time() - trialStart < wait_period):
+            #   chtr.update()
+        
+    chtr.close()
+
 
 
 if __name__ == '__main__':
