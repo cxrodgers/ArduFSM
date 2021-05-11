@@ -139,7 +139,7 @@ Once the trial parameters are received, the Arduino will wait to begin the upcom
 
 RELEASE_TRL\n
 
-Last updated DDK 2017-08-15
+Last updated DDK 2021-05-10
 
 
 ########################################################################
@@ -175,21 +175,19 @@ def checkContinue(str):
 
 
 
-def define_timing_params(timing_file):
+def define_timing_params(timing_assumptions):
     
     """
     """
     
     timing_params = dict()
-    
-    # Load various timing assumptions from timing_assumptions.json into Python dict object:
-    with open(timing_file) as json_data:
-            timing_assumptions = json.load(json_data)
-    
+
     # Define some timing parameters used to determine how to set the latency between the stepper onset and speaker onset:    
     whisker_2_s1_ms = timing_assumptions['whisker_2_s1_latency_ms']
     spkr_2_s1_ms = timing_assumptions['speaker_2_s1_latency_ms']
     stpr_2_whisker_ms = timing_assumptions['stepper_on_2_whisker_latency_ms'] 
+    tgt_som_minus_aud_ms = timing_assumptions['tgt_som_minus_aud_ms']
+    stimDur = timing_assumptions['stimDur']
     
     # Print some debug messages confirming assumptions about timing. 
     print('Assuming latency between stepper onset and whisker contact is ' + str(stpr_2_whisker_ms) + ' ms.')
@@ -220,6 +218,7 @@ def define_timing_params(timing_file):
     timing_params['speaker_2_s1_latency_ms'] = spkr_2_s1_ms
     timing_params['stepper_on_2_whisker_latency_ms'] = stpr_2_whisker_ms
     timing_params['stimDurAdjusted'] = stimDurAdjusted
+    timing_params['stpr_minus_spkr_ms'] = stpr_minus_spkr_ms
 
     return timing_params
     
@@ -417,6 +416,10 @@ def define_expt_structure(settings):
 
 
 def main():
+    
+    
+    baseDir = os.getcwd()
+    
     # Prompt user for name of settings file to use:
     settings_file = raw_input("Please enter name of settings file to use for current session: ")
     if not os.path.isfile(settings_file):
@@ -426,26 +429,31 @@ def main():
     with open(settings_file) as json_data:
             settings = json.load(json_data)
             
-    # Define some parameters and metadata:
-    timing_params = define_timing_params(timing_file)
-    settings['Hostname'] = socket.gethostname()
-    settings['Date'] = time.strftime("%Y-%m-%d")
-    settings['whisker_2_s1_ms'] = timing_params['whisker_2_s1_latency_ms']
-    settings['spkr_2_s1_ms'] = timing_params['speaker_2_s1_latency_ms']
-    settings['stpr_2_whisker_ms'] = timing_params['stepper_on_2_whisker_latency_ms']
-    settings['stpr_2_whisker_ms'] = timing_params['stimDurAdjusted']
-
-    src_metadata = get_src_metadata()
-    settings['libraries'] = src_metadata['libraries']
-    settings['srcFiles'] = src_metadata['srcFiles']
-    
     # Extract some some timing parameters that need to be used by main function:    
     stimDur= settings['StimDur_s']
     responseWindow = settings['ResponseWindow_s']
     minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
     maxITI = settings['MaxITI_s']  
-    tgt_som_minus_aud_ms = settings['tgt_som_minus_aud_ms']
-    
+
+    # Load various timing assumptions, compute some additonal timing parameters:
+    with open(timing_file) as json_data:
+            timing_assumptions = json.load(json_data)
+    timing_assumptions['tgt_som_minus_aud_ms'] = settings['tgt_som_minus_aud_ms']
+    timing_assumptions['stimDur'] = stimDur 
+    timing_params = define_timing_params(timing_assumptions)
+    settings['Hostname'] = socket.gethostname()
+    settings['Date'] = time.strftime("%Y-%m-%d")
+    settings['whisker_2_s1_ms'] = timing_params['whisker_2_s1_latency_ms']
+    settings['spkr_2_s1_ms'] = timing_params['speaker_2_s1_latency_ms']
+    settings['stpr_2_whisker_ms'] = timing_params['stepper_on_2_whisker_latency_ms']
+    settings['stimDurAdjusted'] = timing_params['stimDurAdjusted']
+    settings['stpr_minus_spkr_ms'] = timing_params['stpr_minus_spkr_ms']
+
+    # Get commit metadata for various source files:
+    src_metadata = get_src_metadata()
+    settings['libraries'] = src_metadata['libraries']
+    settings['srcFiles'] = src_metadata['srcFiles']
+
     # Define experiment structure:
     experiment = define_expt_structure(settings)
     
