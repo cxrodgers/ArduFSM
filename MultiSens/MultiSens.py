@@ -258,7 +258,6 @@ def define_timing_params(timing_assumptions):
     
 
 
-
 def get_src_metadata():
     """
     Get metadata for source files run during experiment, including file paths and most recent commit hash. *Must be run from directory containing code to 
@@ -448,8 +447,29 @@ def get_src_metadata():
     
 
 def define_expt_structure(settings):
-# Define experiment structure:
+    """
+    Define a dict specifying the parameters of each trial in the session.
+    
+    Parameters:
+    -----------
+    Settings: dict
+        Dict containing various experiment parameters. 
         
+        
+    Returns:
+    --------
+    experiment: dict
+        Dict specifying parameters of each trial in the session. Defines the following keys:
+            
+            phases: list
+                List of dicts. Each dict corresponds to a different phase of the session. Each defines the following keys:
+                    
+                    trials: list
+                        Another list of dicts. Here each dict corresponds to a single trial. Each dict corresponding to a single trial defines keys 
+                        corresponding to different trial parameters (e.g., "STPRIDX", "SPKRIDX"). In any given session, these will depend on the parameters 
+                        specified in the .json settings file passed to main().
+    """
+    # Define experiment structure:        
     stimDurAdjusted = settings['stimDurAdjusted']
     stpr_minus_spkr_ms = settings['stpr_minus_spkr_ms']
     
