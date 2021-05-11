@@ -151,6 +151,7 @@ import random
 import json
 import os
 import sys
+import numpy as np
 import subprocess
 import socket
 import copy
@@ -536,6 +537,7 @@ def main():
     responseWindow = settings['ResponseWindow_s']
     minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
     maxITI = settings['MaxITI_s']  
+    meanITI = settings['MeanITI_s']
 
     # Load various timing assumptions, compute some additonal timing parameters:
     timing_file = "C:\\Users\\lab\\Documents\\Arduino\\ArduFSM\\MultiSens\\timing_assumptions.json"
@@ -579,7 +581,8 @@ def main():
         for trial in phase['trials']:
                 
             # Choose ITI:
-            ITI = random.uniform(minITI, maxITI)
+            #ITI = random.uniform(minITI, maxITI)
+            ITI = minITI + np.random.exponential(meanITI)
             n = n + 1
             print('trial ' + str(n))
     
