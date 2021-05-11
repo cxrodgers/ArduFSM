@@ -156,7 +156,6 @@ import socket
 import copy
 import warnings
 random.seed()
-timing_file = "C:\\Users\\lab\\Documents\\Arduino\\ArduFSM\\MultiSens\\timing_assumptions.json"
 
 ############################################################################
 # Define some utility functions:
@@ -539,6 +538,7 @@ def main():
     maxITI = settings['MaxITI_s']  
 
     # Load various timing assumptions, compute some additonal timing parameters:
+    timing_file = "C:\\Users\\lab\\Documents\\Arduino\\ArduFSM\\MultiSens\\timing_assumptions.json"
     with open(timing_file) as json_data:
             timing_assumptions = json.load(json_data)
     timing_assumptions['tgt_som_minus_aud_ms'] = settings['tgt_som_minus_aud_ms']
