@@ -176,10 +176,45 @@ def checkContinue(str):
 
 
 def define_timing_params(timing_assumptions):
-    
     """
-    """
+    Load and compute stimulus-timing related parameters.
+
     
+    Parameters:
+    -----------
+    timing_assumptions: str
+        Path to .json file defining following keys:
+            
+            whisker_2_s1_latency_ms: float
+                Latency between whisker contact and S1 response onset; estimate from literature.
+                
+            sepaker_2_s1_latency_ms: float
+                Latency between speaker onset and S1 subthreshold response onset; estimated from Medini et al 2012. 
+                
+            stepper_on_2_whisker_latency_ms: float
+                Latency between stepper onset and whisker contact. Estimate using empirical measurements.
+                
+            tgt_som_minus_aud_ms: float
+                Desired latency between S1 auditory response onset and S1 tactile response onset. Positive values mean tactile responses should begin after                             
+                auditory responses; negative values mean tactile responses should begin before auditory responses.
+  
+            stim_dur: float
+                Un-adjusted stimulus duration, in seconds.
+                
+    Returns:
+    --------
+    timing_params: dict
+        Dict defining various timing paramters. Defines all fields in Parameters, in addition to:
+            
+            stimDurAdjusted: float
+                Adjusted stimulus duration, in seconds. Equal to un-adjusted stimulus duration plus time it takes for pole to reach whiskers. In other      
+                words, gives the total amount of time between when the steper starts moving and when it's retracted.
+      
+            stpr_minus_spkr_ms: float
+                Latency between stepper onset and speaker onset in milliseconds required to achieve desired latency between auditory and tactile response 
+                onsets. Positive values mean the stepper should come on before the speaker; negative values mean the stepper should come on after the 
+                speaker.
+    """
     timing_params = dict()
 
     # Define some timing parameters used to determine how to set the latency between the stepper onset and speaker onset:    
@@ -204,7 +239,6 @@ def define_timing_params(timing_assumptions):
     
     # Adjust the stimulus duration to account for the amount of time it takes for the stepper to reach the whsikers:
     stimDurAdjusted = stimDur +  stpr_2_whisker_ms/1000.0
-    
     
     # If the speaker must come on AFTER the stepper starts moving in order to achieve the desired latency between auditory and somatosensory signals arriving in S1, then instruct the user to set the appropriate delay in HardWareTriggeredNoise_dk.vi.
     if spkr_minus_stpr_ms >= 0:
@@ -278,7 +312,6 @@ def get_src_metadata():
     # Write list of dicts, one for each source code file, to settings:
     src_metadata['srcFiles'] =srcDicts
 
-    
     # Get version information for Arduino libraries:
     inos = [y for y in os.listdir(os.getcwd()) if '.ino' in y] # find all .ino files in main sketch directory 
     arduinoPath = 'C:\\Program Files (x86)\\Arduino'
@@ -331,8 +364,7 @@ def get_src_metadata():
                             warns.append(warnTxt)
                             warnings.warn(warnTxt)
                             choice = raw_input("Proceed anyway? ([y]/n)")
-                            checkContinue(choice)
-                            
+                            checkContinue(choice)                            
                             
             # If the library is a sparse checkout of ArduFSM:		
             else:
