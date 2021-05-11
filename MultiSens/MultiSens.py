@@ -507,8 +507,20 @@ def define_expt_structure(settings):
 
 
 def main():
+    """
+    Main function for running a single session of MultiSens experiment.
     
     
+    Parameters:
+    -----------
+    None, but see general remarks at top of document for description of required settings files.
+    
+    
+    Returns:
+    --------
+    None. 
+    
+    """
     baseDir = os.getcwd()
     
     # Prompt user for name of settings file to use:
