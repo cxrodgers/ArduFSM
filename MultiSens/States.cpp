@@ -83,6 +83,8 @@ int vol_sig_dur = 204;
 int wait_spkr_info = 100;
 int spkr_trigger_dur = 10;
 int total_steps = NUM_STEPS * MICROSTEP;
+int init_steps = round(total_steps/5);
+int ctr = 5;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -405,6 +407,14 @@ void full_turn(){
 }
 
 
+void full_turn_to_sensor(){
+  for(int i = 0; i < init_steps + 1; i++){
+    rotate_one_step();
+  }
+  rotate_to_sensor();
+}
+
+
 // StateResponseWindow definitions:
 void StateResponseWindow::update()
 {
@@ -580,11 +590,21 @@ void trigger_audio(){
 void trigger_stepper(){
     if(param_values[tpidx_STPRIDX]==1){
         digitalWrite(DIR_PIN, HIGH);
-        full_turn();
+        /*if (ctr==5){
+          full_turn_to_sensor();
+          ctr = 0;
+          }
+        else {
+          full_turn();
+          ctr++;
+          }*/
+        full_turn_to_sensor();        
       }
     else if (param_values[tpidx_STPRIDX]==2){
         digitalWrite(DIR_PIN, LOW);
         full_turn();
+        ctr++;
+        //full_turn_to_sensor();
       }
     else if (param_values[tpidx_STPRIDX]==0){
         digitalWrite(DIR_PIN, HIGH);
