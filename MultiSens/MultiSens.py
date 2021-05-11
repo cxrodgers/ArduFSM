@@ -205,36 +205,7 @@ src_metadata = get_src_metadata()
         
         
 #########################################################################
-# Define experiment structure:
-        
-experiment = copy.deepcopy(settings['Phases'])  # Extract the experiment structure data from the dict object:
-all_trials = []
 
-# Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
-for phase in experiment:
-        phase['trials'] = []
-        for condition in phase['conditions']:
-                condition["STIMDUR"] = stimDurAdjusted * 1000;
-                
-                # If the speaker needs to come on after the stepper, then don't make States.cpp call delay() between calling trigger_audio() and trigger_stepper(); HardwareTriggeredNoise_dk.vi will be responsible for implementing a delay before the speaker comes on
-                if stpr_minus_spkr_ms < 0:
-                    condition["ISL"] = 0
-                
-                # If the stepper needs to come on after the stepper, then make States.cpp call delay() for the appropriate amount of time between calling trigger_audio() and trigger_stepper()
-                else:
-                    condition["ISL"] = stpr_minus_spkr_ms 
-                n_trials = condition['NUM_TRIALS']
-                for t in range(1, n_trials+1):
-                        phase['trials'].append(condition)
-                        all_trials.append(condition)
-
-# Shuffle trial order:
-for phase in experiment:
-        random.shuffle(phase['trials'])
-
-#random.shuffle(phase3)
-print(all_trials)
-print(len(all_trials))
 
 #########################################################################
 # Establish serial connection with Arduino;  we'll communicate with the Arduino by instantiating a Chatter object, writing all instructions to the Chatter object's input pipe, then calling  Chatter.update() to send the data from the input pipe to the Arduino; Chatter.update() will also write any acknowledgements sent back from the Arduino to an ardulines file saved to disk.
@@ -519,6 +490,45 @@ def get_src_metadata():
     src_metadata['libraries'] = libDicts
     
     
+
+def define_expt_structure(settings):
+# Define experiment structure:
+        
+    stimDurAdjusted = settings['stimDurAdjusted']
+    stpr_minus_spkr_ms = settings['stpr_minus_spkr_ms']
+    
+    experiment = copy.deepcopy(settings['Phases'])  # Extract the experiment structure data from the dict object:
+    all_trials = []
+    
+    # Each phase will be represented by a list of trials. Each trial will be a list of pairs. Each pair is a parameter name followed by the corresponding parameter value:
+    for phase in experiment:
+            phase['trials'] = []
+            for condition in phase['conditions']:
+                    condition["STIMDUR"] = stimDurAdjusted * 1000;
+                    
+                    # If the speaker needs to come on after the stepper, then don't make States.cpp call delay() between calling trigger_audio() and trigger_stepper(); HardwareTriggeredNoise_dk.vi will be responsible for implementing a delay before the speaker comes on
+                    if stpr_minus_spkr_ms < 0:
+                        condition["ISL"] = 0
+                    
+                    # If the stepper needs to come on after the stepper, then make States.cpp call delay() for the appropriate amount of time between calling trigger_audio() and trigger_stepper()
+                    else:
+                        condition["ISL"] = stpr_minus_spkr_ms 
+                    n_trials = condition['NUM_TRIALS']
+                    for t in range(1, n_trials+1):
+                            phase['trials'].append(condition)
+                            all_trials.append(condition)
+    
+    # Shuffle trial order:
+    for phase in experiment:
+            random.shuffle(phase['trials'])
+    
+    #random.shuffle(phase3)
+    print(all_trials)
+    print(len(all_trials))    
+    
+    return experiment
+
+
 
 def foo():
     pass
