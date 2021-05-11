@@ -156,7 +156,7 @@ into States.cpp.
 #define STPR1_CW 50
 #define STPR1_CCW -50
 #define HALL_VAL 500  
-#define STEP_HALFDELAY_US 1100
+#define STEP_HALFDELAY_US 1300
 #define MICROSTEP 16 //Determined by how Trinamic TMC2100 SilentStepStick stepper driver is PHYSICALLY configured; by default (no connections to pins CFG1 or CFG2), this will be 16 ('StealthChop' mode).
 #define REVERSE_ROTATION_DEGREES 50
 
