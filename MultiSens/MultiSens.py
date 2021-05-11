@@ -258,7 +258,46 @@ def define_timing_params(timing_assumptions):
     
 
 
+
 def get_src_metadata():
+    """
+    Get metadata for source files run during experiment, including file paths and most recent commit hash. *Must be run from directory containing code to 
+    be run*.
+    
+    
+    Parameters:
+    -----------
+    None
+    
+    
+    Returns:
+    --------
+    src_metadata: dict
+        Dict containing metadata about code run during experiment. Defines following keys:
+            
+            srcDicts: list
+                List of dicts containing git version information for files in main sketch directory. Each dict contains information about a single file, 
+                including the following keys:
+                    
+                    path: str
+                        Full path to source file.
+                        
+                    SHA1: str
+                        SHA1 checksum of source file.
+                    
+            libDicts: list
+                List of dicts containing version information about any Arduino libraries included in sketch code. Each element corresponds to a single 
+                library. Each dict defines the following keys:
+                
+                    libPath: str
+                        Full path to Arduino library.
+                        
+                    SHA1: str
+                        SHA1 checksum of Arduino library.
+                        
+                    warnings: str
+                        Any warnings that were raised in trying to get SHA1 checksum of Arduino library.                
+    """
     
     src_metadata = dict()
     
