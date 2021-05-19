@@ -1,4 +1,4 @@
-/* Last updated DDK 6/7/16
+/* Last updated DDK 2021-05-19
  *  
  * OVERVIEW: 
  * This file defines the state-dependent operations for the ArduFSM protocol 
@@ -85,6 +85,9 @@ int spkr_trigger_dur = 10;
 int total_steps = NUM_STEPS * MICROSTEP;
 int init_steps = round(total_steps/5);
 int ctr = 5;
+int fwd_bck_steps = 1400;
+int bck_fwd_steps = 2200;
+int fwd_bck_interval = 120; // in milliseconds
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
