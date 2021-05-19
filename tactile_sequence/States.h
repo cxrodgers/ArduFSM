@@ -263,6 +263,7 @@ void rotate_back();
 void trigger_stepper();
 void trigger_audio();
 void signal_trial_start();
+void rotate_steps_read_sensor(int n);
 void rotate_steps(int n);
 void full_turn();
 void full_turn_to_sensor();

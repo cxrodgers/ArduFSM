@@ -324,7 +324,7 @@ void StimPeriod::s_finish()
   delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + trial_start_signal_duration + spkr_trigger_dur);  
   digitalWrite(DIR_PIN, LOW); //changed
   if(param_values[tpidx_STPRIDX]==0){
-        rotate_steps(catchSteps);
+        rotate_steps_read_sensor(catchSteps);
   }
   digitalWrite(SOLENOID_PIN, LOW);
   //if the mouse licked during the stimulus period, transition to timeout
@@ -637,7 +637,7 @@ void signal_trial_start(){
   digitalWrite(TIMER_PIN, LOW);
   }
 
-void rotate_steps(int n){
+void rotate_steps_read_sensor(int n){
   for(int i = 0; i < n + 1; i++){
     int x = analogRead(A0);
     rotate_one_step();}
