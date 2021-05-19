@@ -1,0 +1,6 @@
+{
+"whisker_2_s1_latency_ms": 10,
+"speaker_2_s1_latency_ms": 35,
+"stepper_on_2_whisker_latency_ms": 214,
+"speaker_trigger_dur_ms": 10
+}
