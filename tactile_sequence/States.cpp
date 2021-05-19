@@ -418,6 +418,20 @@ void full_turn_to_sensor(){
 }
 
 
+void fwd_bck(){
+  digitalWrite(DIR_PIN, HIGH);
+  // rotate to just beyond whisker field
+  for(int i = 0; i < fwd_bck_steps; i++){
+    rotate_one_step();
+  }  
+  // pause
+  delay(fwd_bck_interval);
+  // rotate back to sensor
+  digitalWrite(DIR_PIN, LOW);
+  rotate_to_sensor();
+}
+
+
 // StateResponseWindow definitions:
 void StateResponseWindow::update()
 {

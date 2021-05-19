@@ -1,4 +1,4 @@
-/* Last updated DDK 6/7/16
+/* Last updated DDK 2021-05-19
  * 
  * OVERVIEW: 
  * This is a header file containing declarations for the functions defined in the 
@@ -266,5 +266,6 @@ void signal_trial_start();
 void rotate_steps(int n);
 void full_turn();
 void full_turn_to_sensor();
+void fwd_bck();
 
 #endif
