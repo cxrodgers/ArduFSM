@@ -643,6 +643,11 @@ void rotate_steps_read_sensor(int n){
     rotate_one_step();}
   }
 
+void rotate_steps(int n){
+  for(int i = 0; i < n + 1; i++){
+  rotate_one_step();}
+  }
+
 Device ** config_hw(){ 
     
     bool debug = 0; // set to 0 if using real hardware devices; set to 1 if using dummy devices
