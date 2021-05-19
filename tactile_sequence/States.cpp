@@ -621,6 +621,9 @@ void trigger_stepper(){
         ctr++;
         //full_turn_to_sensor();
       }
+    else if (param_values[tpidx_STPRIDX]==3){
+        fwd_bck();
+      }
     else if (param_values[tpidx_STPRIDX]==0){
         digitalWrite(DIR_PIN, HIGH);
         rotate_to_sensor2();
