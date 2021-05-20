@@ -138,7 +138,7 @@ into States.cpp.
 #define LED_PIN 5 // reserved for H-bridge
 #define STPR_PIN 6 // reserved for stepper motor driver STEP pin
 #define ENBL_PIN 7 // reserved for stepper motor driver ENABLE pin
-#define DIR_PIN 8 // reserved for stepper motor driver DIR pin
+#define DIR_PIN 8 // reserved for stepper motor driver DIR pin; when axel-side of stepper is facing up, LOW is forwards, and HIGH is backwards; when axel-side of stepper is facing down, opposite
 #define SLP_PIN 9 // reserved for stepper motor driver SLEEP pin
 #define SPKR_COND_PIN2 10
 //#define STPR1_PIN2 6      
