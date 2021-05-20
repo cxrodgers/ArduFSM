@@ -292,7 +292,7 @@ void StimPeriod::s_setup(){
 
   delay(wait_spkr_info);
   
-  digitalWrite(DIR_PIN, HIGH); // changed
+  digitalWrite(DIR_PIN, LOW); // changed
   signal_trial_start(); 
   trigger_audio();
   delay(param_values[tpidx_INTERSTIM_LATENCY]);
@@ -322,7 +322,7 @@ void StimPeriod::s_finish()
   // so that the actual whisker pole isn't retracted
   // until a full 2 s after it's extended:
   delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + trial_start_signal_duration + spkr_trigger_dur);  
-  digitalWrite(DIR_PIN, LOW); //changed
+  digitalWrite(DIR_PIN, HIGH); //changed
   if(param_values[tpidx_STPRIDX]==0){
         rotate_steps_read_sensor(catchSteps);
   }
@@ -419,13 +419,13 @@ void full_turn_to_sensor(){
 
 
 void fwd_bck(){
-  digitalWrite(DIR_PIN, HIGH);
+  digitalWrite(DIR_PIN, LOW);
   // rotate to just beyond whisker field
   rotate_steps(fwd_bck_steps);
   // pause
   delay(fwd_bck_interval);
   // rotate back to sensor
-  digitalWrite(DIR_PIN, LOW);
+  digitalWrite(DIR_PIN, HIGH);
   rotate_steps(fwd_bck_steps);
 }
 
@@ -604,7 +604,7 @@ void trigger_audio(){
 
 void trigger_stepper(){
     if(param_values[tpidx_STPRIDX]==1){
-        digitalWrite(DIR_PIN, HIGH);
+        digitalWrite(DIR_PIN, LOW);
         /*if (ctr==5){
           full_turn_to_sensor();
           ctr = 0;
@@ -616,16 +616,16 @@ void trigger_stepper(){
         full_turn_to_sensor();        
       }
     else if (param_values[tpidx_STPRIDX]==2){
-        digitalWrite(DIR_PIN, LOW);
+        digitalWrite(DIR_PIN, HIGH);
         full_turn();
         ctr++;
         //full_turn_to_sensor();
       }
     else if (param_values[tpidx_STPRIDX]==3){
-        fwd_bck();
+        fwd_bck();  
       }
     else if (param_values[tpidx_STPRIDX]==0){
-        digitalWrite(DIR_PIN, HIGH);
+        digitalWrite(DIR_PIN, LOW);
         rotate_to_sensor2();
       }
   }
