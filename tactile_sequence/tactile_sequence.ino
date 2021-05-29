@@ -144,6 +144,9 @@ void setup()
 
   // turn on LED lamp:
   digitalWrite(LED_PIN, HIGH);
+
+  // Intialize RNG:
+  randomSeed(analogRead(0));
 }
 
 
