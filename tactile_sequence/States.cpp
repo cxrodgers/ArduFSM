@@ -617,7 +617,7 @@ void trigger_stepper(){
           full_turn();
           ctr++;
           }*/
-        if(rnd<0.5){
+        if(rnd<0.1){
           full_turn_to_sensor();
           }
         else{
@@ -626,7 +626,7 @@ void trigger_stepper(){
       }
     else if (param_values[tpidx_STPRIDX]==2){
         digitalWrite(DIR_PIN, HIGH);
-        if(rnd<0.5){
+        if(rnd<0.1){
           full_turn_to_sensor();
           } 
         else{
