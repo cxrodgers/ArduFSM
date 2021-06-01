@@ -88,7 +88,7 @@ int ctr = 5;
 int fwd_bck_steps = 1400;
 int bck_fwd_steps = 2200;
 int fwd_bck_interval = 200; // in milliseconds
-float rnd;
+long rnd;
 
 // These should go into some kind of Protocol.h or something
 char* param_abbrevs[N_TRIAL_PARAMS] = {
@@ -606,7 +606,7 @@ void trigger_audio(){
 void trigger_stepper(){
     
     // decide whether to count steps or rotate to sensor:
-    rnd = random(0,1);
+    rnd = random(0,100);
     if(param_values[tpidx_STPRIDX]==1){
         digitalWrite(DIR_PIN, LOW);
         /*if (ctr==5){
@@ -617,7 +617,7 @@ void trigger_stepper(){
           full_turn();
           ctr++;
           }*/
-        if(rnd<0.1){
+        if(rnd<10){
           full_turn_to_sensor();
           }
         else{
@@ -626,7 +626,7 @@ void trigger_stepper(){
       }
     else if (param_values[tpidx_STPRIDX]==2){
         digitalWrite(DIR_PIN, HIGH);
-        if(rnd<0.1){
+        if(rnd<10){
           full_turn_to_sensor();
           } 
         else{

@@ -128,7 +128,7 @@ void setup()
   //digitalWrite(SLP_PIN, LOW);
    
   // random number seed
-  randomSeed(analogRead(3));
+  randomSeed(analogRead(A5));
   
   //// Run communications until we've received all setup info
   // Later make this a new flag. For now wait for first trial release.
@@ -144,9 +144,6 @@ void setup()
 
   // turn on LED lamp:
   digitalWrite(LED_PIN, HIGH);
-
-  // Intialize RNG:
-  randomSeed(analogRead(0));
 }
 
 
