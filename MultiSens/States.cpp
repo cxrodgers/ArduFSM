@@ -319,7 +319,7 @@ void StimPeriod::s_finish()
   // so that the actual whisker pole isn't retracted
   // until a full 2 s after it's extended:
   delay(spkr_cond_sig_dur + vol_sig_dur + wait_spkr_info + trial_start_signal_duration + spkr_trigger_dur);  
-  digitalWrite(DIR_PIN, LOW); //changed
+  digitalWrite(DIR_PIN, LOW); //rotate towards mouse
   if(param_values[tpidx_STPRIDX]==0){
         rotate_steps(catchSteps);
   }
@@ -615,7 +615,7 @@ void trigger_stepper(){
         //full_turn_to_sensor();
       }
     else if (param_values[tpidx_STPRIDX]==0){
-        digitalWrite(DIR_PIN, HIGH);
+        digitalWrite(DIR_PIN, HIGH); // rotate away from mouse
         rotate_to_sensor2();
       }
   }
