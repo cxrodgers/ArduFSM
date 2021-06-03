@@ -85,7 +85,7 @@ int spkr_trigger_dur = 10;
 int total_steps = NUM_STEPS * MICROSTEP;
 int init_steps = round(total_steps/5);
 int ctr = 5;
-int fwd_bck_steps = 1400;
+int fwd_bck_steps = 1800;
 int bck_fwd_steps = 2200;
 int fwd_bck_interval = 200; // in milliseconds
 long rnd;
