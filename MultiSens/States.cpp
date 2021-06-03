@@ -597,7 +597,7 @@ void trigger_audio(){
 
 void trigger_stepper(){
     if(param_values[tpidx_STPRIDX]==1){
-        digitalWrite(DIR_PIN, HIGH);
+        digitalWrite(DIR_PIN, LOW);
         /*if (ctr==5){
           full_turn_to_sensor();
           ctr = 0;
@@ -609,7 +609,7 @@ void trigger_stepper(){
         full_turn_to_sensor();        
       }
     else if (param_values[tpidx_STPRIDX]==2){
-        digitalWrite(DIR_PIN, LOW);
+        digitalWrite(DIR_PIN, HIGH);
         full_turn();
         ctr++;
         //full_turn_to_sensor();
