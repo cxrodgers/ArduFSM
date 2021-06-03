@@ -415,6 +415,14 @@ void full_turn_to_sensor(){
 }
 
 
+void full_turn_to_sensor2(){
+  for(int i = 0; i < init_steps + 1; i++){
+    rotate_one_step();
+  }
+  rotate_to_sensor2();
+}
+
+
 // StateResponseWindow definitions:
 void StateResponseWindow::update()
 {

@@ -266,5 +266,6 @@ void signal_trial_start();
 void rotate_steps(int n);
 void full_turn();
 void full_turn_to_sensor();
+void full_turn_to_sensor2();
 
 #endif
