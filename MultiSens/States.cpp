@@ -337,15 +337,15 @@ void StimPeriod::s_finish()
 
 void rotate_to_sensor(){
     // if steps haven't been counted yet, count the number of steps to HES
-    if(~steps_counted){
-        numSteps = 0;
+    if(~catch_steps_counted){
+        catchSteps = 0;
         while(analogRead(HALL_PIN)<HALL_THRESH){
           rotate_one_step(); //how to deal with direction??
-          numSteps = numSteps + 1;
+          catchSteps = catchSteps + 1;          
           //delay(1);
           //hall_val = analogRead(HALL_PIN);
         }
-        steps_counted = 1;
+        catch_steps_counted = 1;
 
     // if steps to HES have already been counted, don't count again; this will make stepper go faster
     } else{
@@ -358,15 +358,16 @@ void rotate_to_sensor(){
 
 void rotate_to_sensor2(){
     // if steps haven't been counted yet, count the number of steps to HES
-    if(~catch_steps_counted){
-        catchSteps = 0;
+    if(~steps_counted){
+        numSteps = 0;
         while(analogRead(HALL_PIN2)<HALL_THRESH){
           rotate_one_step(); //how to deal with direction??
-          catchSteps = catchSteps + 1;
+          numSteps = numSteps + 1;
+
           //delay(1);
           //hall_val = analogRead(HALL_PIN);
         }
-        catch_steps_counted = 1;
+        steps_counted = 1;
 
     // if steps to HES have already been counted, don't count again; this will make stepper go faster
     } else{
