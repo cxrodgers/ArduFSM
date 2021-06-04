@@ -606,7 +606,7 @@ void trigger_stepper(){
           full_turn();
           ctr++;
           }*/
-        full_turn_to_sensor();        
+        full_turn_to_sensor2();        
       }
     else if (param_values[tpidx_STPRIDX]==2){
         digitalWrite(DIR_PIN, HIGH);
@@ -616,7 +616,7 @@ void trigger_stepper(){
       }
     else if (param_values[tpidx_STPRIDX]==0){
         digitalWrite(DIR_PIN, HIGH); // rotate away from mouse
-        rotate_to_sensor2();
+        rotate_to_sensor();
       }
   }
 
