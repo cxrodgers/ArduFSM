@@ -536,7 +536,7 @@ def main():
     stimDur= settings['StimDur_s']
     responseWindow = settings['ResponseWindow_s']
     minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
-    meanITI = settings['MeanITI_s']
+    exp_mean = settings['Exp_mean_s']
 
     # Load various timing assumptions, compute some additonal timing parameters:
     timing_file = "C:\\Users\\lab\\Documents\\Arduino\\ArduFSM\\MultiSens\\timing_assumptions.json"
@@ -581,7 +581,7 @@ def main():
                 
             # Choose ITI:
             #ITI = random.uniform(minITI, maxITI)
-            ITI = minITI + np.random.exponential(meanITI)
+            ITI = minITI + np.random.exponential(exp_mean)
             n = n + 1
             print('trial ' + str(n))
     
