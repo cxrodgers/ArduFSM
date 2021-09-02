@@ -536,7 +536,6 @@ def main():
     stimDur= settings['StimDur_s']
     responseWindow = settings['ResponseWindow_s']
     minITI = settings['MinITI_s'] # should be slightly longer than the Arduino's ITI to be safe
-    maxITI = settings['MaxITI_s']  
     meanITI = settings['MeanITI_s']
 
     # Load various timing assumptions, compute some additonal timing parameters:
