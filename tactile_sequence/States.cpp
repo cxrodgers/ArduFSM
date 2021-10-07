@@ -87,7 +87,7 @@ int init_steps = round(total_steps/5);
 int ctr = 5;
 int fwd_bck_steps = 1800;
 int bck_fwd_steps = 1800;
-int fwd_bck_interval = 200; // in milliseconds
+int fwd_bck_interval = 250; // in milliseconds
 long rnd;
 
 // These should go into some kind of Protocol.h or something
